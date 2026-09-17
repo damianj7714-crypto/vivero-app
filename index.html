@@ -591,7 +591,9 @@
             return '$ ' + num.toLocaleString('es-AR');
         }
 
-        let dbData = {
+        // Cargar datos guardados previamente en localStorage o usar valores por defecto
+        const savedDb = localStorage.getItem('viveroApp_db_v3');
+        let dbData = savedDb ? JSON.parse(savedDb) : {
             plants: [
                 { id: 'p1', name: 'Monstera Deliciosa', family: 'Araceae', location: 'Interior', pot: 'Maceta N° 16', buyPrice: 8000, sellPrice: 16000, updateDate: '2026-03-01', image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400' },
                 { id: 'p2', name: 'Ficus Lyrata', family: 'Moraceae', location: 'Interior / Exterior', pot: 'Maceta N° 18', buyPrice: 15000, sellPrice: 30000, updateDate: '2026-03-02', image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=400' },
@@ -886,7 +888,7 @@
             }
 
             grid.innerHTML = list.map(p => {
-                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeName = (p.name || '').replace(/['"\\]/g, '');
                 const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Planta';
                 const buyP = Number(p.buyPrice) || 0;
                 const sellP = Number(p.sellPrice) || (buyP * 2);
@@ -963,7 +965,7 @@
                 const promptText = `Eres un experto agrónomo y encargado de este vivero. El usuario ha subido una foto de una planta. Analiza la foto y compárala con el siguiente stock actual disponible en el vivero:\n\n${stockSummary}\n\nIndícale al usuario:\n1. Qué planta es (nombre común y especie/familia).\n2. Si coincide con alguna planta existente en el stock/catálogo listado arriba y cuál es su similitud o correspondencia.\n3. Breves recomendaciones de cuidado.`;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1123,7 +1125,7 @@
             }
 
             grid.innerHTML = list.map(item => {
-                const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeName = (item.name || '').replace(/['"\\]/g, '');
                 const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Ítem';
                 const buyP = Number(item.buyPrice) || 0;
                 const sellP = Number(item.sellPrice) || (buyP * 2);
@@ -1345,7 +1347,7 @@
             }
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
