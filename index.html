@@ -929,7 +929,7 @@
             }).join('');
         }
 
-        // --- BOT COMPARADOR DE FOTOS CON EL STOCK ---
+        // --- BOT COMPARADOR DE FOTOS CON EL STOCK (CORREGIDO) ---
         async function comparePhotoWithStock() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -973,8 +973,8 @@
                                 parts: [
                                     { text: promptText },
                                     {
-                                        inline_data: {
-                                            mime_type: mimeType,
+                                        inlineData: {
+                                            mimeType: mimeType,
                                             data: base64String
                                         }
                                     }
@@ -1326,7 +1326,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- BOT ASESOR GENERAL ---
+        // --- BOT ASESOR GENERAL (CORREGIDO) ---
         async function askBot() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -1352,7 +1352,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: query }] }],
-                        system_instruction: { parts: [{ text: "Eres un experto agrónomo en viveros. Responde de forma clara y concisa en español." }] }
+                        systemInstruction: { parts: [{ text: "Eres un experto agrónomo en viveros. Responde de forma clara y concisa en español." }] }
                     })
                 });
                 const result = await response.json();
