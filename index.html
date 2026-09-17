@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vivero Morlina - Gestión de Inventario</title>
+    <title>Vivero Morlina - Gestión de Catálogo</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (Librería para leer Excel) -->
+    <!-- SheetJS para procesar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -18,51 +18,56 @@
     <header class="bg-emerald-700 text-white shadow-md p-4 mb-6">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold tracking-wide">🌱 Vivero Morlina</h1>
-            <span class="text-emerald-100 text-sm">Sistema de Gestión de Catálogo</span>
+            <span class="text-emerald-100 text-sm">Gestión de Productos</span>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 pb-12">
         
-        <!-- Panel de Acciones e Importación Excel -->
+        <!-- Bloque 1: Carga Masiva desde Excel -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6 border border-emerald-100">
-            <h2 class="text-lg font-semibold text-emerald-800 mb-4">Acciones e Importación Masiva</h2>
-            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md cursor-pointer text-sm font-medium transition shadow-sm">
-                        📁 Cargar Excel de Tierras
-                        <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="cargarExcel(event)">
-                    </label>
-                    <span id="excelStatus" class="text-xs text-slate-500">Formato esperado: .xlsx, .xls o .csv</span>
-                </div>
-                <div class="text-xs text-slate-500">
-                    Columnas Excel: <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-700">nombre, marca, medida, tipo, precioCompra, precioVenta, fechaActualizacion</code>
-                </div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold text-emerald-800 flex items-center gap-2">
+                    📊 Carga Masiva de Tierras (Excel)
+                </h2>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium">Categoría: Tierras</span>
+            </div>
+            
+            <p class="text-xs text-slate-500 mb-4">
+                Sube una planilla (.xlsx, .xls o .csv) para registrar múltiples tierras simultáneamente. Columnas requeridas: 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">nombre</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">marca</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">medida</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">tipo</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">precioCompra</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">precioVenta</code>, 
+                <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">fechaActualizacion</code>
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-md cursor-pointer text-sm font-medium transition shadow-sm flex items-center gap-2">
+                    <span>📁 Seleccionar Archivo Excel</span>
+                    <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="procesarExcelTierras(event)">
+                </label>
+                <span id="excelStatus" class="text-xs text-slate-500 font-medium">Esperando archivo...</span>
             </div>
         </div>
 
-        <!-- Formulario de Registro -->
+        <!-- Bloque 2: Formulario Individual (Agregar Nueva Tierra) -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-emerald-100">
-            <h2 class="text-lg font-semibold text-emerald-800 mb-4">Agregar Producto</h2>
-            <form id="productForm" onsubmit="guardarProducto(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Categoría</label>
-                    <select id="categoria" class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" onchange="alternarCamposCategoria()">
-                        <option value="Tierras">Tierras</option>
-                        <option value="Plantas">Plantas</option>
-                        <option value="Macetas">Macetas</option>
-                        <option value="Insumos">Insumos</option>
-                    </select>
-                </div>
+            <h2 class="text-lg font-semibold text-emerald-800 mb-4 flex items-center gap-2">
+                ➕ Agregar Nueva Tierra
+            </h2>
 
+            <form id="formTierra" onsubmit="guardarTierra(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nombre</label>
-                    <input type="text" id="nombre" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nombre / Descripción</label>
+                    <input type="text" id="nombre" placeholder="Ej: Tierra Fértil Preparada" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Marca</label>
-                    <input type="text" id="marca" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="text" id="marca" placeholder="Ej: NutriPlant" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
@@ -72,17 +77,17 @@
 
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Tipo</label>
-                    <input type="text" id="tipo" placeholder="Ej: Compostada, Orgánica" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="text" id="tipo" placeholder="Ej: Compostada, Orgánica, Humus" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Precio Compra ($)</label>
-                    <input type="number" step="0.01" id="precioCompra" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="number" step="0.01" id="precioCompra" placeholder="0.00" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Precio Venta ($)</label>
-                    <input type="number" step="0.01" id="precioVenta" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="number" step="0.01" id="precioVenta" placeholder="0.00" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
@@ -90,24 +95,24 @@
                     <input type="date" id="fechaActualizacion" required class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
-                <div class="md:col-span-2 lg:col-span-4 flex justify-end mt-2">
-                    <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-6 py-2 rounded-md transition shadow-sm text-sm">
-                        Guardar Producto
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-2 px-4 rounded-md transition shadow-sm text-sm">
+                        Guardar Tierra
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Filtros por Sección -->
+        <!-- Secciones de Navegación -->
         <div class="flex space-x-2 mb-4 border-b border-emerald-200 pb-2 overflow-x-auto">
-            <button onclick="filtrarSeccion('Todas')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-emerald-800 hover:bg-emerald-100 transition active-tab">Todas</button>
+            <button onclick="filtrarSeccion('Todas')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-emerald-800 bg-emerald-100 transition">Todas</button>
             <button onclick="filtrarSeccion('Tierras')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-slate-600 hover:bg-emerald-100 transition">Tierras</button>
             <button onclick="filtrarSeccion('Plantas')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-slate-600 hover:bg-emerald-100 transition">Plantas</button>
             <button onclick="filtrarSeccion('Macetas')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-slate-600 hover:bg-emerald-100 transition">Macetas</button>
             <button onclick="filtrarSeccion('Insumos')" class="tab-btn px-4 py-2 rounded-t-lg font-medium text-sm text-slate-600 hover:bg-emerald-100 transition">Insumos</button>
         </div>
 
-        <!-- Tabla de Productos -->
+        <!-- Tabla -->
         <div class="bg-white rounded-lg shadow-sm border border-emerald-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
@@ -125,18 +130,18 @@
                         </tr>
                     </thead>
                     <tbody id="tablaProductos" class="divide-y divide-slate-100">
-                        <!-- Carga dinámica -->
+                        <!-- Registros dinámicos -->
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Eliminación con Temporizador -->
+    <!-- Modal Borrado -->
     <div id="modalEliminar" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl border border-slate-100 text-center">
-            <h3 class="text-lg font-semibold text-slate-800 mb-2">¿Eliminar producto?</h3>
-            <p class="text-xs text-slate-500 mb-6">Esta acción eliminará el registro permanentemente de Firestore.</p>
+            <h3 class="text-lg font-semibold text-slate-800 mb-2">¿Eliminar registro?</h3>
+            <p class="text-xs text-slate-500 mb-6">Esta acción eliminará el producto permanentemente de Firestore.</p>
             
             <div class="flex justify-center items-center gap-3">
                 <button onclick="cancelarEliminacion()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-md text-sm font-medium transition">
@@ -151,7 +156,7 @@
 
     <!-- Script Lógico -->
     <script>
-        // Configuración Firebase (viveromorlina)
+        // Configuración de Firebase (viveromorlina)
         const firebaseConfig = {
             apiKey: "AIzaSyMorlinaKeyExample123456789",
             authDomain: "viveromorlina.firebaseapp.com",
@@ -172,10 +177,9 @@
         let temporizador = null;
         let segundosRestantes = 3;
 
-        // Establecer fecha de hoy por defecto
         document.getElementById('fechaActualizacion').valueAsDate = new Date();
 
-        // Cargar productos en tiempo real desde Firestore
+        // Escuchador Firestore
         db.collection("productos").onSnapshot((snapshot) => {
             todosLosProductos = [];
             snapshot.forEach((doc) => {
@@ -193,7 +197,7 @@
                 : todosLosProductos.filter(p => p.categoria === seccionActual);
 
             if (filtrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">No hay productos registrados en esta sección.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">No hay registros en esta sección.</td></tr>`;
                 return;
             }
 
@@ -201,7 +205,7 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-emerald-50/50 transition";
                 tr.innerHTML = `
-                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full font-medium">${item.categoria || 'N/A'}</span></td>
+                    <td class="p-3"><span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full font-medium">${item.categoria || 'Sin Cat.'}</span></td>
                     <td class="p-3 font-medium text-slate-700">${item.nombre || '-'}</td>
                     <td class="p-3 text-slate-600">${item.marca || '-'}</td>
                     <td class="p-3 text-slate-600">${item.medida || '-'}</td>
@@ -219,32 +223,33 @@
             });
         }
 
-        function guardarProducto(e) {
+        // Carga individual
+        function guardarTierra(e) {
             e.preventDefault();
-            const nuevoProducto = {
-                categoria: document.getElementById('categoria').value,
+            const nuevaTierra = {
+                categoria: "Tierras",
                 nombre: document.getElementById('nombre').value,
                 marca: document.getElementById('marca').value,
                 medida: document.getElementById('medida').value,
                 tipo: document.getElementById('tipo').value,
-                precioCompra: parseFloat(document.getElementById('precioCompra').value),
-                precioVenta: parseFloat(document.getElementById('precioVenta').value),
+                precioCompra: parseFloat(document.getElementById('precioCompra').value) || 0,
+                precioVenta: parseFloat(document.getElementById('precioVenta').value) || 0,
                 fechaActualizacion: document.getElementById('fechaActualizacion').value
             };
 
-            db.collection("productos").add(nuevoProducto).then(() => {
-                document.getElementById('productForm').reset();
+            db.collection("productos").add(nuevaTierra).then(() => {
+                document.getElementById('formTierra').reset();
                 document.getElementById('fechaActualizacion').valueAsDate = new Date();
             });
         }
 
-        // Carga desde archivo Excel (Categoría Tierras)
-        function cargarExcel(e) {
+        // Carga Masiva mediante Excel
+        function procesarExcelTierras(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const status = document.getElementById('excelStatus');
-            status.innerText = "Procesando archivo...";
+            status.innerText = "Procesando Excel...";
             status.className = "text-xs text-emerald-600 font-medium";
 
             const reader = new FileReader();
@@ -256,39 +261,46 @@
                     const sheet = workbook.Sheets[sheetName];
                     const json = XLSX.utils.sheet_to_json(sheet);
 
+                    if (json.length === 0) {
+                        status.innerText = "El archivo está vacío.";
+                        status.className = "text-xs text-rose-600 font-medium";
+                        return;
+                    }
+
                     const batch = db.batch();
                     json.forEach((row) => {
                         const ref = db.collection("productos").doc();
                         batch.set(ref, {
                             categoria: "Tierras",
-                            nombre: row.nombre || "Sin nombre",
-                            marca: row.marca || "Genérico",
-                            medida: row.medida || "N/A",
-                            tipo: row.tipo || "General",
+                            nombre: String(row.nombre || "Sin Nombre"),
+                            marca: String(row.marca || "Genérico"),
+                            medida: String(row.medida || "N/A"),
+                            tipo: String(row.tipo || "General"),
                             precioCompra: parseFloat(row.precioCompra) || 0,
                             precioVenta: parseFloat(row.precioVenta) || 0,
-                            fechaActualizacion: row.fechaActualizacion || new Date().toISOString().split('T')[0]
+                            fechaActualizacion: String(row.fechaActualizacion || new Date().toISOString().split('T')[0])
                         });
                     });
 
                     batch.commit().then(() => {
-                        status.innerText = "¡Carga masiva completada con éxito!";
+                        status.innerText = `¡Éxito! ${json.length} tierras importadas.`;
                         status.className = "text-xs text-emerald-600 font-bold";
-                        setTimeout(() => status.innerText = "Formato esperado: .xlsx, .xls o .csv", 4000);
+                        document.getElementById('excelInput').value = "";
+                        setTimeout(() => status.innerText = "Esperando archivo...", 4000);
                     });
                 } catch (err) {
-                    status.innerText = "Error al procesar el archivo Excel.";
+                    status.innerText = "Error al leer el archivo Excel.";
                     status.className = "text-xs text-rose-600 font-medium";
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Filtro por secciones
+        // Control de Secciones
         function filtrarSeccion(seccion) {
             seccionActual = seccion;
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                if(btn.innerText === seccion) {
+                if (btn.innerText === seccion) {
                     btn.classList.add('bg-emerald-100', 'text-emerald-800');
                     btn.classList.remove('text-slate-600');
                 } else {
@@ -299,7 +311,7 @@
             renderizarTabla();
         }
 
-        // Modal con temporizador de 3 segundos para el borrado
+        // Modal Eliminación con Temporizador de 3s
         function abrirModalEliminar(id) {
             idAEliminar = id;
             segundosRestantes = 3;
