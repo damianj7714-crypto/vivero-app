@@ -910,7 +910,7 @@
             }).join('');
         }
 
-        // --- BOT COMPARADOR DE FOTOS CON EL STOCK (USANDO GEMINI 1.5 FLASH) ---
+        // --- BOT COMPARADOR DE FOTOS CON EL STOCK (CORREGIDO A v1) ---
         async function comparePhotoWithStock() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -946,7 +946,7 @@
                 const promptText = `Eres un experto agrónomo y encargado de este vivero. El usuario ha subido una foto de una planta. Analiza la foto y compárala con el siguiente stock actual disponible en el vivero:\n\n${stockSummary}\n\nIndícale al usuario:\n1. Qué planta es (nombre común y especie/familia).\n2. Si coincide con alguna planta existente en el stock/catálogo listado arriba y cuál es su similitud o correspondencia.\n3. Breves recomendaciones de cuidado.`;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1293,6 +1293,7 @@
             reader.readAsArrayBuffer(file);
         }
 
+        // --- BOT ASESOR GENERAL (CORREGIDO A v1) ---
         async function askBot() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -1313,7 +1314,7 @@
             }
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
