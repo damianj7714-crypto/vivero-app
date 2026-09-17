@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dónde descargar el archivo index.html</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col justify-center items-center p-4">
+
+    <div class="max-w-xl w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-200 space-y-6">
+        <div class="flex items-center space-x-4 border-b border-slate-100 pb-5">
+            <div class="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md shadow-emerald-200">
+                <i class="fa-solid fa-code"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-slate-900 text-xl">¿Dónde está el botón para descargar el archivo?</h1>
+                <p class="text-xs text-emerald-600 font-medium">Guía rápida de la interfaz</p>
+            </div>
+        </div>
+
+        <div class="space-y-4 text-sm text-slate-700">
+            <p class="leading-relaxed">
+                El archivo completo de tu aplicación (<code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-emerald-700 font-bold">index.html</code>) se encuentra directamente en el **editor de código** que ves en la pantalla derecha de nuestra plataforma.
+            </p>
+
+            <div class="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl space-y-3">
+                <h3 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-emerald-600"></i> Pasos para guardarlo en tu computadora:
+                </h3>
+                <ol class="list-decimal list-inside space-y-2 text-xs text-emerald-900/80 leading-relaxed font-medium">
+                    <li>Dirígete a la ventana o pestaña del **editor de código** (a la derecha en la interfaz).</li>
+                    <li>Selecciona y **copia todo el código** que contiene el archivo <code class="bg-white px-1 py-0.5 rounded font-mono">index.html</code> (puedes usar <kbd class="bg-white px-1.5 py-0.5 rounded shadow-xs font-mono">Ctrl + A</kbd> y luego <kbd class="bg-white px-1.5 py-0.5 rounded shadow-xs font-mono">Ctrl + C</kbd>).</li>
+                    <li>Abre el **Bloc de notas** o cualquier editor de texto en tu computadora (como VS Code).</li>
+                    <li>Pega el código y guárdalo con el nombre exacto de <code class="bg-white px-1.5 py-0.5 rounded font-mono">index.html</code> (asegurándote de que la extensión sea <code class="bg-white px-1.5 py-0.5 rounded font-mono">.html</code> y no `.txt`).</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row gap-3">
+            <a href="index.html" id="goToApp" class="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Volver a ViveroApp
+            </a>
+            <a href="hosting_guide.html" class="flex-1 text-center bg-sky-50 hover:bg-sky-100 text-sky-700 py-3 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Ver Guía de Alojamiento
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('goToApp').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
