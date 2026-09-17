@@ -24,7 +24,7 @@
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
 
     <!-- HEADER -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg shadow-md shadow-emerald-200">
@@ -59,7 +59,7 @@
     </header>
 
     <!-- NAVIGATION TABS -->
-    <nav class="bg-white border-b border-slate-200 shadow-xs">
+    <nav class="bg-white border-b border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2">
             <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-leaf"></i> Plantas
@@ -274,7 +274,7 @@
     </main>
 
     <!-- PIN CONFIRMATION MODAL -->
-    <div id="pinModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div id="pinModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl space-y-4 text-center">
             <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">
                 <i class="fa-solid fa-lock"></i>
@@ -294,7 +294,7 @@
     </div>
 
     <!-- FIREBASE & AI CONFIG MODAL -->
-    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -351,7 +351,7 @@
     </div>
 
     <!-- FIREBASE DIAGNOSTICS MODAL -->
-    <div id="firebaseDiagnosticsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="firebaseDiagnosticsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -386,7 +386,7 @@
     </div>
 
     <!-- PLANT MODAL -->
-    <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 id="plantModalTitle" class="font-bold text-slate-900 text-lg">Nueva Planta</h3>
@@ -435,7 +435,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen del Vivero (Archivo local)</label>
-                        <input type="file" id="plantImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-750 hover:file:bg-emerald-100">
+                        <input type="file" id="plantImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                     </div>
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
@@ -447,7 +447,7 @@
     </div>
 
     <!-- GENERAL ITEM MODAL -->
-    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 id="itemModalTitle" class="font-bold text-slate-900 text-lg">Nuevo Ítem</h3>
@@ -483,7 +483,7 @@
     </div>
 
     <!-- EXCEL IMPORT MODAL -->
-    <div id="excelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="excelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -509,7 +509,7 @@
     </div>
 
     <!-- SALE MODAL -->
-    <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-lg">Registrar Nueva Venta</h3>
@@ -542,7 +542,7 @@
     </div>
 
     <!-- CUSTOM TIMED DELETE CONFIRMATION MODAL -->
-    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
             <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner">
                 <i class="fa-solid fa-triangle-exclamation"></i>
@@ -877,10 +877,10 @@
                 const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
 
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
                         <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
                             <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
-                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-xs">
+                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-sm">
                                 ${p.location || 'Interior'}
                             </span>
                         </div>
@@ -910,7 +910,7 @@
             }).join('');
         }
 
-        // --- BOT COMPARADOR DE FOTOS CON EL STOCK (CORREGIDO A v1) ---
+        // --- BOT COMPARADOR DE FOTOS CON EL STOCK ---
         async function comparePhotoWithStock() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -1108,7 +1108,7 @@
                 const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
 
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
                         <div class="relative h-44 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
                             <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                         </div>
@@ -1293,7 +1293,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- BOT ASESOR GENERAL (CORREGIDO A v1) ---
+        // --- BOT ASESOR GENERAL ---
         async function askBot() {
             if (!geminiApiKey) {
                 alert('Por favor ingresa tu Gemini API Key en el botón de Configuración & IA.');
@@ -1319,7 +1319,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: query }] }],
-                        systemInstruction: { parts: [{ text: "Eres un experto agrónomo en viveros. Responde de forma clara y concisa en español." }] }
+                        system_instruction: { parts: [{ text: "Eres un experto agrónomo en viveros. Responde de forma clara y concisa en español." }] }
                     })
                 });
                 const result = await response.json();
