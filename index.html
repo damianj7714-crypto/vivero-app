@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViveroApp - Gestión Profesional</title>
+    <title>Gestión de Vivero</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- FontAwesome Icons -->
@@ -21,45 +21,28 @@
                     <i class="fa-solid fa-seedling text-lg"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-slate-900 text-base sm:text-lg">ViveroApp</h1>
-                        <!-- INDICADOR DE VERSIÓN -->
-                        <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wide">v1.2</span>
-                    </div>
-                    <p class="text-xs text-slate-500 hidden sm:block">Gestión Profesional (Precios en pesos $)</p>
+                    <h1 class="font-bold text-slate-900 text-base sm:text-lg">Vivero Manager</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Control de inventario y precios</p>
                 </div>
             </div>
 
-            <!-- Top Actions & Firebase Status -->
-            <div class="flex items-center gap-3">
-                <!-- Toggle Price View -->
-                <div class="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
-                    <span>P. Compra:</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggleBuyPrice" onchange="toggleBuyPriceView()" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
-                </div>
-
-                <!-- Firebase status badge -->
-                <button onclick="openFirebaseModal()" class="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="hidden md:inline">Firebase Conectado</span>
-                </button>
-            </div>
+            <!-- Navigation Tabs (Desktop) -->
+            <nav class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button onclick="switchTab('plants')" id="nav-plants" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs">Plantas</button>
+                <button onclick="switchTab('pots')" id="nav-pots" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Macetas</button>
+                <button onclick="switchTab('tierras')" id="nav-tierras" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Tierras</button>
+                <button onclick="switchTab('accessories')" id="nav-accessories" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Accesorios</button>
+                <button onclick="switchTab('chemicals')" id="nav-chemicals" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Químicos</button>
+            </nav>
         </div>
 
-        <!-- Navigation Tabs (Desktop & Mobile) -->
-        <div class="bg-slate-100 border-t border-slate-200 px-4 sm:px-6 lg:px-8 overflow-x-auto">
-            <div class="max-w-7xl mx-auto flex items-center gap-1 py-2">
-                <button onclick="switchTab('plants')" id="nav-plants" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs whitespace-nowrap cursor-pointer"><i class="fa-solid fa-seedling mr-1"></i> Plantas</button>
-                <button onclick="switchTab('pots')" id="nav-pots" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-circle mr-1"></i> Macetas</button>
-                <button onclick="switchTab('tierras')" id="nav-tierras" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-earth-americas mr-1"></i> Tierras</button>
-                <button onclick="switchTab('accessories')" id="nav-accessories" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-trowel mr-1"></i> Accesorios</button>
-                <button onclick="switchTab('chemicals')" id="nav-chemicals" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-flask mr-1"></i> Químicos</button>
-                <button onclick="switchTab('bot')" id="nav-bot" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-robot mr-1"></i> Bot de Plantas</button>
-                <button onclick="switchTab('sales')" id="nav-sales" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-emerald-700 hover:text-emerald-900 bg-emerald-50 whitespace-nowrap cursor-pointer"><i class="fa-solid fa-cash-register mr-1"></i> Ventas & Caja</button>
-            </div>
+        <!-- Mobile Navigation bar -->
+        <div class="flex md:hidden overflow-x-auto px-2 py-2 bg-slate-100 border-t border-slate-200 gap-1">
+            <button onclick="switchTab('plants')" id="nav-m-plants" class="px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap bg-white text-emerald-700 shadow-xs">Plantas</button>
+            <button onclick="switchTab('pots')" id="nav-m-pots" class="px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap text-slate-600">Macetas</button>
+            <button onclick="switchTab('tierras')" id="nav-m-tierras" class="px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap text-slate-600">Tierras</button>
+            <button onclick="switchTab('accessories')" id="nav-m-accessories" class="px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap text-slate-600">Accesorios</button>
+            <button onclick="switchTab('chemicals')" id="nav-m-chemicals" class="px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap text-slate-600">Químicos</button>
         </div>
     </header>
 
@@ -161,101 +144,6 @@
             <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
-        <!-- 6. BOT TAB -->
-        <section id="section-bot" class="space-y-6 hidden">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-900 mb-1"><i class="fa-solid fa-robot text-emerald-600 mr-2"></i>Bot Asistente de Plantas</h2>
-                <p class="text-xs sm:text-sm text-slate-500">Haz consultas sobre cuidados, riego y plagas.</p>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div id="botChatContainer" class="h-80 overflow-y-auto space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm">
-                    <div class="bg-emerald-100 text-emerald-900 p-3 rounded-xl max-w-md">¡Hola! Soy tu asistente de vivero. ¿En qué puedo ayudarte hoy con tus plantas?</div>
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="botInputMsg" placeholder="Pregunta sobre riego, luz, plagas..." class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="if(event.key==='Enter')sendBotMessage()">
-                    <button onclick="sendBotMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition cursor-pointer"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </section>
-
-        <!-- 7. SALES / CAJA TAB -->
-        <section id="section-sales" class="space-y-6 hidden">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-900 mb-1"><i class="fa-solid fa-cash-register text-emerald-600 mr-2"></i>Caja y Registro de Ventas</h2>
-                <p class="text-xs sm:text-sm text-slate-500">Busca productos de cualquier sección o escribe un ítem personalizado a mano.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left Column: Search & Manual Add -->
-                <div class="lg:col-span-1 space-y-4">
-                    <!-- Search from DB -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-                        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-magnifying-glass text-sky-600 mr-1"></i> Buscar Producto en Inventario</h3>
-                        <div class="relative">
-                            <input type="text" id="salesSearchInput" oninput="filterSalesSearch()" placeholder="Escribe para buscar plantas, macetas..." class="w-full px-3 py-2 pl-9 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                            <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
-                        </div>
-                        <div id="salesSearchResults" class="max-h-60 overflow-y-auto space-y-1.5 divide-y divide-slate-50"></div>
-                    </div>
-
-                    <!-- Add Custom Manually -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-                        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-pen-to-square text-amber-600 mr-1"></i> Agregar Producto a Mano</h3>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre del Producto</label>
-                            <input type="text" id="customSaleName" placeholder="Ej. Servicio de plantación" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Precio de Venta ($)</label>
-                            <input type="number" id="customSalePrice" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <button onclick="addCustomItemToCart()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
-                            <i class="fa-solid fa-plus mr-1"></i> Agregar a la Suma
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Right Column: Cart / Sum Summary -->
-                <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                            <h3 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-cart-shopping text-emerald-600 mr-2"></i> Resumen de la Venta actual</h3>
-                            <button onclick="clearCart()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"><i class="fa-solid fa-trash-can mr-1"></i> Vaciar Suma</button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm">
-                                <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                    <tr>
-                                        <th class="p-2.5 rounded-l-xl">Producto / Sección</th>
-                                        <th class="p-2.5 text-center">Cant.</th>
-                                        <th class="p-2.5 text-right">Precio Unit.</th>
-                                        <th class="p-2.5 text-right">Subtotal</th>
-                                        <th class="p-2.5 rounded-r-xl text-center">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cartTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
-                                    <tr>
-                                        <td colspan="5" class="text-center py-8 text-slate-400">No hay productos agregados todavía. Busca o escribe uno.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-slate-100 pt-4 mt-6 space-y-4">
-                        <div class="flex justify-between items-center text-lg font-bold text-slate-900">
-                            <span>Total a Cobrar:</span>
-                            <span id="cartTotalAmount" class="text-emerald-600 text-xl sm:text-2xl">$0</span>
-                        </div>
-                        <button onclick="finalizeSale()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-check"></i> Finalizar y Registrar Venta
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <!-- EXCEL IMPORT MODAL -->
@@ -309,17 +197,6 @@
         </div>
     </div>
 
-    <!-- FIREBASE MODAL -->
-    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 class="font-bold text-slate-900 text-lg">Configuración de Firebase</h3>
-            <p class="text-xs text-slate-500">El sistema está conectado actualmente a tu proyecto en la nube.</p>
-            <div class="flex justify-end pt-2">
-                <button onclick="closeFirebaseModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- APP SCRIPT -->
     <script>
         let dbData = JSON.parse(localStorage.getItem('vivero_db')) || {
@@ -340,47 +217,31 @@
             ]
         };
 
-        let cart = [];
         let currentTab = 'plants';
         let currentExcelType = 'plants';
         let currentItemType = 'plants';
-        let showBuyPrice = false;
 
         function saveDb() {
             localStorage.setItem('vivero_db', JSON.stringify(dbData));
         }
 
-        function toggleBuyPriceView() {
-            showBuyPrice = document.getElementById('toggleBuyPrice').checked;
-            renderCurrentTab();
-        }
-
         function switchTab(tab) {
             currentTab = tab;
-            const tabs = ['plants', 'pots', 'tierras', 'accessories', 'chemicals', 'bot', 'sales'];
+            const tabs = ['plants', 'pots', 'tierras', 'accessories', 'chemicals'];
             
             tabs.forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btnDesk = document.getElementById(`nav-${t}`);
+                const btnMob = document.getElementById(`nav-m-${t}`);
 
                 if (t === tab) {
                     if (sec) sec.classList.remove('hidden');
-                    if (btnDesk) {
-                        if (t === 'sales' || t === 'bot') {
-                            btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-emerald-700 text-white shadow-xs whitespace-nowrap cursor-pointer";
-                        } else {
-                            btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs whitespace-nowrap cursor-pointer";
-                        }
-                    }
+                    if (btnDesk) btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs";
+                    if (btnMob) btnMob.className = "px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap bg-white text-emerald-700 shadow-xs";
                 } else {
                     if (sec) sec.classList.add('hidden');
-                    if (btnDesk) {
-                        if (t === 'sales') {
-                            btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition text-emerald-700 hover:text-emerald-900 bg-emerald-50 whitespace-nowrap cursor-pointer";
-                        } else {
-                            btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 whitespace-nowrap cursor-pointer";
-                        }
-                    }
+                    if (btnDesk) btnDesk.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900";
+                    if (btnMob) btnMob.className = "px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap text-slate-600";
                 }
             });
 
@@ -389,8 +250,6 @@
 
         function renderCurrentTab() {
             if (currentTab === 'plants') renderPlants();
-            else if (currentTab === 'sales') renderSales();
-            else if (currentTab === 'bot') {}
             else renderItems(currentTab);
         }
 
@@ -400,16 +259,6 @@
             grid.innerHTML = '';
 
             dbData.plants.forEach(item => {
-                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>`;
-                if (showBuyPrice) {
-                    priceHtml = `
-                        <div class="text-xs">
-                            <span class="text-slate-400 block text-[10px]">Compra: $${(item.buyPrice || 0).toLocaleString()}</span>
-                            <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
-                        </div>
-                    `;
-                }
-
                 grid.innerHTML += `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
                         <div>
@@ -425,7 +274,7 @@
                         <div class="p-4 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
                             <div>
                                 <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">Precio Venta</span>
-                                ${priceHtml}
+                                <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
                             </div>
                             <button onclick="deleteItem('plants', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -441,16 +290,6 @@
 
             const list = dbData[type] || [];
             list.forEach(item => {
-                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>`;
-                if (showBuyPrice) {
-                    priceHtml = `
-                        <div class="text-xs">
-                            <span class="text-slate-400 block text-[10px]">Compra: $${(item.buyPrice || 0).toLocaleString()}</span>
-                            <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
-                        </div>
-                    `;
-                }
-
                 grid.innerHTML += `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
                         <div>
@@ -459,12 +298,13 @@
                             </div>
                             <div class="p-4 space-y-1">
                                 <h3 class="font-bold text-slate-900 text-sm">${item.name}</h3>
+                                <p class="text-xs text-slate-500">Compra: $${item.buyPrice.toLocaleString()}</p>
                             </div>
                         </div>
                         <div class="p-4 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
                             <div>
                                 <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">Precio Venta</span>
-                                ${priceHtml}
+                                <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
                             </div>
                             <button onclick="deleteItem('${type}', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -479,166 +319,6 @@
                 saveDb();
                 renderCurrentTab();
             }
-        }
-
-        // --- SALES & CART LOGIC ---
-        function renderSales() {
-            filterSalesSearch();
-            renderCartTable();
-        }
-
-        function filterSalesSearch() {
-            const query = document.getElementById('salesSearchInput').value.toLowerCase().trim();
-            const resultsDiv = document.getElementById('salesSearchResults');
-            if(!resultsDiv) return;
-            resultsDiv.innerHTML = '';
-
-            let allProducts = [];
-            const categories = { plants: 'Planta', pots: 'Maceta', tierras: 'Tierra', accessories: 'Accesorio', chemicals: 'Químico' };
-
-            for (let cat in categories) {
-                if (dbData[cat]) {
-                    dbData[cat].forEach(item => {
-                        allProducts.push({ ...item, categoryName: categories[cat] });
-                    });
-                }
-            }
-
-            const filtered = query === '' 
-                ? allProducts.slice(0, 5) 
-                : allProducts.filter(p => p.name.toLowerCase().includes(query) || (p.family && p.family.toLowerCase().includes(query)));
-
-            if (filtered.length === 0) {
-                resultsDiv.innerHTML = `<p class="text-xs text-slate-400 p-2 text-center">No se encontraron productos.</p>`;
-                return;
-            }
-
-            filtered.forEach(item => {
-                resultsDiv.innerHTML += `
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition cursor-pointer border border-transparent hover:border-slate-200" onclick="addToCart('${item.name}', ${item.sellPrice}, '${item.categoryName}')">
-                        <div>
-                            <p class="font-semibold text-slate-800 text-xs">${item.name}</p>
-                            <span class="text-[10px] text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">${item.categoryName}</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-bold text-emerald-600 text-xs">$${item.sellPrice.toLocaleString()}</span>
-                            <button class="ml-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function addToCart(name, price, category) {
-            const existing = cart.find(i => i.name === name && i.price === price);
-            if (existing) {
-                existing.qty += 1;
-            } else {
-                cart.push({ name, price, qty: 1, category });
-            }
-            renderCartTable();
-        }
-
-        function addCustomItemToCart() {
-            const nameInput = document.getElementById('customSaleName');
-            const priceInput = document.getElementById('customSalePrice');
-            const name = nameInput.value.trim();
-            const price = parseFloat(priceInput.value);
-
-            if (!name || isNaN(price) || price <= 0) {
-                alert('Por favor ingresa un nombre y un precio válido para el ítem manual.');
-                return;
-            }
-
-            addToCart(name, price, 'Manual');
-            nameInput.value = '';
-            priceInput.value = '';
-        }
-
-        function updateCartQty(index, delta) {
-            cart[index].qty += delta;
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
-            renderCartTable();
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            renderCartTable();
-        }
-
-        function clearCart() {
-            cart = [];
-            renderCartTable();
-        }
-
-        function renderCartTable() {
-            const tbody = document.getElementById('cartTableBody');
-            const totalEl = document.getElementById('cartTotalAmount');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            if (cart.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">No hay productos agregados todavía. Busca o escribe uno.</td></tr>`;
-                totalEl.innerText = '$0';
-                return;
-            }
-
-            let total = 0;
-            cart.forEach((item, index) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-2.5">
-                            <span class="font-semibold text-slate-800 block">${item.name}</span>
-                            <span class="text-[10px] text-slate-400">${item.category}</span>
-                        </td>
-                        <td class="p-2.5 text-center">
-                            <div class="inline-flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-lg">
-                                <button onclick="updateCartQty(${index}, -1)" class="text-slate-600 hover:text-red-600 font-bold px-1 cursor-pointer">-</button>
-                                <span class="font-bold text-slate-800">${item.qty}</span>
-                                <button onclick="updateCartQty(${index}, 1)" class="text-slate-600 hover:text-emerald-600 font-bold px-1 cursor-pointer">+</button>
-                            </div>
-                        </td>
-                        <td class="p-2.5 text-right text-slate-600">$${item.price.toLocaleString()}</td>
-                        <td class="p-2.5 text-right font-bold text-emerald-600">$${subtotal.toLocaleString()}</td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="removeFromCart(${index})" class="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            totalEl.innerText = `$${total.toLocaleString()}`;
-        }
-
-        function finalizeSale() {
-            if (cart.length === 0) {
-                alert('El carrito está vacío.');
-                return;
-            }
-            alert('¡Venta registrada con éxito!');
-            cart = [];
-            renderCartTable();
-        }
-
-        // Bot simulation
-        function sendBotMessage() {
-            const input = document.getElementById('botInputMsg');
-            const container = document.getElementById('botChatContainer');
-            if(!input || !input.value.trim()) return;
-
-            const text = input.value;
-            container.innerHTML += `<div class="bg-white text-slate-800 p-3 rounded-xl max-w-md ml-auto shadow-xs">${text}</div>`;
-            input.value = '';
-
-            setTimeout(() => {
-                container.innerHTML += `<div class="bg-emerald-100 text-emerald-900 p-3 rounded-xl max-w-md">Recomiendo regar moderadamente cuando la tierra esté seca al tacto y asegurar buena iluminación indirecta.</div>`;
-                container.scrollTop = container.scrollHeight;
-            }, 600);
-            container.scrollTop = container.scrollHeight;
         }
 
         // Excel Modal functions
@@ -810,16 +490,6 @@
             document.getElementById('modalInputName').value = '';
             document.getElementById('modalInputBuy').value = '';
             document.getElementById('modalInputImg').value = '';
-        }
-
-        function openFirebaseModal() {
-            const modal = document.getElementById('firebaseModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeFirebaseModal() {
-            const modal = document.getElementById('firebaseModal');
-            if (modal) modal.classList.add('hidden');
         }
 
         window.onload = function() {
