@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Ventas y Depuración de IA</title>
+    <title>Filtro de Ventas y Plantas</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f7f6; color: #333; }
-        .container { max-width: 650px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .filters { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"], select, textarea, button { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="text"], select { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; }
         input[type="text"] { flex: 2; }
         select { flex: 1; }
-        textarea { width: 100%; box-sizing: border-box; resize: vertical; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; padding: 10px 15px; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
         ul { list-style: none; padding: 0; }
-        li { background: #fafafa; margin-bottom: 8px; padding: 10px; border-left: 4px solid #007bff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .error-box { background: #ffe6e6; border: 1px solid #ff4d4d; padding: 12px; margin-top: 15px; border-radius: 4px; color: #990000; }
-        .success-box { background: #e6f9ff; border: 1px solid #0088cc; padding: 12px; margin-top: 15px; border-radius: 4px; color: #004466; }
+        li { background: #fafafa; margin-bottom: 8px; padding: 12px; border-left: 4px solid #007bff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Gestión de Ventas, Inventario y Asistente IA</h2>
-
-    <!-- SECCIÓN DE FILTROS: Buscador por texto + Selector de Planta -->
+    <h2>Gestión de Ventas / Inventario</h2>
+    
+    <!-- Filtros: Buscador por texto + Selector de Planta -->
     <div class="filters">
         <input type="text" id="searchInput" placeholder="Buscar producto o material...">
         <select id="plantSelect">
@@ -36,27 +31,13 @@
         </select>
     </div>
 
-    <!-- LISTA RESULTANTE -->
-    <h3>Resultados de Inventario / Ventas</h3>
-    <ul id="itemList">
-        <!-- Los elementos se cargan dinámicamente mediante JavaScript -->
-    </ul>
-
-    <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;">
-
-    <!-- SECCIÓN DE LA IA Y DEPURACIÓN -->
-    <h3>Asistente de IA</h3>
-    <div style="margin-bottom: 10px;">
-        <textarea id="aiPrompt" rows="3" placeholder="Escribe tu consulta para la IA (ej. ¿Cuál es el stock total en Planta Norte?)..."></textarea>
-    </div>
-    <button id="aiButton">Consultar IA</button>
-
-    <!-- CONTENEDOR DE RESPUESTAS O ERRORES DE LA IA -->
-    <div id="aiResultContainer"></div>
+    <!-- Lista de Resultados -->
+    <h3>Resultados</h3>
+    <ul id="itemList"></ul>
 </div>
 
 <script>
-    // 1. Datos de ejemplo para las pruebas
+    // Datos de ejemplo
     const items = [
         { id: 1, nombre: 'Cemento bolsa 50kg', planta: 'Planta Norte', stock: 120 },
         { id: 2, nombre: 'Varilla de acero 12mm', planta: 'Planta Sur', stock: 85 },
@@ -68,11 +49,8 @@
     const searchInput = document.getElementById('searchInput');
     const plantSelect = document.getElementById('plantSelect');
     const itemList = document.getElementById('itemList');
-    const aiButton = document.getElementById('aiButton');
-    const aiPrompt = document.getElementById('aiPrompt');
-    const aiResultContainer = document.getElementById('aiResultContainer');
 
-    // 2. Función lógica del Filtrado Combinado (Buscador + Planta)
+    // Función de filtrado combinado
     function renderItems() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const selectedPlant = plantSelect.value;
@@ -97,64 +75,12 @@
         });
     }
 
-    // Escuchar eventos de cambio en el buscador y el selector
+    // Escuchar cambios en el buscador y el selector
     searchInput.addEventListener('input', renderItems);
     plantSelect.addEventListener('change', renderItems);
 
-    // Carga inicial al abrir la página
+    // Carga inicial
     renderItems();
-
-    // 3. Lógica de la IA y Depuración de Errores
-    aiButton.addEventListener('click', async () => {
-        const promptText = aiPrompt.value.trim();
-        if (!promptText) {
-            alert('Por favor escribe una consulta para la IA.');
-            return;
-        }
-
-        aiResultContainer.innerHTML = '<p style="color: #666; font-style: italic;">Procesando consulta con la IA...</p>';
-
-        try {
-            // Nota: Esta llamada apunta a un endpoint de ejemplo que fallará intencionalmente 
-            // a menos que tengas un servidor corriendo en '/api/ia-endpoint'. 
-            // Sirve para ver cómo actúa el bloque de depuración.
-            const response = await fetch('/api/ia-endpoint', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    prompt: promptText, 
-                    plantaFiltroActiva: plantSelect.value 
-                })
-            });
-
-            if (!response.ok) {
-                // Captura exacta del error devuelto por el servidor
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(`Error HTTP ${response.status}: ${errorData.message || response.statusText}`);
-            }
-
-            const data = await response.json();
-            aiResultContainer.innerHTML = `
-                <div class="success-box">
-                    <strong>Respuesta de la IA:</strong>
-                    <p>${data.resultado || 'Consulta procesada correctamente.'}</p>
-                </div>
-            `;
-
-        } catch (error) {
-            // Depuración en consola y visualización amigable en pantalla de por qué no funciona la IA
-            console.error("Fallo técnico al conectar con la IA:", error);
-            
-            aiResultContainer.innerHTML = `
-                <div class="error-box">
-                    <strong>Fallo detectado en la IA (Depuración activa):</strong>
-                    <p>${error.message}</p>
-                    <hr style="border:0; border-top:1px solid #ffb3b3; margin:8px 0;">
-                    <small><strong>Posible causa:</strong> El endpoint <code>/api/ia-endpoint</code> no está respondiendo o no existe en tu entorno local actual. Asegúrate de apuntar a tu URL de backend correcta y verificar que tu API Key sea válida.</small>
-                </div>
-            `;
-        }
-    });
 </script>
 
 </body>
