@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- HEADER / NAVIGATION (BOTÓN DE EXCEL GLOBAL FIJO ARRIBA) -->
+    <!-- HEADER / NAVIGATION -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <div class="flex items-center gap-3">
@@ -26,22 +26,14 @@
                 </div>
             </div>
 
-            <!-- CONTROLES SUPERIORES: BOTÓN EXCEL + PESTAÑAS ESCRITORIO -->
-            <div class="flex items-center gap-2">
-                <!-- Botón de Excel Global (Siempre Visible) -->
-                <button onclick="openCurrentExcelModal()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-file-excel text-base"></i> <span class="hidden sm:inline">Importar Excel</span>
-                </button>
-
-                <!-- Navigation Tabs (Desktop) -->
-                <nav class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                    <button onclick="switchTab('plants')" id="nav-plants" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs">Plantas</button>
-                    <button onclick="switchTab('pots')" id="nav-pots" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Macetas</button>
-                    <button onclick="switchTab('tierras')" id="nav-tierras" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Tierras</button>
-                    <button onclick="switchTab('accessories')" id="nav-accessories" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Accesorios</button>
-                    <button onclick="switchTab('chemicals')" id="nav-chemicals" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Químicos</button>
-                </nav>
-            </div>
+            <!-- Navigation Tabs (Desktop) -->
+            <nav class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button onclick="switchTab('plants')" id="nav-plants" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition bg-white text-emerald-700 shadow-xs">Plantas</button>
+                <button onclick="switchTab('pots')" id="nav-pots" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Macetas</button>
+                <button onclick="switchTab('tierras')" id="nav-tierras" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Tierras</button>
+                <button onclick="switchTab('accessories')" id="nav-accessories" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Accesorios</button>
+                <button onclick="switchTab('chemicals')" id="nav-chemicals" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900">Químicos</button>
+            </nav>
         </div>
 
         <!-- Mobile Navigation bar -->
@@ -59,70 +51,95 @@
 
         <!-- 1. PLANTS TAB -->
         <section id="section-plants" class="space-y-6">
-            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Inventario de Plantas</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Gestión de especies, ubicaciones y precios (en $).</p>
                 </div>
-                <button onclick="openItemModal('plants')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nueva Planta
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openExcelModal('plants')" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('plants')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Nueva Planta
+                    </button>
+                </div>
             </div>
             <div id="plantsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
         <!-- 2. POTS TAB -->
         <section id="section-pots" class="space-y-6 hidden">
-            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Macetas y Contenedores</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de macetas (en $).</p>
                 </div>
-                <button onclick="openItemModal('pots')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nueva Maceta
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openExcelModal('pots')" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('pots')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Nueva Maceta
+                    </button>
+                </div>
             </div>
             <div id="potsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
         <!-- 3. TIERRAS TAB -->
         <section id="section-tierras" class="space-y-6 hidden">
-            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Tierras y Sustratos</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de tierras (en $).</p>
                 </div>
-                <button onclick="openItemModal('tierras')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nueva Tierra
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openExcelModal('tierras')" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('tierras')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Nueva Tierra
+                    </button>
+                </div>
             </div>
             <div id="tierrasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
         <!-- 4. ACCESSORIES TAB -->
         <section id="section-accessories" class="space-y-6 hidden">
-            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Accesorios y Herramientas</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Palas, guantes, tutores (en $).</p>
                 </div>
-                <button onclick="openItemModal('accessories')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nuevo Accesorio
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openExcelModal('accessories')" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('accessories')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Nuevo Accesorio
+                    </button>
+                </div>
             </div>
             <div id="accessoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
         <!-- 5. CHEMICALS TAB -->
         <section id="section-chemicals" class="space-y-6 hidden">
-            <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Fertilizantes y Químicos</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Abonos y plaguicidas (en $).</p>
                 </div>
-                <button onclick="openItemModal('chemicals')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nuevo Químico
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openExcelModal('chemicals')" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('chemicals')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Nuevo Químico
+                    </button>
+                </div>
             </div>
             <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
@@ -304,12 +321,8 @@
             }
         }
 
-        // Excel Modal functions (Linked globally to current tab)
-        function openCurrentExcelModal() {
-            openExcelModal(currentTab);
-        }
-
-        function openExcelModal(type = 'plants') {
+        // Excel Modal functions
+        function openExcelModal(type) {
             currentExcelType = type;
             const titleEl = document.getElementById('excelModalTitle');
             const titles = {
@@ -342,7 +355,7 @@
                 filename = "Plantilla_Plantas.xlsx";
             } else {
                 templateData = [
-                    { Nombre: "Ejemplo de Ítem", PrecioCompra: 2000, Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400" }
+                    { Nombre: "Ejemplo de Ítem", PrecioCompra: 800, Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400" }
                 ];
                 filename = `Plantilla_${currentExcelType}.xlsx`;
             }
@@ -366,25 +379,36 @@
 
                     let count = 0;
                     json.forEach(row => {
-                        const name = row.Nombre || row.nombre || row.NAME;
+                        const getVal = (keys) => {
+                            for (let k of keys) {
+                                for (let col in row) {
+                                    if (col.trim().toLowerCase() === k.toLowerCase()) {
+                                        return row[col];
+                                    }
+                                }
+                            }
+                            return null;
+                        };
+
+                        const name = getVal(['Nombre', 'Name', 'Nombres', 'Maceta', 'Item']);
                         if (name) {
-                            let rawBuy = row.PrecioCompra || row.preciocompra || row.Precio || row.precio || 2000;
+                            let rawBuy = getVal(['PrecioCompra', 'Precio Compra', 'Precio de Compra', 'Precio', 'BuyPrice', 'Costo']) || 2000;
                             if (typeof rawBuy === 'string') {
                                 rawBuy = rawBuy.replace(/[^0-9,.-]/g, '').replace(',', '.');
                             }
                             const buy = parseFloat(rawBuy) || 2000;
-                            const imgUrl = row.Imagen || row.imagen || row.IMAGE || row.foto || row.Foto;
+                            const imgUrl = getVal(['Imagen', 'Image', 'Foto', 'URL']);
 
                             if (currentExcelType === 'plants') {
                                 dbData.plants.push({
                                     id: 'p_ex_' + Date.now() + Math.random().toString(36).substr(2, 4),
                                     name: String(name),
-                                    family: String(row.Familia || row.familia || ''),
-                                    location: String(row.Ubicacion || row.ubicacion || 'Interior'),
-                                    pot: String(row.Maceta || row.maceta || ''),
+                                    family: String(getVal(['Familia', 'Family']) || ''),
+                                    location: String(getVal(['Ubicacion', 'Ubicación', 'Location']) || 'Interior'),
+                                    pot: String(getVal(['Maceta', 'Pot']) || ''),
                                     buyPrice: buy,
                                     sellPrice: buy * 2,
-                                    updateDate: String(row.FechaActualizacion || row.fechaactualizacion || new Date().toISOString().split('T')[0]),
+                                    updateDate: String(getVal(['FechaActualizacion', 'Fecha Actualización', 'Fecha']) || new Date().toISOString().split('T')[0]),
                                     image: (imgUrl && String(imgUrl).startsWith('http')) ? String(imgUrl) : 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
                                 });
                             } else {
@@ -405,7 +429,10 @@
                     renderCurrentTab();
                     alert(`¡Se importaron ${count} elementos exitosamente en la sección ${currentExcelType}!`);
                 } catch(err) {
-                    alert('Error al procesar el archivo Excel.');
+                    console.error(err);
+                    alert('Error al procesar el archivo Excel. Asegúrate de que el formato sea correcto.');
+                } finally {
+                    e.target.value = '';
                 }
             };
             reader.readAsArrayBuffer(file);
