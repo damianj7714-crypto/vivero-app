@@ -526,11 +526,16 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Selector de catálogo -->
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
-                    <h4 class="text-xs font-bold text-slate-700 uppercase">1. Agregar desde el Catálogo (Plantas, Macetas, etc.)</h4>
+                <!-- Buscador predictivo de catálogo -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3 relative">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase">1. Buscar Producto del Catálogo</h4>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <select id="saleItemSelect" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+                        <div class="flex-1 relative">
+                            <input type="text" id="saleItemSearchInput" oninput="filterSaleCatalog(this.value)" onfocus="filterSaleCatalog(this.value)" placeholder="Escribe el nombre del producto para buscar..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" autocomplete="off">
+                            <input type="hidden" id="selectedSaleItemKey" value="">
+                            <!-- Lista desplegable de resultados -->
+                            <div id="saleCatalogDropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto z-50 hidden divide-y divide-slate-100"></div>
+                        </div>
                         <input type="number" id="saleQty" min="1" value="1" class="w-20 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-center">
                         <button type="button" onclick="addItemSelectedToSaleCart()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs rounded-xl transition">Agregar</button>
                     </div>
@@ -612,6 +617,7 @@
         let showBuyPrice = false;
         let pendingToggleState = false;
         let currentSaleCart = [];
+        let allCatalogItems = [];
 
         const FIXED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyBn86ARo8leHh73bHJOLCmeGAmvsDp764Q",
@@ -654,6 +660,15 @@
             initFirebase(FIXED_FIREBASE_CONFIG, false);
             document.getElementById('toggleBuyPrice').checked = showBuyPrice;
             renderPlants();
+
+            // Cerrar el dropdown del buscador de ventas al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('saleCatalogDropdown');
+                const input = document.getElementById('saleItemSearchInput');
+                if (dropdown && input && !input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
         });
 
         function handleBuyPriceToggle(checkbox) {
@@ -685,7 +700,7 @@
             const statusText = document.getElementById('connectionStatus');
             if (isCloud) {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
-                statusText.innerHTML = `<i class="fa-solid fa-check text-emerald-600 font-bold mr-1"></i> Conectado a Firebase (${name || 'viveromorlina'})`;
+                statusText.innerHTML = `<i class="fa-solid fa-check text-emerald-600 font-bold mr-1"></i> Conectado à Firebase (${name || 'viveromorlina'})`;
                 lastSyncTime = new Date().toLocaleTimeString();
             } else {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
@@ -1140,16 +1155,25 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- SALES & CART SYSTEM ---
+        // --- SALES & CART SYSTEM WITH PREDICTIVE SEARCH ---
         function openSaleModal() {
             currentSaleCart = [];
-            const select = document.getElementById('saleItemSelect');
-            select.innerHTML = '<option value="">-- Seleccionar del catálogo --</option>';
-            
+            document.getElementById('saleItemSearchInput').value = '';
+            document.getElementById('selectedSaleItemKey').value = '';
+            document.getElementById('saleCatalogDropdown').classList.add('hidden');
+
+            // Cargar todos los elementos de todas las categorías en una lista unificada para búsqueda
+            allCatalogItems = [];
             ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(type => {
                 (dbData[type] || []).forEach(item => {
                     const price = item.sellPrice || (item.buyPrice * 2) || 0;
-                    select.innerHTML += `<option value="${type}_${item.id}">[${type.toUpperCase()}] ${item.name} (${formatMoney(price)})</option>`;
+                    allCatalogItems.push({
+                        key: `${type}_${item.id}`,
+                        name: item.name,
+                        type: type,
+                        price: price,
+                        label: `[${type.toUpperCase()}] ${item.name} (${formatMoney(price)})`
+                    });
                 });
             });
 
@@ -1158,19 +1182,56 @@
         }
         function closeSaleModal() { document.getElementById('saleModal').classList.add('hidden'); }
 
+        function filterSaleCatalog(query) {
+            const dropdown = document.getElementById('saleCatalogDropdown');
+            const q = query.toLowerCase().trim();
+            
+            let filtered = allCatalogItems;
+            if (q) {
+                filtered = allCatalogItems.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
+            }
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">No se encontraron productos</div>`;
+            } else {
+                dropdown.innerHTML = filtered.map(item => `
+                    <div onclick="selectSaleCatalogItem('${item.key}', '${item.name.replace(/'/g, "\\'")}')" class="px-3.5 py-2.5 text-xs hover:bg-emerald-50 cursor-pointer flex justify-between items-center transition">
+                        <div>
+                            <span class="font-bold text-slate-800 block">${item.name}</span>
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold">${item.type}</span>
+                        </div>
+                        <span class="text-emerald-700 font-bold">${formatMoney(item.price)}</span>
+                    </div>
+                `).join('');
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectSaleCatalogItem(key, name) {
+            document.getElementById('selectedSaleItemKey').value = key;
+            document.getElementById('saleItemSearchInput').value = name;
+            document.getElementById('saleCatalogDropdown').classList.add('hidden');
+        }
+
         function addItemSelectedToSaleCart() {
-            const select = document.getElementById('saleItemSelect');
+            const key = document.getElementById('selectedSaleItemKey').value;
             const qtyInput = document.getElementById('saleQty');
-            if (!select.value) return;
+            if (!key) {
+                alert('Por favor busca y selecciona un producto del catálogo.');
+                return;
+            }
             const qty = parseInt(qtyInput.value) || 1;
-            const [type, id] = select.value.split('_');
+            const [type, id] = key.split('_');
             const item = (dbData[type] || []).find(x => x.id === id);
             if (!item) return;
 
             const unitPrice = Number(item.sellPrice) || (Number(item.buyPrice) * 2) || 0;
             currentSaleCart.push({ name: item.name, qty: qty, total: unitPrice * qty });
             renderSaleCartTable();
-            select.value = '';
+            
+            // Limpiar buscador para la siguiente selección
+            document.getElementById('saleItemSearchInput').value = '';
+            document.getElementById('selectedSaleItemKey').value = '';
             qtyInput.value = '1';
         }
 
