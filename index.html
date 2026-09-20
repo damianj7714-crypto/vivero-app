@@ -227,7 +227,7 @@
                 </button>
             </div>
 
-            <!-- METRIC CARDS (UPDATE DYNAMICALLY WITH FILTERS) -->
+            <!-- METRIC CARDS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
                     <div>
@@ -256,7 +256,6 @@
                         <i class="fa-solid fa-filter text-emerald-600"></i>
                         <span class="font-bold text-slate-800 text-sm">Filtros de Control de Ventas:</span>
                     </div>
-                    <!-- Botones de Acceso Rápido -->
                     <div class="flex flex-wrap gap-1.5" id="salesFilterPresets">
                         <button onclick="setSalesPreset('all')" id="preset-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition">Todos</button>
                         <button onclick="setSalesPreset('today')" id="preset-today" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Hoy</button>
@@ -266,7 +265,6 @@
                     </div>
                 </div>
 
-                <!-- Entradas de Rango de Fechas e Input de Texto -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-500 mb-1">Desde Fecha</label>
@@ -341,7 +339,7 @@
                 <button onclick="closeFirebaseModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">
-                Ingresa las credenciales de tu proyecto Firebase. Asegúrate de tener activa la base de datos Firestore en tu <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Firebase Console</a> y configurar las Reglas de Firestore (permiso de lectura/escritura).
+                Ingresa las credenciales de tu proyecto Firebase. Asegúrate de tener activa la base de datos Firestore en tu <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Firebase Console</a> y configurar las Reglas de Firestore.
             </p>
             <form id="firebaseForm" onsubmit="saveFirebaseConfig(event)" class="space-y-3">
                 <div>
@@ -525,9 +523,9 @@
                 <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-4 text-sm text-slate-600">
-                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las columnas: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-semibold text-slate-800">Nombre, Familia, Ubicacion, Maceta, PrecioCompra, FechaActualizacion, Imagen</code> (el precio de venta se calcula automáticamente al doble).</p>
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las columnas: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-semibold text-slate-800">Nombre, Familia, Ubicacion, Maceta, PrecioCompra, FechaActualizacion, Imagen</code>.</p>
                 <button onclick="downloadExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Ejemplo con Imagen
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Ejemplo
                 </button>
                 <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('excelFileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
@@ -541,7 +539,7 @@
         </div>
     </div>
 
-    <!-- SALE MODAL (REGISTRAR VENTA CON BÚSQUEDA Y CARRITO DE COMPRAS) -->
+    <!-- SALE MODAL -->
     <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -554,11 +552,9 @@
                 <button onclick="closeSaleModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- LAYOUT EN DOS COLUMNAS: SELECCIÓN Y CARRITO -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- COLUMNA IZQUIERDA: BÚSQUEDA / ÍTEM MANUAL (7 cols) -->
+                <!-- COLUMNA IZQUIERDA -->
                 <div class="lg:col-span-7 space-y-4">
-                    <!-- PESTAÑAS: INVENTARIO vs ÍTEM MANUAL -->
                     <div class="flex border-b border-slate-200 text-xs font-semibold">
                         <button type="button" id="saleModeInvTab" onclick="switchSaleModeTab('inv')" class="pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5">
                             <i class="fa-solid fa-magnifying-glass"></i> Buscar en Inventario
@@ -568,25 +564,20 @@
                         </button>
                     </div>
 
-                    <!-- BÚSQUEDA POR COINCIDENCIA EN INVENTARIO -->
                     <div id="saleInvSection" class="space-y-3">
                         <div class="relative">
                             <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                            <input type="text" id="cartSearchInput" oninput="filterCartInventory()" placeholder="Escribe para buscar por nombre o categoría (ej: Monstera, Maceta, Sustrato)..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" id="cartSearchInput" oninput="filterCartInventory()" placeholder="Escribe para buscar por nombre o categoría..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
 
-                        <!-- LISTA DE RESULTADOS COINCIDENTES -->
-                        <div id="cartSearchResults" class="max-h-64 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                            <!-- Se puebla dinámicamente -->
-                        </div>
+                        <div id="cartSearchResults" class="max-h-64 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
                     </div>
 
-                    <!-- INGRESO MANUAL DE ÍTEM -->
                     <div id="saleManualSection" class="space-y-3 hidden bg-slate-50 p-4 rounded-2xl border border-slate-200">
                         <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Agregar Ítem Personalizado</h4>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Concepto / Descripción *</label>
-                            <input type="text" id="manualItemName" placeholder="Ej: Servicio de Envío, Planta Especial, Servicio de Jardinería..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" id="manualItemName" placeholder="Ej: Servicio de Envío, Planta Especial..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -604,7 +595,7 @@
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: CARRITO DE COMPRAS Y FINALIZACIÓN (5 cols) -->
+                <!-- COLUMNA DERECHA -->
                 <div class="lg:col-span-5 bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center border-b border-slate-200 pb-2">
@@ -614,13 +605,9 @@
                             <span id="cartBadgeCount" class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ítems</span>
                         </div>
 
-                        <!-- LISTADO DE PRODUCTOS EN EL CARRITO -->
-                        <div id="cartItemsList" class="max-h-56 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                            <!-- Se puebla dinámicamente -->
-                        </div>
+                        <div id="cartItemsList" class="max-h-56 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
                     </div>
 
-                    <!-- RESUMEN DE TOTAL Y BOTÓN FINALIZAR -->
                     <div class="pt-3 border-t border-slate-200 space-y-3">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-semibold text-slate-600">Forma de Pago:</span>
@@ -647,7 +634,7 @@
         </div>
     </div>
 
-    <!-- SALE DETAIL MODAL (VER COMPROBANTE/TICKET) -->
+    <!-- SALE DETAIL MODAL -->
     <div id="saleDetailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -656,9 +643,7 @@
                 </h3>
                 <button onclick="closeSaleDetailModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="saleDetailContent" class="space-y-3 text-xs">
-                <!-- Se puebla dinámicamente -->
-            </div>
+            <div id="saleDetailContent" class="space-y-3 text-xs"></div>
             <div class="pt-2 flex justify-end">
                 <button onclick="closeSaleDetailModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
             </div>
@@ -702,19 +687,15 @@
         let deleteTimerInterval = null;
         let unsubscribeSnapshot = null;
         
-        // Estado de visibilidad de Precios de Compra
         let showBuyPrice = false;
         let pendingToggleState = false;
 
-        // Variables para Búsqueda Visual
         let selectedSearchImageBase64 = null;
         let selectedSearchImageMime = null;
 
-        // Estado del Carrito de Compras
         let cart = [];
         let currentSalesPreset = 'all';
 
-        // Credenciales fijas de Firebase
         let FIXED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyBn86ARo8leHh73bHJOLCmeGAmvsDp764Q",
             authDomain: "viveromorlina.firebaseapp.com",
@@ -766,7 +747,6 @@
             renderPlants();
         });
 
-        // --- PIN SECURITY HANDLERS ---
         function handleBuyPriceToggle(checkbox) {
             pendingToggleState = checkbox.checked;
             checkbox.checked = showBuyPrice;
@@ -979,7 +959,6 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // --- TIMED DELETE CONFIRMATION MODAL ---
         function openTimedDeleteModal(titleText, onConfirmCallback) {
             const modal = document.getElementById('deleteModal');
             const textEl = document.getElementById('deleteModalText');
@@ -1028,7 +1007,6 @@
             }
         }
 
-        // --- PLANTS RENDERING ---
         function renderPlants() {
             const grid = document.getElementById('plantsGrid');
             if (!grid) return;
@@ -1190,7 +1168,6 @@
             });
         }
 
-        // --- ITEMS LOGIC ---
         function renderItems(type) {
             const gridId = type + 'Grid';
             const grid = document.getElementById(gridId);
@@ -1331,7 +1308,6 @@
             });
         }
 
-        // --- EXCEL LOGIC ---
         function openExcelModal() {
             const modal = document.getElementById('excelModal');
             if (modal) modal.classList.remove('hidden');
@@ -1397,7 +1373,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- BOT DE BÚSQUEDA VISUAL POR FOTO ---
         function promptGeminiKey() {
             const currentKey = localStorage.getItem('vivero_gemini_key') || '';
             const key = prompt('Ingresa tu API Key de Google Gemini para búsqueda por IA:', currentKey);
@@ -1459,7 +1434,6 @@
                 btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Comparando e identificando...`;
             }
 
-            // Recopilar inventario con sus IDs
             const allInventory = [
                 ...(dbData.plants || []).map(p => ({ id: p.id, Categoria: 'Planta', Nombre: p.name, Familia: p.family || '', Ubicacion: p.location || '', Maceta: p.pot || '', PrecioVenta: p.sellPrice, itemObj: p })),
                 ...(dbData.pots || []).map(p => ({ id: p.id, Categoria: 'Maceta', Nombre: p.name, PrecioVenta: p.sellPrice, itemObj: p })),
@@ -1481,7 +1455,8 @@
             const promptText = `Analiza la fotografía adjunta y compárala con nuestro catálogo de inventario disponible:\n\n${JSON.stringify(inventoryListForPrompt, null, 2)}\n\nIdentifica las coincidencias exactas o más similares del catálogo. Responde OBLIGATORIAMENTE únicamente con el arreglo de IDs coincidentes en este formato exacto:\nCOINCIDENCIAS_IDS: ["id1", "id2"]`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                // Modelo actualizado a gemini-2.5-flash
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1520,7 +1495,6 @@
                             .filter(Boolean);
                     }
 
-                    // Respaldos por nombre si no vino la clave estándar
                     if (matchedIds.length === 0) {
                         allInventory.forEach(inv => {
                             if (inv.Nombre && reply.toLowerCase().includes(inv.Nombre.toLowerCase())) {
@@ -1591,7 +1565,6 @@
             }
         }
 
-        // --- SALES & CARRITO DE COMPRAS LOGIC ---
         function switchSaleModeTab(mode) {
             const invTab = document.getElementById('saleModeInvTab');
             const manualTab = document.getElementById('saleModeManualTab');
@@ -1652,52 +1625,39 @@
                 ...(dbData.chemicals || []).map(c => ({ id: c.id, cat: 'Químico', name: c.name, price: c.sellPrice || (c.buyPrice * 2), img: c.image }))
             ];
 
-            let filtered = allInventory;
-            if (search) {
-                filtered = filtered.filter(item => 
-                    (item.name && item.name.toLowerCase().includes(search)) || 
-                    (item.cat && item.cat.toLowerCase().includes(search))
-                );
-            }
+            const filtered = allInventory.filter(item => 
+                !search || item.name.toLowerCase().includes(search) || item.cat.toLowerCase().includes(search)
+            );
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-100">No se encontraron productos en el inventario.</div>`;
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">No se encontraron productos en el inventario.</div>`;
                 return;
             }
 
             container.innerHTML = filtered.map(item => `
-                <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-100 transition">
+                <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-100 hover:border-emerald-200 transition">
                     <div class="flex items-center gap-3">
-                        <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 object-cover rounded-lg bg-slate-200" onerror="this.src='https://placehold.co/100'">
+                        <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 object-cover rounded-lg border border-slate-100" onerror="this.src='https://placehold.co/100'">
                         <div>
-                            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">${item.cat}</span>
+                            <span class="text-[10px] font-bold uppercase text-emerald-600 block">${item.cat}</span>
                             <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
                             <span class="text-xs font-semibold text-slate-600">${formatMoney(item.price)}</span>
                         </div>
                     </div>
-                    <button onclick="addToCartFromInv('${item.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs transition flex items-center gap-1">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Agregar
+                    <button type="button" onclick="addToCart('${item.id}', '${item.cat}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Agregar
                     </button>
                 </div>
             `).join('');
         }
 
-        function addToCartFromInv(id) {
-            const allInventory = [
-                ...(dbData.plants || []).map(p => ({ id: p.id, cat: 'Planta', name: p.name, price: p.sellPrice || (p.buyPrice * 2) })),
-                ...(dbData.pots || []).map(p => ({ id: p.id, cat: 'Maceta', name: p.name, price: p.sellPrice || (p.buyPrice * 2) })),
-                ...(dbData.tierras || []).map(t => ({ id: t.id, cat: 'Tierra', name: t.name, price: t.sellPrice || (t.buyPrice * 2) })),
-                ...(dbData.accessories || []).map(a => ({ id: a.id, cat: 'Accesorio', name: a.name, price: a.sellPrice || (a.buyPrice * 2) })),
-                ...(dbData.chemicals || []).map(c => ({ id: c.id, cat: 'Químico', name: c.name, price: c.sellPrice || (c.buyPrice * 2) }))
-            ];
-            const found = allInventory.find(x => x.id === id);
-            if (!found) return;
-
-            const existing = cart.find(x => x.id === id);
+        function addToCart(id, cat, name, price) {
+            const existing = cart.find(i => i.id === id);
             if (existing) {
                 existing.qty += 1;
+                existing.subtotal = existing.qty * existing.unitPrice;
             } else {
-                cart.push({ id: found.id, name: found.name, price: Number(found.price) || 0, qty: 1, cat: found.cat });
+                cart.push({ id, cat, name, unitPrice: price, qty: 1, subtotal: price });
             }
             renderCartUI();
         }
@@ -1711,17 +1671,16 @@
             const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
             const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
 
-            if (!name) {
-                alert('Por favor, ingresa el concepto o descripción del ítem.');
-                return;
-            }
+            if (!name) { alert('Ingresa una descripción para el ítem.'); return; }
+            if (price <= 0) { alert('Ingresa un precio válido.'); return; }
 
             cart.push({
                 id: 'm_' + Date.now(),
+                cat: 'Manual',
                 name: name,
-                price: price,
+                unitPrice: price,
                 qty: qty,
-                cat: 'Manual'
+                subtotal: price * qty
             });
 
             if (nameInput) nameInput.value = '';
@@ -1731,58 +1690,64 @@
             renderCartUI();
         }
 
-        function updateCartQty(index, delta) {
+        function updateCartQty(index, change) {
             if (cart[index]) {
-                cart[index].qty += delta;
+                cart[index].qty += change;
                 if (cart[index].qty <= 0) {
                     cart.splice(index, 1);
+                } else {
+                    cart[index].subtotal = cart[index].qty * cart[index].unitPrice;
                 }
             }
             renderCartUI();
         }
 
-        function removeCartItem(index) {
-            if (cart[index]) {
-                cart.splice(index, 1);
-            }
+        function removeFromCart(index) {
+            cart.splice(index, 1);
             renderCartUI();
         }
 
         function renderCartUI() {
             const listContainer = document.getElementById('cartItemsList');
-            const badgeCount = document.getElementById('cartBadgeCount');
+            const badge = document.getElementById('cartBadgeCount');
             const totalDisplay = document.getElementById('cartTotalDisplay');
 
-            const totalUnits = cart.reduce((acc, item) => acc + item.qty, 0);
-            const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-
-            if (badgeCount) badgeCount.textContent = `${totalUnits} ítem${totalUnits !== 1 ? 's' : ''}`;
-            if (totalDisplay) totalDisplay.textContent = formatMoney(totalPrice);
-
-            if (!listContainer) return;
+            let total = 0;
+            let totalQty = 0;
 
             if (cart.length === 0) {
-                listContainer.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-100">El carrito está vacío.</div>`;
-                return;
+                if (listContainer) listContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">El carrito está vacío.</div>`;
+            } else {
+                if (listContainer) {
+                    listContainer.innerHTML = cart.map((item, idx) => {
+                        total += item.subtotal;
+                        totalQty += item.qty;
+                        return `
+                            <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200">
+                                <div class="flex-1 pr-2">
+                                    <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
+                                    <span class="text-[10px] text-slate-500">${formatMoney(item.unitPrice)} c/u</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                        <button type="button" onclick="updateCartQty(${idx}, -1)" class="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-200">-</button>
+                                        <span class="px-2 text-xs font-bold text-slate-800">${item.qty}</span>
+                                        <button type="button" onclick="updateCartQty(${idx}, 1)" class="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-200">+</button>
+                                    </div>
+                                    <span class="text-xs font-bold text-emerald-700 min-w-[60px] text-right">${formatMoney(item.subtotal)}</span>
+                                    <button type="button" onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 text-xs p-1"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
             }
 
-            listContainer.innerHTML = cart.map((item, idx) => `
-                <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                    <div class="flex-1 pr-2">
-                        <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
-                        <p class="text-[11px] text-slate-500 font-medium">${formatMoney(item.price)} c/u</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200">
-                            <button onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold text-xs">-</button>
-                            <span class="w-6 text-center text-xs font-bold text-slate-800">${item.qty}</span>
-                            <button onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold text-xs">+</button>
-                        </div>
-                        <span class="text-xs font-bold text-slate-900 w-16 text-right">${formatMoney(item.price * item.qty)}</span>
-                        <button onclick="removeCartItem(${idx})" class="text-rose-500 hover:text-rose-700 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
+            total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            if (badge) badge.textContent = `${totalQty} ${totalQty === 1 ? 'ítem' : 'ítems'}`;
+            if (totalDisplay) totalDisplay.textContent = formatMoney(total);
         }
 
         function completeCartSale() {
@@ -1792,35 +1757,31 @@
             }
 
             const now = new Date();
-            const dateStr = now.getFullYear() + '-' +
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0') + ' ' +
-                String(now.getHours()).padStart(2, '0') + ':' +
-                String(now.getMinutes()).padStart(2, '0');
-            
-            const dateOnlyStr = now.toISOString().split('T')[0];
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().substring(0, 5);
+            const fullDateStr = `${dateStr} ${timeStr}`;
 
-            const summary = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
-            const totalUnits = cart.reduce((acc, i) => acc + i.qty, 0);
-            const totalAmount = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-            const method = document.getElementById('salePaymentMethod') ? document.getElementById('salePaymentMethod').value : 'Efectivo';
+            const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            const payMethod = document.getElementById('salePaymentMethod')?.value || 'Efectivo';
+
+            const summaryName = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
 
             const newSale = {
                 id: 's_' + Date.now(),
-                date: dateStr,
-                dateOnly: dateOnlyStr,
-                itemName: summary,
-                qty: totalUnits,
+                date: fullDateStr,
+                dateOnly: dateStr,
+                itemName: summaryName,
+                qty: totalQty,
                 total: totalAmount,
-                paymentMethod: method,
-                items: cart.map(i => ({ name: i.name, qty: i.qty, unitPrice: i.price, subtotal: i.price * i.qty, cat: i.cat || 'General' }))
+                paymentMethod: payMethod,
+                items: JSON.parse(JSON.stringify(cart))
             };
 
-            if (!dbData.sales) dbData.sales = [];
+            dbData.sales = dbData.sales || [];
             dbData.sales.unshift(newSale);
             saveDb();
 
-            cart = [];
             closeSaleModal();
             renderSales();
             alert('¡Venta registrada con éxito!');
@@ -1828,182 +1789,175 @@
 
         function setSalesPreset(preset) {
             currentSalesPreset = preset;
-            const buttons = document.querySelectorAll('#salesFilterPresets button');
-            buttons.forEach(btn => {
-                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
-            });
-            const activeBtn = document.getElementById('preset-' + preset);
-            if (activeBtn) {
-                activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
+            const presetsContainer = document.getElementById('salesFilterPresets');
+            if (presetsContainer) {
+                const btns = presetsContainer.querySelectorAll('button');
+                btns.forEach(btn => {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                });
+                const activeBtn = document.getElementById('preset-' + preset);
+                if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
             }
 
             const fromInput = document.getElementById('salesFilterFrom');
             const toInput = document.getElementById('salesFilterTo');
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
 
-            if (preset === 'all') {
-                if (fromInput) fromInput.value = '';
-                if (toInput) toInput.value = '';
-            } else if (preset === 'today') {
+            if (preset === 'today') {
                 if (fromInput) fromInput.value = todayStr;
                 if (toInput) toInput.value = todayStr;
             } else if (preset === 'yesterday') {
-                const yest = new Date(now);
-                yest.setDate(yest.getDate() - 1);
-                const yestStr = yest.toISOString().split('T')[0];
-                if (fromInput) fromInput.value = yestStr;
-                if (toInput) toInput.value = yestStr;
+                const y = new Date();
+                y.setDate(y.getDate() - 1);
+                const yStr = y.toISOString().split('T')[0];
+                if (fromInput) fromInput.value = yStr;
+                if (toInput) toInput.value = yStr;
             } else if (preset === '7days') {
-                const d7 = new Date(now);
-                d7.setDate(d7.getDate() - 6);
-                if (fromInput) fromInput.value = d7.toISOString().split('T')[0];
+                const d = new Date();
+                d.setDate(d.getDate() - 6);
+                if (fromInput) fromInput.value = d.toISOString().split('T')[0];
                 if (toInput) toInput.value = todayStr;
             } else if (preset === 'month') {
-                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-                if (fromInput) fromInput.value = firstDay.toISOString().split('T')[0];
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                if (fromInput) fromInput.value = firstDay;
                 if (toInput) toInput.value = todayStr;
+            } else if (preset === 'all') {
+                if (fromInput) fromInput.value = '';
+                if (toInput) toInput.value = '';
             }
 
             renderSales();
         }
 
         function onSalesDateInputChange() {
-            const buttons = document.querySelectorAll('#salesFilterPresets button');
-            buttons.forEach(btn => {
-                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
-            });
+            currentSalesPreset = 'custom';
+            const presetsContainer = document.getElementById('salesFilterPresets');
+            if (presetsContainer) {
+                const btns = presetsContainer.querySelectorAll('button');
+                btns.forEach(btn => {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                });
+            }
             renderSales();
         }
 
         function renderSales() {
-            const tbody = document.getElementById('salesTableBody');
-            const totalSalesAmountEl = document.getElementById('totalSalesAmount');
-            const totalSalesCountEl = document.getElementById('totalSalesCount');
-            if (!tbody) return;
+            const tableBody = document.getElementById('salesTableBody');
+            if (!tableBody) return;
 
-            const fromInput = document.getElementById('salesFilterFrom');
-            const toInput = document.getElementById('salesFilterTo');
-            const searchInput = document.getElementById('salesFilterSearch');
+            const fromVal = document.getElementById('salesFilterFrom')?.value || '';
+            const toVal = document.getElementById('salesFilterTo')?.value || '';
+            const searchVal = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase().trim();
 
-            const fromVal = fromInput ? fromInput.value : '';
-            const toVal = toInput ? toInput.value : '';
-            const searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
-
-            let list = [...(dbData.sales || [])];
+            let sales = [...(dbData.sales || [])];
 
             if (fromVal) {
-                list = list.filter(s => (s.dateOnly || s.date.split(' ')[0]) >= fromVal);
+                sales = sales.filter(s => (s.dateOnly || s.date.split(' ')[0]) >= fromVal);
             }
             if (toVal) {
-                list = list.filter(s => (s.dateOnly || s.date.split(' ')[0]) <= toVal);
+                sales = sales.filter(s => (s.dateOnly || s.date.split(' ')[0]) <= toVal);
             }
             if (searchVal) {
-                list = list.filter(s => 
+                sales = sales.filter(s => 
                     (s.itemName && s.itemName.toLowerCase().includes(searchVal)) ||
-                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal))
+                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal)) ||
+                    (s.items && s.items.some(i => i.name.toLowerCase().includes(searchVal)))
                 );
             }
 
-            const totalSum = list.reduce((acc, s) => acc + (Number(s.total) || 0), 0);
-            if (totalSalesAmountEl) totalSalesAmountEl.textContent = formatMoney(totalSum);
-            if (totalSalesCountEl) totalSalesCountEl.textContent = list.length;
+            const totalAmount = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            const totalCount = sales.length;
 
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No hay ventas registradas que coincidan con los filtros.</td></tr>`;
+            const totalSalesEl = document.getElementById('totalSalesAmount');
+            const totalCountEl = document.getElementById('totalSalesCount');
+            if (totalSalesEl) totalSalesEl.textContent = formatMoney(totalAmount);
+            if (totalCountEl) totalCountEl.textContent = totalCount;
+
+            if (sales.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No se encontraron ventas registradas con los filtros aplicados.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = list.map(s => `
-                <tr class="hover:bg-slate-50/80 transition">
-                    <td class="p-4 whitespace-nowrap text-xs font-medium text-slate-600">
-                        ${s.date || 'N/D'}
+            tableBody.innerHTML = sales.map(s => `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-4 font-mono text-xs text-slate-600 whitespace-nowrap">${s.date}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1">${s.itemName || 'Venta'}</div>
+                        <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold mt-0.5">${s.paymentMethod || 'Efectivo'}</span>
                     </td>
-                    <td class="p-4 text-xs font-semibold text-slate-800">
-                        <div>${s.itemName || 'Venta de productos'}</div>
-                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${s.paymentMethod || 'Efectivo'}</span>
-                    </td>
-                    <td class="p-4 text-center text-xs font-semibold text-slate-700">
-                        ${s.qty || 1}
-                    </td>
-                    <td class="p-4 text-xs font-bold text-emerald-600 whitespace-nowrap">
-                        ${formatMoney(s.total || 0)}
-                    </td>
-                    <td class="p-4 text-right whitespace-nowrap space-x-1">
-                        <button onclick="openSaleDetailModal('${s.id}')" class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition">
-                            <i class="fa-solid fa-receipt mr-1"></i> Detalle
-                        </button>
-                        <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <td class="p-4 text-center font-semibold text-xs text-slate-700">${s.qty || 1}</td>
+                    <td class="p-4 font-bold text-emerald-700 text-sm whitespace-nowrap">${formatMoney(s.total)}</td>
+                    <td class="p-4 text-right space-x-1 whitespace-nowrap">
+                        <button onclick="viewSaleDetail('${s.id}')" class="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition" title="Ver Detalle"><i class="fa-solid fa-receipt"></i></button>
+                        <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function deleteSale(id) {
-            openTimedDeleteModal('¿Deseas eliminar este registro de venta?', () => {
-                dbData.sales = (dbData.sales || []).filter(s => s.id !== id);
-                saveDb();
-                renderSales();
-            });
-        }
-
-        function openSaleDetailModal(id) {
+        function viewSaleDetail(id) {
             const sale = (dbData.sales || []).find(s => s.id === id);
             if (!sale) return;
 
-            const content = document.getElementById('saleDetailContent');
-            if (!content) return;
-
-            const itemsHtml = (sale.items && sale.items.length > 0)
-                ? sale.items.map(i => `
-                    <div class="flex justify-between py-1.5 border-b border-slate-100 text-xs">
-                        <div>
-                            <span class="font-semibold text-slate-800">${i.name}</span>
-                            <span class="text-slate-400 block text-[10px]">${formatMoney(i.unitPrice)} x ${i.qty}</span>
-                        </div>
-                        <span class="font-bold text-slate-800">${formatMoney(i.subtotal)}</span>
-                    </div>
-                `).join('')
-                : `<p class="text-xs text-slate-600">${sale.itemName}</p>`;
-
-            content.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-2">
-                    <div class="flex justify-between text-xs text-slate-500">
-                        <span>ID Venta:</span>
-                        <span class="font-mono font-bold text-slate-700">${sale.id}</span>
-                    </div>
-                    <div class="flex justify-between text-xs text-slate-500">
-                        <span>Fecha y Hora:</span>
-                        <span class="font-semibold text-slate-700">${sale.date}</span>
-                    </div>
-                    <div class="flex justify-between text-xs text-slate-500">
-                        <span>Método de Pago:</span>
-                        <span class="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">${sale.paymentMethod || 'Efectivo'}</span>
-                    </div>
-                </div>
-
-                <div class="space-y-1 pt-2">
-                    <h5 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">Desglose de Productos</h5>
-                    <div class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar pr-1">
-                        ${itemsHtml}
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center pt-3 border-t border-slate-200">
-                    <span class="font-bold text-slate-800 text-sm uppercase">Total Cobrado</span>
-                    <span class="text-lg font-extrabold text-emerald-600">${formatMoney(sale.total)}</span>
-                </div>
-            `;
-
             const modal = document.getElementById('saleDetailModal');
+            const content = document.getElementById('saleDetailContent');
+
+            if (content) {
+                const itemsList = (sale.items && sale.items.length > 0) ? sale.items : [{ name: sale.itemName, qty: sale.qty, unitPrice: sale.total / (sale.qty || 1), subtotal: sale.total }];
+                
+                content.innerHTML = `
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
+                        <div class="flex justify-between text-slate-500 text-[11px]">
+                            <span>ID Transacción:</span>
+                            <span class="font-mono">${sale.id}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500 text-[11px]">
+                            <span>Fecha y Hora:</span>
+                            <span class="font-medium text-slate-800">${sale.date}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500 text-[11px]">
+                            <span>Medio de Pago:</span>
+                            <span class="font-bold text-emerald-700">${sale.paymentMethod || 'Efectivo'}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 pt-2">
+                        <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Productos / Conceptos:</h4>
+                        <div class="divide-y divide-slate-100 border-t border-b border-slate-100 py-1 max-h-48 overflow-y-auto">
+                            ${itemsList.map(item => `
+                                <div class="py-2 flex justify-between items-center">
+                                    <div>
+                                        <div class="font-semibold text-slate-800 text-xs">${item.name}</div>
+                                        <div class="text-[10px] text-slate-400">${item.qty} x${formatMoney(item.unitPrice)}</div>
+                                    </div>
+                                    <div class="font-bold text-slate-900 text-xs">${formatMoney(item.subtotal)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                        <span class="font-bold text-emerald-900 text-xs uppercase">Total Pagado:</span>
+                        <span class="font-extrabold text-emerald-700 text-lg">${formatMoney(sale.total)}</span>
+                    </div>
+                `;
+            }
+
             if (modal) modal.classList.remove('hidden');
         }
 
         function closeSaleDetailModal() {
             const modal = document.getElementById('saleDetailModal');
             if (modal) modal.classList.add('hidden');
+        }
+
+        function deleteSale(id) {
+            const sale = (dbData.sales || []).find(s => s.id === id);
+            const detail = sale ? sale.itemName : 'esta venta';
+            openTimedDeleteModal(`Estás a punto de eliminar el registro de venta "${detail}".`, () => {
+                dbData.sales = dbData.sales.filter(s => s.id !== id);
+                saveDb();
+                renderSales();
+            });
         }
     </script>
 </body>
