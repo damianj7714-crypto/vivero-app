@@ -1654,52 +1654,43 @@
 
             let filtered = allInventory;
             if (search) {
-                filtered = allInventory.filter(item => 
-                    item.name.toLowerCase().includes(search) || 
-                    item.cat.toLowerCase().includes(search)
-                );
+                filtered = filtered.filter(item => item.name.toLowerCase().includes(search) || item.cat.toLowerCase().includes(search));
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs bg-white rounded-xl border border-slate-200">No se encontraron productos coincidentes.</div>`;
+                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No se encontraron productos.</div>`;
                 return;
             }
 
-            container.innerHTML = filtered.map(item => {
-                const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const imgUrl = item.img || 'https://placehold.co/100x100/e2e8f0/64748b?text=Item';
-                return `
-                    <div class="p-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 transition">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <img src="${imgUrl}" alt="${safeName}" class="w-10 h-10 rounded-lg object-cover bg-slate-100 flex-shrink-0" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Item'">
-                            <div class="min-w-0">
-                                <span class="text-[10px] font-bold text-emerald-600 block uppercase tracking-wider">${item.cat}</span>
-                                <h5 class="font-bold text-slate-800 text-xs truncate">${item.name}</h5>
-                                <p class="text-xs font-semibold text-slate-600">${formatMoney(item.price)}</p>
-                            </div>
+            container.innerHTML = filtered.map(item => `
+                <div class="p-2 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2 hover:border-emerald-500 transition">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.src='https://placehold.co/100'">
+                        <div class="truncate">
+                            <p class="text-xs font-bold text-slate-800 truncate">${item.name}</p>
+                            <p class="text-[10px] text-slate-500">${item.cat} • ${formatMoney(item.price)}</p>
                         </div>
-                        <button type="button" onclick="addToCartFromInv('${item.id}', '${safeName}', ${item.price}, '${item.cat}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white font-semibold text-xs rounded-lg transition flex items-center gap-1 flex-shrink-0">
-                            <i class="fa-solid fa-plus text-[10px]"></i> Agregar
-                        </button>
                     </div>
-                `;
-            }).join('');
+                    <button type="button" onclick="addItemToCart('${item.id}', '${item.cat}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg transition flex-shrink-0">
+                        + Agregar
+                    </button>
+                </div>
+            `).join('');
         }
 
-        function addToCartFromInv(id, name, unitPrice, cat) {
-            const existingIndex = cart.findIndex(c => c.id === id && !c.isManual);
-            if (existingIndex !== -1) {
+        function addItemToCart(id, cat, name, price) {
+            const existingIndex = cart.findIndex(i => i.id === id);
+            if (existingIndex > -1) {
                 cart[existingIndex].qty += 1;
                 cart[existingIndex].subtotal = cart[existingIndex].qty * cart[existingIndex].unitPrice;
             } else {
                 cart.push({
                     id: id,
-                    name: name,
                     cat: cat,
-                    unitPrice: Number(unitPrice) || 0,
+                    name: name,
+                    unitPrice: price,
                     qty: 1,
-                    subtotal: Number(unitPrice) || 0,
-                    isManual: false
+                    subtotal: price
                 });
             }
             renderCartUI();
@@ -1710,27 +1701,26 @@
             const priceInput = document.getElementById('manualItemPrice');
             const qtyInput = document.getElementById('manualItemQty');
 
-            const name = (nameInput ? nameInput.value : '').trim();
-            const price = parseFloat(priceInput ? priceInput.value : '0');
-            const qty = parseInt(qtyInput ? qtyInput.value : '1') || 1;
+            const name = nameInput ? nameInput.value.trim() : '';
+            const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
+            const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
 
             if (!name) {
-                alert('Por favor, ingresa una descripción o concepto para el ítem manual.');
+                alert('Ingresa una descripción para el ítem manual.');
                 return;
             }
-            if (isNaN(price) || price < 0) {
-                alert('Por favor, ingresa un precio unitario válido.');
+            if (price <= 0) {
+                alert('Ingresa un precio unitario válido.');
                 return;
             }
 
             cart.push({
-                id: 'manual_' + Date.now() + Math.random().toString(36).substring(2, 5),
-                name: name,
+                id: 'm_' + Date.now(),
                 cat: 'Manual',
+                name: name,
                 unitPrice: price,
                 qty: qty,
-                subtotal: price * qty,
-                isManual: true
+                subtotal: price * qty
             });
 
             if (nameInput) nameInput.value = '';
@@ -1741,72 +1731,53 @@
         }
 
         function updateCartQty(index, newQty) {
-            const qty = parseInt(newQty);
-            if (isNaN(qty) || qty <= 0) {
-                cart.splice(index, 1);
-            } else {
-                cart[index].qty = qty;
-                cart[index].subtotal = cart[index].qty * cart[index].unitPrice;
+            const qty = parseInt(newQty) || 1;
+            if (qty <= 0) {
+                removeItemFromCart(index);
+                return;
             }
-            renderCartUI();
+            if (cart[index]) {
+                cart[index].qty = qty;
+                cart[index].subtotal = cart[index].unitPrice * qty;
+                renderCartUI();
+            }
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            renderCartUI();
+        function removeItemFromCart(index) {
+            if (cart[index]) {
+                cart.splice(index, 1);
+                renderCartUI();
+            }
         }
 
         function renderCartUI() {
-            const container = document.getElementById('cartItemsList');
+            const listContainer = document.getElementById('cartItemsList');
             const totalDisplay = document.getElementById('cartTotalDisplay');
             const badgeCount = document.getElementById('cartBadgeCount');
-            const btnComplete = document.getElementById('btnCompleteSale');
 
-            if (!container) return;
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            const grandTotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
-            let totalVal = 0;
-            let totalItemsCount = 0;
+            if (badgeCount) badgeCount.textContent = `${totalQty} ítem${totalQty !== 1 ? 's' : ''}`;
+            if (totalDisplay) totalDisplay.textContent = formatMoney(grandTotal);
 
-            cart.forEach(item => {
-                totalVal += item.subtotal;
-                totalItemsCount += item.qty;
-            });
-
-            if (badgeCount) badgeCount.textContent = `${totalItemsCount} ítem${totalItemsCount !== 1 ? 's' : ''}`;
-            if (totalDisplay) totalDisplay.textContent = formatMoney(totalVal);
-
-            if (btnComplete) {
-                if (cart.length === 0) {
-                    btnComplete.disabled = true;
-                    btnComplete.className = 'flex-1 py-2.5 bg-slate-300 text-slate-500 text-xs font-semibold rounded-xl transition cursor-not-allowed flex items-center justify-center gap-1.5';
-                } else {
-                    btnComplete.disabled = false;
-                    btnComplete.className = 'flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5';
-                }
-            }
+            if (!listContainer) return;
 
             if (cart.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-xl">El carrito está vacío. Agrega productos de la lista o ítems manuales.</div>`;
+                listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">El carrito está vacío.</p>`;
                 return;
             }
 
-            container.innerHTML = cart.map((item, idx) => `
-                <div class="p-2.5 bg-white border border-slate-200 rounded-xl space-y-1.5">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="min-w-0">
-                            <span class="text-[9px] font-bold ${item.isManual ? 'text-amber-600' : 'text-emerald-600'} uppercase block">${item.cat || 'Producto'}</span>
-                            <h5 class="font-bold text-slate-800 text-xs truncate">${item.name}</h5>
-                            <span class="text-[11px] text-slate-500">${formatMoney(item.unitPrice)} c/u</span>
-                        </div>
-                        <button type="button" onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+            listContainer.innerHTML = cart.map((item, idx) => `
+                <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-800 truncate">${item.name}</p>
+                        <p class="text-[10px] text-slate-500">${item.cat} • ${formatMoney(item.unitPrice)} c/u</p>
                     </div>
-                    <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-                        <div class="flex items-center gap-1">
-                            <button type="button" onclick="updateCartQty(${idx}, ${item.qty - 1})" class="w-5 h-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded flex items-center justify-center">-</button>
-                            <input type="number" min="1" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)" class="w-10 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded py-0.5">
-                            <button type="button" onclick="updateCartQty(${idx}, ${item.qty + 1})" class="w-5 h-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded flex items-center justify-center">+</button>
-                        </div>
-                        <span class="font-bold text-emerald-700 text-xs">${formatMoney(item.subtotal)}</span>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)" class="w-12 px-1.5 py-1 text-center bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none">
+                        <span class="text-xs font-bold text-slate-700 min-w-[60px] text-right">${formatMoney(item.subtotal)}</span>
+                        <button type="button" onclick="removeItemFromCart(${idx})" class="p-1 text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -1814,63 +1785,57 @@
 
         function completeCartSale() {
             if (cart.length === 0) {
-                alert('El carrito está vacío.');
+                alert('El carrito está vacío. Agrega al menos un producto.');
                 return;
             }
 
-            const payMethodSelect = document.getElementById('salePaymentMethod');
-            const payMethod = payMethodSelect ? payMethodSelect.value : 'Efectivo';
-            
+            const paymentMethod = document.getElementById('salePaymentMethod')?.value || 'Efectivo';
             const now = new Date();
+            const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().substring(0, 5);
             const dateOnly = now.toISOString().split('T')[0];
-            const timeStr = now.toTimeString().substring(0, 5);
-            const fullDateStr = `${dateOnly} ${timeStr}`;
 
-            const itemsSummary = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
-            const totalCart = cart.reduce((sum, i) => sum + i.subtotal, 0);
-            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            const grandTotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            const summaryText = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
 
             const newSale = {
                 id: 's_' + Date.now(),
-                date: fullDateStr,
+                date: dateStr,
                 dateOnly: dateOnly,
-                itemName: itemsSummary,
+                itemName: summaryText,
                 qty: totalQty,
-                total: totalCart,
-                paymentMethod: payMethod,
-                items: cart.map(i => ({
-                    id: i.id,
-                    name: i.name,
-                    cat: i.cat,
-                    unitPrice: i.unitPrice,
-                    qty: i.qty,
-                    subtotal: i.subtotal,
-                    isManual: i.isManual
-                }))
+                total: grandTotal,
+                paymentMethod: paymentMethod,
+                items: [...cart]
             };
 
             if (!dbData.sales) dbData.sales = [];
             dbData.sales.unshift(newSale);
+
             saveDb();
             closeSaleModal();
             renderSales();
+            alert('¡Venta registrada con éxito!');
         }
 
-        // --- FILTROS POR DÍAS Y CONTROL DE VENTAS ---
         function setSalesPreset(preset) {
             currentSalesPreset = preset;
             const now = new Date();
             const fromInput = document.getElementById('salesFilterFrom');
             const toInput = document.getElementById('salesFilterTo');
 
-            const presetBtns = document.querySelectorAll('#salesFilterPresets button');
-            presetBtns.forEach(btn => {
-                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+            const presetBtns = ['all', 'today', 'yesterday', '7days', 'month'];
+            presetBtns.forEach(p => {
+                const btn = document.getElementById('preset-' + p);
+                if (btn) {
+                    if (p === preset) {
+                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                    }
+                }
             });
-            const activeBtn = document.getElementById('preset-' + preset);
-            if (activeBtn) {
-                activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
-            }
 
             if (preset === 'all') {
                 if (fromInput) fromInput.value = '';
@@ -1881,13 +1846,13 @@
                 if (toInput) toInput.value = todayStr;
             } else if (preset === 'yesterday') {
                 const yest = new Date(now);
-                yest.setDate(now.getDate() - 1);
+                yest.setDate(yest.getDate() - 1);
                 const yestStr = yest.toISOString().split('T')[0];
                 if (fromInput) fromInput.value = yestStr;
                 if (toInput) toInput.value = yestStr;
             } else if (preset === '7days') {
                 const past = new Date(now);
-                past.setDate(now.getDate() - 6);
+                past.setDate(past.getDate() - 6);
                 if (fromInput) fromInput.value = past.toISOString().split('T')[0];
                 if (toInput) toInput.value = now.toISOString().split('T')[0];
             } else if (preset === 'month') {
@@ -1901,9 +1866,12 @@
 
         function onSalesDateInputChange() {
             currentSalesPreset = 'custom';
-            const presetBtns = document.querySelectorAll('#salesFilterPresets button');
-            presetBtns.forEach(btn => {
-                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+            const presetBtns = ['all', 'today', 'yesterday', '7days', 'month'];
+            presetBtns.forEach(p => {
+                const btn = document.getElementById('preset-' + p);
+                if (btn) {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+                }
             });
             renderSales();
         }
@@ -1912,144 +1880,104 @@
             const tableBody = document.getElementById('salesTableBody');
             const totalAmountEl = document.getElementById('totalSalesAmount');
             const totalCountEl = document.getElementById('totalSalesCount');
-            const fromVal = document.getElementById('salesFilterFrom')?.value || '';
-            const toVal = document.getElementById('salesFilterTo')?.value || '';
-            const searchVal = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase().trim();
-
             if (!tableBody) return;
 
-            let sales = [...(dbData.sales || [])];
+            const fromDate = document.getElementById('salesFilterFrom')?.value;
+            const toDate = document.getElementById('salesFilterTo')?.value;
+            const searchVal = document.getElementById('salesFilterSearch')?.value.toLowerCase().trim();
 
-            // Filtro por rango de fechas
-            if (fromVal || toVal) {
-                sales = sales.filter(s => {
-                    let sDateStr = '';
-                    if (s.dateOnly) {
-                        sDateStr = s.dateOnly;
-                    } else if (s.date) {
-                        sDateStr = s.date.split(' ')[0];
-                    }
-                    if (!sDateStr) return true;
+            let salesList = [...(dbData.sales || [])];
 
-                    if (fromVal && sDateStr < fromVal) return false;
-                    if (toVal && sDateStr > toVal) return false;
-                    return true;
-                });
+            if (fromDate) {
+                salesList = salesList.filter(s => (s.dateOnly || s.date?.split(' ')[0]) >= fromDate);
             }
-
-            // Filtro por término de búsqueda (nombre, forma de pago, fecha)
+            if (toDate) {
+                salesList = salesList.filter(s => (s.dateOnly || s.date?.split(' ')[0]) <= toDate);
+            }
             if (searchVal) {
-                sales = sales.filter(s => {
-                    const nameMatch = (s.itemName || '').toLowerCase().includes(searchVal);
-                    const payMatch = (s.paymentMethod || '').toLowerCase().includes(searchVal);
-                    const dateMatch = (s.date || '').toLowerCase().includes(searchVal);
-                    return nameMatch || payMatch || dateMatch;
-                });
+                salesList = salesList.filter(s => 
+                    (s.itemName && s.itemName.toLowerCase().includes(searchVal)) ||
+                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal))
+                );
             }
 
-            let totalVal = 0;
+            const totalSalesAmount = salesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            if (totalAmountEl) totalAmountEl.textContent = formatMoney(totalSalesAmount);
+            if (totalCountEl) totalCountEl.textContent = salesList.length;
 
-            if (sales.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 bg-white">No se encontraron ventas para los filtros de días o búsqueda seleccionados.</td></tr>`;
-            } else {
-                tableBody.innerHTML = sales.map(s => {
-                    const saleTotal = Number(s.total) || 0;
-                    totalVal += saleTotal;
-                    const safeItemsName = (s.itemName || 'Venta').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const methodBadge = s.paymentMethod ? `<span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded-md border border-slate-200 mr-1.5">${s.paymentMethod}</span>` : '';
-                    const hasMultipleItems = s.items && s.items.length > 0;
-
-                    return `
-                        <tr class="hover:bg-slate-50/80 transition">
-                            <td class="p-4 font-mono text-xs text-slate-500 whitespace-nowrap">${s.date || 'N/D'}</td>
-                            <td class="p-4 font-semibold text-slate-900">
-                                <div class="flex items-center gap-1.5">
-                                    ${methodBadge}
-                                    <span class="truncate max-w-xs sm:max-w-md block" title="${safeItemsName}">${s.itemName || 'Producto'}</span>
-                                </div>
-                            </td>
-                            <td class="p-4 text-center font-medium text-slate-700">${s.qty || 1}</td>
-                            <td class="p-4 font-bold text-emerald-700">${formatMoney(saleTotal)}</td>
-                            <td class="p-4 text-right whitespace-nowrap">
-                                ${hasMultipleItems ? `
-                                    <button onclick="viewSaleDetail('${s.id}')" class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg text-xs font-semibold transition mr-1" title="Ver detalle del ticket">
-                                        <i class="fa-solid fa-eye"></i> Detalle
-                                    </button>
-                                ` : ''}
-                                <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold transition" title="Eliminar registro">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+            if (salesList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No se encontraron ventas para los filtros seleccionados.</td></tr>`;
+                return;
             }
 
-            if (totalAmountEl) totalAmountEl.textContent = formatMoney(totalVal);
-            if (totalCountEl) totalCountEl.textContent = sales.length;
+            tableBody.innerHTML = salesList.map(s => {
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-mono text-xs text-slate-600 whitespace-nowrap">${s.date}</td>
+                        <td class="p-4 font-semibold text-slate-900">
+                            <div>${s.itemName}</div>
+                            <span class="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${s.paymentMethod || 'Efectivo'}</span>
+                        </td>
+                        <td class="p-4 text-center font-bold text-slate-700">${s.qty || 1}</td>
+                        <td class="p-4 font-extrabold text-emerald-600 whitespace-nowrap">${formatMoney(s.total)}</td>
+                        <td class="p-4 text-right whitespace-nowrap space-x-1">
+                            <button onclick="openSaleDetailModal('${s.id}')" class="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg font-semibold text-xs transition"><i class="fa-solid fa-eye"></i> Ticket</button>
+                            <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg font-semibold text-xs transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        function viewSaleDetail(id) {
+        function openSaleDetailModal(id) {
             const sale = (dbData.sales || []).find(s => s.id === id);
             if (!sale) return;
 
-            const content = document.getElementById('saleDetailContent');
-            if (!content) return;
+            const contentBox = document.getElementById('saleDetailContent');
+            if (!contentBox) return;
 
-            const items = sale.items || [];
-            let itemsHtml = '';
-
-            if (items.length > 0) {
-                itemsHtml = `
-                    <div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
-                        ${items.map(i => `
-                            <div class="p-2.5 bg-slate-50/50 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-slate-800 text-xs">${i.name}</p>
-                                    <p class="text-[10px] text-slate-500">${i.qty} x${formatMoney(i.unitPrice)}</p>
-                                </div>
-                                <span class="font-bold text-emerald-700 text-xs">${formatMoney(i.subtotal || (i.qty * i.unitPrice))}</span>
-                            </div>
-                        `).join('')}
+            const itemsHtml = (sale.items && sale.items.length > 0)
+                ? sale.items.map(i => `
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100 text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${i.name}</p>
+                            <p class="text-[10px] text-slate-500">${i.cat || 'Ítem'} • ${formatMoney(i.unitPrice)} x ${i.qty}</p>
+                        </div>
+                        <span class="font-bold text-slate-900">${formatMoney(i.subtotal || (i.unitPrice * i.qty))}</span>
                     </div>
-                `;
-            } else {
-                itemsHtml = `<p class="p-3 bg-slate-50 rounded-xl text-slate-600 border border-slate-100">${sale.itemName}</p>`;
-            }
+                `).join('')
+                : `<p class="py-2 text-slate-700 font-medium">${sale.itemName}</p>`;
 
-            content.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
-                    <div class="flex justify-between text-slate-500">
-                        <span>Fecha y Hora:</span>
-                        <span class="font-mono font-medium text-slate-800">${sale.date}</span>
-                    </div>
-                    <div class="flex justify-between text-slate-500">
-                        <span>Forma de Pago:</span>
-                        <span class="font-semibold text-slate-800">${sale.paymentMethod || 'Efectivo'}</span>
+            contentBox.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
+                    <div class="flex justify-between text-slate-500"><span>Fecha:</span><span class="font-bold text-slate-800">${sale.date}</span></div>
+                    <div class="flex justify-between text-slate-500"><span>Método Pago:</span><span class="font-bold text-slate-800">${sale.paymentMethod || 'Efectivo'}</span></div>
+                    <div class="flex justify-between text-slate-500"><span>ID Venta:</span><span class="font-mono text-[10px] text-slate-600">${sale.id}</span></div>
+                </div>
+                <div class="pt-2">
+                    <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Desglose de Ítems</h4>
+                    <div class="space-y-1 bg-white p-3 rounded-2xl border border-slate-200">
+                        ${itemsHtml}
                     </div>
                 </div>
-                <div>
-                    <span class="font-bold text-slate-700 block mb-1">Ítems de la Compra:</span>
-                    ${itemsHtml}
-                </div>
-                <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-xl border border-emerald-100 font-bold text-emerald-900 text-sm">
-                    <span>Total de la Venta:</span>
-                    <span>${formatMoney(sale.total)}</span>
+                <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-2xl border border-emerald-100 pt-3">
+                    <span class="font-bold text-emerald-900">Total Venta</span>
+                    <span class="text-lg font-extrabold text-emerald-700">${formatMoney(sale.total)}</span>
                 </div>
             `;
 
-            const modal = document.getElementById('saleDetailModal');
-            if (modal) modal.classList.remove('hidden');
+            document.getElementById('saleDetailModal').classList.remove('hidden');
         }
 
         function closeSaleDetailModal() {
-            const modal = document.getElementById('saleDetailModal');
-            if (modal) modal.classList.add('hidden');
+            document.getElementById('saleDetailModal').classList.add('hidden');
         }
 
         function deleteSale(id) {
-            openTimedDeleteModal('¿Estás seguro de eliminar este registro de venta?', () => {
-                dbData.sales = (dbData.sales || []).filter(s => s.id !== id);
+            const sale = (dbData.sales || []).find(s => s.id === id);
+            const label = sale ? `la venta de ${formatMoney(sale.total)} (${sale.date})` : 'esta venta';
+            openTimedDeleteModal(`Estás a punto de eliminar ${label}.`, () => {
+                dbData.sales = dbData.sales.filter(s => s.id !== id);
                 saveDb();
                 renderSales();
             });
