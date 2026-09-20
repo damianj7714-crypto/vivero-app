@@ -1654,44 +1654,50 @@
 
             let filtered = allInventory;
             if (search) {
-                filtered = filtered.filter(item => item.name.toLowerCase().includes(search) || item.cat.toLowerCase().includes(search));
+                filtered = filtered.filter(item => 
+                    (item.name && item.name.toLowerCase().includes(search)) || 
+                    (item.cat && item.cat.toLowerCase().includes(search))
+                );
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No se encontraron productos.</div>`;
+                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-100">No se encontraron productos en el inventario.</div>`;
                 return;
             }
 
             container.innerHTML = filtered.map(item => `
-                <div class="p-2 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2 hover:border-emerald-500 transition">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.src='https://placehold.co/100'">
-                        <div class="truncate">
-                            <p class="text-xs font-bold text-slate-800 truncate">${item.name}</p>
-                            <p class="text-[10px] text-slate-500">${item.cat} • ${formatMoney(item.price)}</p>
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-100 transition">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 object-cover rounded-lg bg-slate-200" onerror="this.src='https://placehold.co/100'">
+                        <div>
+                            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">${item.cat}</span>
+                            <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
+                            <span class="text-xs font-semibold text-slate-600">${formatMoney(item.price)}</span>
                         </div>
                     </div>
-                    <button type="button" onclick="addItemToCart('${item.id}', '${item.cat}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg transition flex-shrink-0">
-                        + Agregar
+                    <button onclick="addToCartFromInv('${item.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Agregar
                     </button>
                 </div>
             `).join('');
         }
 
-        function addItemToCart(id, cat, name, price) {
-            const existingIndex = cart.findIndex(i => i.id === id);
-            if (existingIndex > -1) {
-                cart[existingIndex].qty += 1;
-                cart[existingIndex].subtotal = cart[existingIndex].qty * cart[existingIndex].unitPrice;
+        function addToCartFromInv(id) {
+            const allInventory = [
+                ...(dbData.plants || []).map(p => ({ id: p.id, cat: 'Planta', name: p.name, price: p.sellPrice || (p.buyPrice * 2) })),
+                ...(dbData.pots || []).map(p => ({ id: p.id, cat: 'Maceta', name: p.name, price: p.sellPrice || (p.buyPrice * 2) })),
+                ...(dbData.tierras || []).map(t => ({ id: t.id, cat: 'Tierra', name: t.name, price: t.sellPrice || (t.buyPrice * 2) })),
+                ...(dbData.accessories || []).map(a => ({ id: a.id, cat: 'Accesorio', name: a.name, price: a.sellPrice || (a.buyPrice * 2) })),
+                ...(dbData.chemicals || []).map(c => ({ id: c.id, cat: 'Químico', name: c.name, price: c.sellPrice || (c.buyPrice * 2) }))
+            ];
+            const found = allInventory.find(x => x.id === id);
+            if (!found) return;
+
+            const existing = cart.find(x => x.id === id);
+            if (existing) {
+                existing.qty += 1;
             } else {
-                cart.push({
-                    id: id,
-                    cat: cat,
-                    name: name,
-                    unitPrice: price,
-                    qty: 1,
-                    subtotal: price
-                });
+                cart.push({ id: found.id, name: found.name, price: Number(found.price) || 0, qty: 1, cat: found.cat });
             }
             renderCartUI();
         }
@@ -1706,21 +1712,16 @@
             const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
 
             if (!name) {
-                alert('Ingresa una descripción para el ítem manual.');
-                return;
-            }
-            if (price <= 0) {
-                alert('Ingresa un precio unitario válido.');
+                alert('Por favor, ingresa el concepto o descripción del ítem.');
                 return;
             }
 
             cart.push({
                 id: 'm_' + Date.now(),
-                cat: 'Manual',
                 name: name,
-                unitPrice: price,
+                price: price,
                 qty: qty,
-                subtotal: price * qty
+                cat: 'Manual'
             });
 
             if (nameInput) nameInput.value = '';
@@ -1730,54 +1731,55 @@
             renderCartUI();
         }
 
-        function updateCartQty(index, newQty) {
-            const qty = parseInt(newQty) || 1;
-            if (qty <= 0) {
-                removeItemFromCart(index);
-                return;
-            }
+        function updateCartQty(index, delta) {
             if (cart[index]) {
-                cart[index].qty = qty;
-                cart[index].subtotal = cart[index].unitPrice * qty;
-                renderCartUI();
+                cart[index].qty += delta;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
             }
+            renderCartUI();
         }
 
-        function removeItemFromCart(index) {
+        function removeCartItem(index) {
             if (cart[index]) {
                 cart.splice(index, 1);
-                renderCartUI();
             }
+            renderCartUI();
         }
 
         function renderCartUI() {
             const listContainer = document.getElementById('cartItemsList');
-            const totalDisplay = document.getElementById('cartTotalDisplay');
             const badgeCount = document.getElementById('cartBadgeCount');
+            const totalDisplay = document.getElementById('cartTotalDisplay');
 
-            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-            const grandTotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            const totalUnits = cart.reduce((acc, item) => acc + item.qty, 0);
+            const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
-            if (badgeCount) badgeCount.textContent = `${totalQty} ítem${totalQty !== 1 ? 's' : ''}`;
-            if (totalDisplay) totalDisplay.textContent = formatMoney(grandTotal);
+            if (badgeCount) badgeCount.textContent = `${totalUnits} ítem${totalUnits !== 1 ? 's' : ''}`;
+            if (totalDisplay) totalDisplay.textContent = formatMoney(totalPrice);
 
             if (!listContainer) return;
 
             if (cart.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">El carrito está vacío.</p>`;
+                listContainer.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-100">El carrito está vacío.</div>`;
                 return;
             }
 
             listContainer.innerHTML = cart.map((item, idx) => `
-                <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-800 truncate">${item.name}</p>
-                        <p class="text-[10px] text-slate-500">${item.cat} • ${formatMoney(item.unitPrice)} c/u</p>
+                <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                    <div class="flex-1 pr-2">
+                        <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
+                        <p class="text-[11px] text-slate-500 font-medium">${formatMoney(item.price)} c/u</p>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <input type="number" min="1" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)" class="w-12 px-1.5 py-1 text-center bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none">
-                        <span class="text-xs font-bold text-slate-700 min-w-[60px] text-right">${formatMoney(item.subtotal)}</span>
-                        <button type="button" onclick="removeItemFromCart(${idx})" class="p-1 text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200">
+                            <button onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold text-xs">-</button>
+                            <span class="w-6 text-center text-xs font-bold text-slate-800">${item.qty}</span>
+                            <button onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold text-xs">+</button>
+                        </div>
+                        <span class="text-xs font-bold text-slate-900 w-16 text-right">${formatMoney(item.price * item.qty)}</span>
+                        <button onclick="removeCartItem(${idx})" class="text-rose-500 hover:text-rose-700 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -1789,31 +1791,36 @@
                 return;
             }
 
-            const paymentMethod = document.getElementById('salePaymentMethod')?.value || 'Efectivo';
             const now = new Date();
-            const dateStr = now.toISOString().split('T')[0] + ' ' + now.toTimeString().substring(0, 5);
-            const dateOnly = now.toISOString().split('T')[0];
+            const dateStr = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0');
+            
+            const dateOnlyStr = now.toISOString().split('T')[0];
 
-            const grandTotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-
-            const summaryText = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
+            const summary = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
+            const totalUnits = cart.reduce((acc, i) => acc + i.qty, 0);
+            const totalAmount = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+            const method = document.getElementById('salePaymentMethod') ? document.getElementById('salePaymentMethod').value : 'Efectivo';
 
             const newSale = {
                 id: 's_' + Date.now(),
                 date: dateStr,
-                dateOnly: dateOnly,
-                itemName: summaryText,
-                qty: totalQty,
-                total: grandTotal,
-                paymentMethod: paymentMethod,
-                items: [...cart]
+                dateOnly: dateOnlyStr,
+                itemName: summary,
+                qty: totalUnits,
+                total: totalAmount,
+                paymentMethod: method,
+                items: cart.map(i => ({ name: i.name, qty: i.qty, unitPrice: i.price, subtotal: i.price * i.qty, cat: i.cat || 'General' }))
             };
 
             if (!dbData.sales) dbData.sales = [];
             dbData.sales.unshift(newSale);
-
             saveDb();
+
+            cart = [];
             closeSaleModal();
             renderSales();
             alert('¡Venta registrada con éxito!');
@@ -1821,27 +1828,24 @@
 
         function setSalesPreset(preset) {
             currentSalesPreset = preset;
-            const now = new Date();
+            const buttons = document.querySelectorAll('#salesFilterPresets button');
+            buttons.forEach(btn => {
+                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+            });
+            const activeBtn = document.getElementById('preset-' + preset);
+            if (activeBtn) {
+                activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
+            }
+
             const fromInput = document.getElementById('salesFilterFrom');
             const toInput = document.getElementById('salesFilterTo');
-
-            const presetBtns = ['all', 'today', 'yesterday', '7days', 'month'];
-            presetBtns.forEach(p => {
-                const btn = document.getElementById('preset-' + p);
-                if (btn) {
-                    if (p === preset) {
-                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
-                    } else {
-                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
-                    }
-                }
-            });
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
 
             if (preset === 'all') {
                 if (fromInput) fromInput.value = '';
                 if (toInput) toInput.value = '';
             } else if (preset === 'today') {
-                const todayStr = now.toISOString().split('T')[0];
                 if (fromInput) fromInput.value = todayStr;
                 if (toInput) toInput.value = todayStr;
             } else if (preset === 'yesterday') {
@@ -1851,136 +1855,155 @@
                 if (fromInput) fromInput.value = yestStr;
                 if (toInput) toInput.value = yestStr;
             } else if (preset === '7days') {
-                const past = new Date(now);
-                past.setDate(past.getDate() - 6);
-                if (fromInput) fromInput.value = past.toISOString().split('T')[0];
-                if (toInput) toInput.value = now.toISOString().split('T')[0];
+                const d7 = new Date(now);
+                d7.setDate(d7.getDate() - 6);
+                if (fromInput) fromInput.value = d7.toISOString().split('T')[0];
+                if (toInput) toInput.value = todayStr;
             } else if (preset === 'month') {
                 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
                 if (fromInput) fromInput.value = firstDay.toISOString().split('T')[0];
-                if (toInput) toInput.value = now.toISOString().split('T')[0];
+                if (toInput) toInput.value = todayStr;
             }
 
             renderSales();
         }
 
         function onSalesDateInputChange() {
-            currentSalesPreset = 'custom';
-            const presetBtns = ['all', 'today', 'yesterday', '7days', 'month'];
-            presetBtns.forEach(p => {
-                const btn = document.getElementById('preset-' + p);
-                if (btn) {
-                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
-                }
+            const buttons = document.querySelectorAll('#salesFilterPresets button');
+            buttons.forEach(btn => {
+                btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
             });
             renderSales();
         }
 
         function renderSales() {
-            const tableBody = document.getElementById('salesTableBody');
-            const totalAmountEl = document.getElementById('totalSalesAmount');
-            const totalCountEl = document.getElementById('totalSalesCount');
-            if (!tableBody) return;
+            const tbody = document.getElementById('salesTableBody');
+            const totalSalesAmountEl = document.getElementById('totalSalesAmount');
+            const totalSalesCountEl = document.getElementById('totalSalesCount');
+            if (!tbody) return;
 
-            const fromDate = document.getElementById('salesFilterFrom')?.value;
-            const toDate = document.getElementById('salesFilterTo')?.value;
-            const searchVal = document.getElementById('salesFilterSearch')?.value.toLowerCase().trim();
+            const fromInput = document.getElementById('salesFilterFrom');
+            const toInput = document.getElementById('salesFilterTo');
+            const searchInput = document.getElementById('salesFilterSearch');
 
-            let salesList = [...(dbData.sales || [])];
+            const fromVal = fromInput ? fromInput.value : '';
+            const toVal = toInput ? toInput.value : '';
+            const searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
 
-            if (fromDate) {
-                salesList = salesList.filter(s => (s.dateOnly || s.date?.split(' ')[0]) >= fromDate);
+            let list = [...(dbData.sales || [])];
+
+            if (fromVal) {
+                list = list.filter(s => (s.dateOnly || s.date.split(' ')[0]) >= fromVal);
             }
-            if (toDate) {
-                salesList = salesList.filter(s => (s.dateOnly || s.date?.split(' ')[0]) <= toDate);
+            if (toVal) {
+                list = list.filter(s => (s.dateOnly || s.date.split(' ')[0]) <= toVal);
             }
             if (searchVal) {
-                salesList = salesList.filter(s => 
+                list = list.filter(s => 
                     (s.itemName && s.itemName.toLowerCase().includes(searchVal)) ||
                     (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal))
                 );
             }
 
-            const totalSalesAmount = salesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
-            if (totalAmountEl) totalAmountEl.textContent = formatMoney(totalSalesAmount);
-            if (totalCountEl) totalCountEl.textContent = salesList.length;
+            const totalSum = list.reduce((acc, s) => acc + (Number(s.total) || 0), 0);
+            if (totalSalesAmountEl) totalSalesAmountEl.textContent = formatMoney(totalSum);
+            if (totalSalesCountEl) totalSalesCountEl.textContent = list.length;
 
-            if (salesList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No se encontraron ventas para los filtros seleccionados.</td></tr>`;
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No hay ventas registradas que coincidan con los filtros.</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = salesList.map(s => {
-                return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-mono text-xs text-slate-600 whitespace-nowrap">${s.date}</td>
-                        <td class="p-4 font-semibold text-slate-900">
-                            <div>${s.itemName}</div>
-                            <span class="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${s.paymentMethod || 'Efectivo'}</span>
-                        </td>
-                        <td class="p-4 text-center font-bold text-slate-700">${s.qty || 1}</td>
-                        <td class="p-4 font-extrabold text-emerald-600 whitespace-nowrap">${formatMoney(s.total)}</td>
-                        <td class="p-4 text-right whitespace-nowrap space-x-1">
-                            <button onclick="openSaleDetailModal('${s.id}')" class="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg font-semibold text-xs transition"><i class="fa-solid fa-eye"></i> Ticket</button>
-                            <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg font-semibold text-xs transition"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            tbody.innerHTML = list.map(s => `
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="p-4 whitespace-nowrap text-xs font-medium text-slate-600">
+                        ${s.date || 'N/D'}
+                    </td>
+                    <td class="p-4 text-xs font-semibold text-slate-800">
+                        <div>${s.itemName || 'Venta de productos'}</div>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${s.paymentMethod || 'Efectivo'}</span>
+                    </td>
+                    <td class="p-4 text-center text-xs font-semibold text-slate-700">
+                        ${s.qty || 1}
+                    </td>
+                    <td class="p-4 text-xs font-bold text-emerald-600 whitespace-nowrap">
+                        ${formatMoney(s.total || 0)}
+                    </td>
+                    <td class="p-4 text-right whitespace-nowrap space-x-1">
+                        <button onclick="openSaleDetailModal('${s.id}')" class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition">
+                            <i class="fa-solid fa-receipt mr-1"></i> Detalle
+                        </button>
+                        <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteSale(id) {
+            openTimedDeleteModal('¿Deseas eliminar este registro de venta?', () => {
+                dbData.sales = (dbData.sales || []).filter(s => s.id !== id);
+                saveDb();
+                renderSales();
+            });
         }
 
         function openSaleDetailModal(id) {
             const sale = (dbData.sales || []).find(s => s.id === id);
             if (!sale) return;
 
-            const contentBox = document.getElementById('saleDetailContent');
-            if (!contentBox) return;
+            const content = document.getElementById('saleDetailContent');
+            if (!content) return;
 
             const itemsHtml = (sale.items && sale.items.length > 0)
                 ? sale.items.map(i => `
-                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100 text-xs">
+                    <div class="flex justify-between py-1.5 border-b border-slate-100 text-xs">
                         <div>
-                            <p class="font-bold text-slate-800">${i.name}</p>
-                            <p class="text-[10px] text-slate-500">${i.cat || 'Ítem'} • ${formatMoney(i.unitPrice)} x ${i.qty}</p>
+                            <span class="font-semibold text-slate-800">${i.name}</span>
+                            <span class="text-slate-400 block text-[10px]">${formatMoney(i.unitPrice)} x ${i.qty}</span>
                         </div>
-                        <span class="font-bold text-slate-900">${formatMoney(i.subtotal || (i.unitPrice * i.qty))}</span>
+                        <span class="font-bold text-slate-800">${formatMoney(i.subtotal)}</span>
                     </div>
                 `).join('')
-                : `<p class="py-2 text-slate-700 font-medium">${sale.itemName}</p>`;
+                : `<p class="text-xs text-slate-600">${sale.itemName}</p>`;
 
-            contentBox.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
-                    <div class="flex justify-between text-slate-500"><span>Fecha:</span><span class="font-bold text-slate-800">${sale.date}</span></div>
-                    <div class="flex justify-between text-slate-500"><span>Método Pago:</span><span class="font-bold text-slate-800">${sale.paymentMethod || 'Efectivo'}</span></div>
-                    <div class="flex justify-between text-slate-500"><span>ID Venta:</span><span class="font-mono text-[10px] text-slate-600">${sale.id}</span></div>
+            content.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>ID Venta:</span>
+                        <span class="font-mono font-bold text-slate-700">${sale.id}</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>Fecha y Hora:</span>
+                        <span class="font-semibold text-slate-700">${sale.date}</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>Método de Pago:</span>
+                        <span class="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">${sale.paymentMethod || 'Efectivo'}</span>
+                    </div>
                 </div>
-                <div class="pt-2">
-                    <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Desglose de Ítems</h4>
-                    <div class="space-y-1 bg-white p-3 rounded-2xl border border-slate-200">
+
+                <div class="space-y-1 pt-2">
+                    <h5 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">Desglose de Productos</h5>
+                    <div class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar pr-1">
                         ${itemsHtml}
                     </div>
                 </div>
-                <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-2xl border border-emerald-100 pt-3">
-                    <span class="font-bold text-emerald-900">Total Venta</span>
-                    <span class="text-lg font-extrabold text-emerald-700">${formatMoney(sale.total)}</span>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-200">
+                    <span class="font-bold text-slate-800 text-sm uppercase">Total Cobrado</span>
+                    <span class="text-lg font-extrabold text-emerald-600">${formatMoney(sale.total)}</span>
                 </div>
             `;
 
-            document.getElementById('saleDetailModal').classList.remove('hidden');
+            const modal = document.getElementById('saleDetailModal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeSaleDetailModal() {
-            document.getElementById('saleDetailModal').classList.add('hidden');
-        }
-
-        function deleteSale(id) {
-            const sale = (dbData.sales || []).find(s => s.id === id);
-            const label = sale ? `la venta de ${formatMoney(sale.total)} (${sale.date})` : 'esta venta';
-            openTimedDeleteModal(`Estás a punto de eliminar ${label}.`, () => {
-                dbData.sales = dbData.sales.filter(s => s.id !== id);
-                saveDb();
-                renderSales();
-            });
+            const modal = document.getElementById('saleDetailModal');
+            if (modal) modal.classList.add('hidden');
         }
     </script>
 </body>
