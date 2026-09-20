@@ -495,7 +495,7 @@
             for (let cat in categories) {
                 if (dbData[cat]) {
                     dbData[cat].forEach(item => {
-                        allProducts.push({ ...item, categoryName: categories[cat] });
+                        allProducts.push({ ...item, categoryName: categories[cat], categoryKey: cat });
                     });
                 }
             }
@@ -511,7 +511,7 @@
 
             filtered.forEach(item => {
                 resultsDiv.innerHTML += `
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition cursor-pointer border border-transparent hover:border-slate-200" onclick="addToCart('${item.name}', ${item.sellPrice}, '${item.categoryName}')">
+                    <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition cursor-pointer border border-transparent hover:border-slate-200" onclick="addProductById('${item.categoryKey}', '${item.id}')">
                         <div>
                             <p class="font-semibold text-slate-800 text-xs">${item.name}</p>
                             <span class="text-[10px] text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">${item.categoryName}</span>
@@ -523,6 +523,13 @@
                     </div>
                 `;
             });
+        }
+
+        function addProductById(catKey, itemId) {
+            const item = dbData[catKey].find(i => i.id === itemId);
+            if (!item) return;
+            const categoryName = { plants: 'Planta', pots: 'Maceta', tierras: 'Tierra', accessories: 'Accesorio', chemicals: 'Químico' }[catKey];
+            addToCart(item.name, item.sellPrice, categoryName);
         }
 
         function addToCart(name, price, category) {
