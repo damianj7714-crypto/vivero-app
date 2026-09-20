@@ -77,7 +77,7 @@
                 <i class="fa-solid fa-flask"></i> Químicos
             </button>
             <button onclick="switchTab('bot')" id="tab-bot" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-robot"></i> Bot de Plantas
+                <i class="fa-solid fa-camera"></i> Buscar por Foto
             </button>
             <button onclick="switchTab('sales')" id="tab-sales" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-cash-register"></i> Ventas & Caja
@@ -177,22 +177,33 @@
             <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
-        <!-- BOT TAB -->
+        <!-- VISUAL SEARCH BOT TAB -->
         <section id="section-bot" class="space-y-6 hidden">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-900">Bot Experto en Plantas</h2>
-                <p class="text-xs sm:text-sm text-slate-500">Consulta cuidados, riego, plagas y genera recomendaciones al instante.</p>
+                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Sube o toma una imagen de una planta o producto para comparar y buscar coincidencias en tu inventario actual.</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
-                <div class="flex gap-2">
-                    <input type="text" id="botQuery" placeholder="Ej: ¿Cómo revivir un helecho marchito?" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <button onclick="askBot()" id="botSendBtn" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Consultar
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50 flex flex-col items-center justify-center min-h-[180px]" onclick="document.getElementById('visualSearchInput').click()">
+                        <i class="fa-solid fa-camera text-3xl text-emerald-600 mb-2"></i>
+                        <p class="font-semibold text-slate-800 text-sm">Haz clic para tomar o subir una foto</p>
+                        <p class="text-xs text-slate-400 mt-1">Formatos soportados: JPG, PNG, WEBP</p>
+                        <input type="file" id="visualSearchInput" accept="image/*" onchange="previewSearchImage(event)" class="hidden">
+                    </div>
+                    <div id="previewContainer" class="hidden flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200 relative">
+                        <img id="visualSearchPreview" src="" alt="Vista previa" class="max-h-48 rounded-xl object-contain shadow-xs">
+                        <button onclick="clearSearchImage()" class="mt-2 text-xs text-rose-600 hover:underline font-semibold"><i class="fa-solid fa-trash mr-1"></i> Quitar foto</button>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario
                     </button>
                 </div>
                 <div id="botResult" class="hidden p-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-4">
                     <h3 class="font-bold text-emerald-900 flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-emerald-600"></i> Respuesta del Bot:
+                        <i class="fa-solid fa-robot text-emerald-600"></i> Coincidencias Encontradas:
                     </h3>
                     <div id="botAnswerText" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
                 </div>
@@ -545,6 +556,10 @@
         // Estado de visibilidad de Precios de Compra (ocultos por defecto)
         let showBuyPrice = false;
         let pendingToggleState = false;
+
+        // Variables para la Búsqueda por Foto
+        let selectedSearchImageBase64 = null;
+        let selectedSearchImageMime = null;
 
         // Credenciales fijas de Firebase integradas permanentemente
         const FIXED_FIREBASE_CONFIG = {
@@ -1142,7 +1157,7 @@
             });
         }
 
-        // --- EXCEL & BOT ---
+        // --- EXCEL LOGIC ---
         function openExcelModal() {
             const modal = document.getElementById('excelModal');
             if (modal) modal.classList.remove('hidden');
@@ -1208,38 +1223,91 @@
             reader.readAsArrayBuffer(file);
         }
 
-        async function askBot() {
-            const queryInput = document.getElementById('botQuery');
-            const query = queryInput ? queryInput.value.trim() : '';
-            if (!query) return;
-            const btn = document.getElementById('botSendBtn');
+        // --- BOT DE BÚSQUEDA VISUAL POR FOTO ---
+        function previewSearchImage(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            selectedSearchImageMime = file.type;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const dataUrl = evt.target.result;
+                selectedSearchImageBase64 = dataUrl.split(',')[1];
+                const img = document.getElementById('visualSearchPreview');
+                const container = document.getElementById('previewContainer');
+                if (img) img.src = dataUrl;
+                if (container) container.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSearchImage() {
+            selectedSearchImageBase64 = null;
+            selectedSearchImageMime = null;
+            const input = document.getElementById('visualSearchInput');
+            if (input) input.value = '';
+            const container = document.getElementById('previewContainer');
+            if (container) container.classList.add('hidden');
+        }
+
+        async function searchByPhoto() {
+            if (!selectedSearchImageBase64) {
+                alert('Por favor, toma o sube una fotografía primero.');
+                return;
+            }
+
+            const btn = document.getElementById('searchByPhotoBtn');
             const resultBox = document.getElementById('botResult');
             const answerText = document.getElementById('botAnswerText');
 
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Consultando...`;
+                btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Comparando e identificando...`;
             }
 
+            // Consolidar inventario completo
+            const inventoryList = [
+                ...(dbData.plants || []).map(p => ({ Categoria: 'Planta', Nombre: p.name, Familia: p.family || '', Ubicacion: p.location || '', Maceta: p.pot || '', PrecioVenta: p.sellPrice })),
+                ...(dbData.pots || []).map(p => ({ Categoria: 'Maceta', Nombre: p.name, PrecioVenta: p.sellPrice })),
+                ...(dbData.tierras || []).map(t => ({ Categoria: 'Tierra/Sustrato', Nombre: t.name, PrecioVenta: t.sellPrice })),
+                ...(dbData.accessories || []).map(a => ({ Categoria: 'Accesorio', Nombre: a.name, PrecioVenta: a.sellPrice })),
+                ...(dbData.chemicals || []).map(c => ({ Categoria: 'Químico', Nombre: c.name, PrecioVenta: c.sellPrice }))
+            ];
+
+            const promptText = `Analiza detalladamente la fotografía adjunta y compárala con nuestro catálogo de inventario disponible:\n\n${JSON.stringify(inventoryList, null, 2)}\n\nPor favor, responde estructuradamente:\n1. **Producto o Planta Detectada:** Indica el nombre y categoría de la coincidencia más probable o exacta de nuestro catálogo.\n2. **Grado de Similitud:** Porcentaje estimado o nivel de coincidencia (Alta, Media, Baja).\n3. **Justificación Visual:** Explica brevemente los rasgos clave observados (forma de hojas, color, textura, tipo de maceta o contenedor).\n4. **Opciones Alternativas:** Si la coincidencia no es exacta, menciona los 1 o 2 artículos más parecidos de nuestro inventario.`;
+
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: query }] }],
-                        systemInstruction: { parts: [{ text: "Eres un experto agrónomo en viveros. Responde de forma clara y concisa en español." }] }
+                        contents: [{
+                            parts: [
+                                {
+                                    inline_data: {
+                                        mime_type: selectedSearchImageMime || 'image/jpeg',
+                                        data: selectedSearchImageBase64
+                                    }
+                                },
+                                { text: promptText }
+                            ]
+                        }],
+                        systemInstruction: {
+                            parts: [{ text: "Eres un asistente botánico experto en identificación de imágenes e inventarios para viveros. Responde de forma clara, directa y profesional en español." }]
+                        }
                     })
                 });
+
                 const result = await response.json();
-                if (answerText) answerText.textContent = result.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo obtener respuesta.";
+                const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (answerText) answerText.textContent = reply || "No se pudo obtener un resultado de la búsqueda visual.";
                 if (resultBox) resultBox.classList.remove('hidden');
             } catch(e) {
-                if (answerText) answerText.textContent = "Error al conectar con el bot.";
+                if (answerText) answerText.textContent = "Ocurrió un error al procesar la imagen con el servicio de análisis visual.";
                 if (resultBox) resultBox.classList.remove('hidden');
             } finally {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Consultar`;
+                    btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario`;
                 }
             }
         }
