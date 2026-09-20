@@ -264,7 +264,7 @@
                 <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-4 text-sm text-slate-600">
-                <p>Sube tu archivo Excel (`.xlsx` o `.csv`). El precio de venta se calculará automáticamente al doble del precio de compra.</p>
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`).</p>
                 <button onclick="downloadExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-download"></i> Descargar Plantilla de Ejemplo
                 </button>
@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <!-- GENERAL ITEM MODAL -->
+    <!-- GENERAL ITEM MODAL (CREATE / EDIT) -->
     <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <h3 id="itemModalTitle" class="font-bold text-slate-900 text-lg">Nuevo Elemento</h3>
@@ -289,9 +289,32 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre</label>
                     <input type="text" id="modalInputName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Precio de Compra ($)</label>
-                    <input type="number" id="modalInputBuy" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <!-- Extra fields for plants -->
+                <div id="plantExtraFields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Familia</label>
+                        <input type="text" id="modalInputFamily" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ubicación</label>
+                            <input type="text" id="modalInputLocation" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Maceta</label>
+                            <input type="text" id="modalInputPot" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="modalInputBuy" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="modalInputSell" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Imagen (URL)</label>
@@ -302,6 +325,15 @@
                 <button onclick="closeItemModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer">Cancelar</button>
                 <button onclick="saveItemModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition cursor-pointer">Guardar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- IMAGE LIGHTBOX MODAL (ZOOM) -->
+    <div id="imageLightboxModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <button onclick="closeImageLightbox()" class="absolute -top-10 right-0 text-white text-2xl hover:text-slate-300 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            <img id="lightboxImg" src="" alt="" class="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl bg-white">
+            <p id="lightboxTitle" class="text-white text-sm font-semibold mt-3"></p>
         </div>
     </div>
 
@@ -340,6 +372,7 @@
         let currentTab = 'plants';
         let currentExcelType = 'plants';
         let currentItemType = 'plants';
+        let currentEditingId = null;
         let showBuyPrice = false;
 
         function saveDb() {
@@ -396,12 +429,12 @@
             grid.innerHTML = '';
 
             dbData.plants.forEach(item => {
-                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>`;
+                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${(item.sellPrice || 0).toLocaleString()}</span>`;
                 if (showBuyPrice) {
                     priceHtml = `
                         <div class="text-xs">
                             <span class="text-slate-400 block text-[10px]">Compra: $${(item.buyPrice || 0).toLocaleString()}</span>
-                            <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
+                            <span class="font-bold text-emerald-600 text-base">$${(item.sellPrice || 0).toLocaleString()}</span>
                         </div>
                     `;
                 }
@@ -409,9 +442,10 @@
                 grid.innerHTML += `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
                         <div>
-                            <div class="h-40 bg-slate-100 overflow-hidden relative">
-                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                                <span class="absolute top-2 right-2 bg-slate-900/70 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-1 rounded-lg">${item.location}</span>
+                            <div class="h-40 bg-slate-100 overflow-hidden relative cursor-pointer group" onclick="openImageLightbox('${item.image}', '${item.name}')">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm"><i class="fa-solid fa-expand"></i></div>
+                                <span class="absolute top-2 right-2 bg-slate-900/70 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-1 rounded-lg">${item.location || 'General'}</span>
                             </div>
                             <div class="p-4 space-y-2">
                                 <h3 class="font-bold text-slate-900 text-sm">${item.name}</h3>
@@ -423,7 +457,10 @@
                                 <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">Precio Venta</span>
                                 ${priceHtml}
                             </div>
-                            <button onclick="deleteItem('plants', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                            <div class="flex items-center gap-1">
+                                <button onclick="openItemModal('plants', '${item.id}')" class="text-slate-400 hover:text-emerald-600 p-2 text-xs transition cursor-pointer" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteItem('plants', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -437,12 +474,12 @@
 
             const list = dbData[type] || [];
             list.forEach(item => {
-                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>`;
+                let priceHtml = `<span class="font-bold text-emerald-600 text-base">$${(item.sellPrice || 0).toLocaleString()}</span>`;
                 if (showBuyPrice) {
                     priceHtml = `
                         <div class="text-xs">
                             <span class="text-slate-400 block text-[10px]">Compra: $${(item.buyPrice || 0).toLocaleString()}</span>
-                            <span class="font-bold text-emerald-600 text-base">$${item.sellPrice.toLocaleString()}</span>
+                            <span class="font-bold text-emerald-600 text-base">$${(item.sellPrice || 0).toLocaleString()}</span>
                         </div>
                     `;
                 }
@@ -450,8 +487,9 @@
                 grid.innerHTML += `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
                         <div>
-                            <div class="h-40 bg-slate-100 overflow-hidden">
-                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <div class="h-40 bg-slate-100 overflow-hidden relative cursor-pointer group" onclick="openImageLightbox('${item.image}', '${item.name}')">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm"><i class="fa-solid fa-expand"></i></div>
                             </div>
                             <div class="p-4 space-y-1">
                                 <h3 class="font-bold text-slate-900 text-sm">${item.name}</h3>
@@ -462,7 +500,10 @@
                                 <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">Precio Venta</span>
                                 ${priceHtml}
                             </div>
-                            <button onclick="deleteItem('${type}', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                            <div class="flex items-center gap-1">
+                                <button onclick="openItemModal('${type}', '${item.id}')" class="text-slate-400 hover:text-emerald-600 p-2 text-xs transition cursor-pointer" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteItem('${type}', '${item.id}')" class="text-slate-400 hover:text-rose-600 p-2 text-xs transition cursor-pointer" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -475,6 +516,23 @@
                 saveDb();
                 renderCurrentTab();
             }
+        }
+
+        // --- IMAGE LIGHTBOX ---
+        function openImageLightbox(url, title) {
+            const modal = document.getElementById('imageLightboxModal');
+            const img = document.getElementById('lightboxImg');
+            const titleEl = document.getElementById('lightboxTitle');
+            if (modal && img) {
+                img.src = url;
+                if (titleEl) titleEl.innerText = title || '';
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeImageLightbox() {
+            const modal = document.getElementById('imageLightboxModal');
+            if (modal) modal.classList.add('hidden');
         }
 
         // --- SALES & CART LOGIC ---
@@ -517,7 +575,7 @@
                             <span class="text-[10px] text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">${item.categoryName}</span>
                         </div>
                         <div class="text-right">
-                            <span class="font-bold text-emerald-600 text-xs">$${item.sellPrice.toLocaleString()}</span>
+                            <span class="font-bold text-emerald-600 text-xs">$${(item.sellPrice || 0).toLocaleString()}</span>
                             <button class="ml-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded-lg text-xs transition"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
@@ -666,12 +724,12 @@
 
             if (currentExcelType === 'plants') {
                 templateData = [
-                    { Nombre: "Monstera Deliciosa", Familia: "Araceae", Ubicacion: "Interior", Maceta: "Maceta N° 16", PrecioCompra: 5000, FechaActualizacion: "2026-03-05", Imagen: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400" }
+                    { Nombre: "Monstera Deliciosa", Familia: "Araceae", Ubicacion: "Interior", Maceta: "Maceta N° 16", PrecioCompra: 5000, PrecioVenta: 10000, FechaActualizacion: "2026-03-05", Imagen: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400" }
                 ];
                 filename = "Plantilla_Plantas.xlsx";
             } else {
                 templateData = [
-                    { Nombre: "Ejemplo de Ítem", PrecioCompra: 800, Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400" }
+                    { Nombre: "Ejemplo de Ítem", PrecioCompra: 800, PrecioVenta: 1600, Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400" }
                 ];
                 filename = `Plantilla_${currentExcelType}.xlsx`;
             }
@@ -709,10 +767,13 @@
                         const name = getVal(['Nombre', 'Name', 'Nombres', 'Maceta', 'Item']);
                         if (name) {
                             let rawBuy = getVal(['PrecioCompra', 'Precio Compra', 'Precio de Compra', 'Precio', 'BuyPrice', 'Costo']) || 2000;
-                            if (typeof rawBuy === 'string') {
-                                rawBuy = rawBuy.replace(/[^0-9,.-]/g, '').replace(',', '.');
-                            }
+                            if (typeof rawBuy === 'string') rawBuy = rawBuy.replace(/[^0-9,.-]/g, '').replace(',', '.');
                             const buy = parseFloat(rawBuy) || 2000;
+
+                            let rawSell = getVal(['PrecioVenta', 'Precio Venta', 'Precio de Venta', 'SellPrice']);
+                            if (typeof rawSell === 'string') rawSell = rawSell.replace(/[^0-9,.-]/g, '').replace(',', '.');
+                            const sell = rawSell ? parseFloat(rawSell) : buy * 2;
+
                             const imgUrl = getVal(['Imagen', 'Image', 'Foto', 'URL']);
 
                             if (currentExcelType === 'plants') {
@@ -723,7 +784,7 @@
                                     location: String(getVal(['Ubicacion', 'Ubicación', 'Location']) || 'Interior'),
                                     pot: String(getVal(['Maceta', 'Pot']) || ''),
                                     buyPrice: buy,
-                                    sellPrice: buy * 2,
+                                    sellPrice: sell,
                                     updateDate: String(getVal(['FechaActualizacion', 'Fecha Actualización', 'Fecha']) || new Date().toISOString().split('T')[0]),
                                     image: (imgUrl && String(imgUrl).startsWith('http')) ? String(imgUrl) : 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
                                 });
@@ -733,7 +794,7 @@
                                     id: currentExcelType[0] + '_ex_' + Date.now() + Math.random().toString(36).substr(2, 4),
                                     name: String(name),
                                     buyPrice: buy,
-                                    sellPrice: buy * 2,
+                                    sellPrice: sell,
                                     image: (imgUrl && String(imgUrl).startsWith('http')) ? String(imgUrl) : 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
                                 });
                             }
@@ -754,58 +815,113 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Manual Item Modal functions
-        function openItemModal(type) {
+        // --- ITEM MODAL (CREATE / EDIT) ---
+        function openItemModal(type, id = null) {
             currentItemType = type;
+            currentEditingId = id;
+            
             const modal = document.getElementById('itemModal');
+            const titleEl = document.getElementById('itemModalTitle');
+            const plantExtraFields = document.getElementById('plantExtraFields');
+
+            // Toggle extra fields for plants
+            if (type === 'plants') {
+                plantExtraFields.classList.remove('hidden');
+            } else {
+                plantExtraFields.classList.add('hidden');
+            }
+
+            if (id) {
+                titleEl.innerText = 'Editar Elemento';
+                const item = dbData[type].find(i => i.id === id);
+                if (item) {
+                    document.getElementById('modalInputName').value = item.name || '';
+                    document.getElementById('modalInputBuy').value = item.buyPrice || '';
+                    document.getElementById('modalInputSell').value = item.sellPrice || '';
+                    document.getElementById('modalInputImg').value = item.image || '';
+                    if (type === 'plants') {
+                        document.getElementById('modalInputFamily').value = item.family || '';
+                        document.getElementById('modalInputLocation').value = item.location || '';
+                        document.getElementById('modalInputPot').value = item.pot || '';
+                    }
+                }
+            } else {
+                titleEl.innerText = 'Nuevo Elemento';
+                document.getElementById('modalInputName').value = '';
+                document.getElementById('modalInputBuy').value = '';
+                document.getElementById('modalInputSell').value = '';
+                document.getElementById('modalInputImg').value = '';
+                if (type === 'plants') {
+                    document.getElementById('modalInputFamily').value = '';
+                    document.getElementById('modalInputLocation').value = 'Interior';
+                    document.getElementById('modalInputPot').value = '';
+                }
+            }
+
             if (modal) modal.classList.remove('hidden');
         }
 
         function closeItemModal() {
             const modal = document.getElementById('itemModal');
             if (modal) modal.classList.add('hidden');
+            currentEditingId = null;
         }
 
         function saveItemModal() {
-            const name = document.getElementById('modalInputName').value;
-            const buy = parseFloat(document.getElementById('modalInputBuy').value) || 2000;
-            const img = document.getElementById('modalInputImg').value || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
+            const name = document.getElementById('modalInputName').value.trim();
+            const buy = parseFloat(document.getElementById('modalInputBuy').value) || 0;
+            const sell = parseFloat(document.getElementById('modalInputSell').value) || 0;
+            const img = document.getElementById('modalInputImg').value.trim() || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
 
             if (!name) {
                 alert('Por favor ingresa un nombre.');
                 return;
             }
 
-            if (currentItemType === 'plants') {
-                dbData.plants.push({
-                    id: 'p_' + Date.now(),
-                    name: name,
-                    family: 'General',
-                    location: 'Interior',
-                    pot: 'N/A',
-                    buyPrice: buy,
-                    sellPrice: buy * 2,
-                    updateDate: new Date().toISOString().split('T')[0],
-                    image: img
-                });
+            if (currentEditingId) {
+                // Edit existing
+                const item = dbData[currentItemType].find(i => i.id === currentEditingId);
+                if (item) {
+                    item.name = name;
+                    item.buyPrice = buy;
+                    item.sellPrice = sell;
+                    item.image = img;
+                    if (currentItemType === 'plants') {
+                        item.family = document.getElementById('modalInputFamily').value.trim();
+                        item.location = document.getElementById('modalInputLocation').value.trim();
+                        item.pot = document.getElementById('modalInputPot').value.trim();
+                        item.updateDate = new Date().toISOString().split('T')[0];
+                    }
+                }
             } else {
-                if (!dbData[currentItemType]) dbData[currentItemType] = [];
-                dbData[currentItemType].push({
-                    id: currentItemType[0] + '_' + Date.now(),
-                    name: name,
-                    buyPrice: buy,
-                    sellPrice: buy * 2,
-                    image: img
-                });
+                // Create new
+                if (currentItemType === 'plants') {
+                    dbData.plants.push({
+                        id: 'p_' + Date.now(),
+                        name: name,
+                        family: document.getElementById('modalInputFamily').value.trim() || 'General',
+                        location: document.getElementById('modalInputLocation').value.trim() || 'Interior',
+                        pot: document.getElementById('modalInputPot').value.trim() || 'N/A',
+                        buyPrice: buy,
+                        sellPrice: sell,
+                        updateDate: new Date().toISOString().split('T')[0],
+                        image: img
+                    });
+                } else {
+                    if (!dbData[currentItemType]) dbData[currentItemType] = [];
+                    dbData[currentItemType].push({
+                        id: currentItemType[0] + '_' + Date.now(),
+                        name: name,
+                        buyPrice: buy,
+                        sellPrice: sell,
+                        image: img
+                    });
+                }
             }
 
             saveDb();
             closeItemModal();
             renderCurrentTab();
-
-            document.getElementById('modalInputName').value = '';
-            document.getElementById('modalInputBuy').value = '';
-            document.getElementById('modalInputImg').value = '';
         }
 
         function openFirebaseModal() {
