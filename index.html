@@ -500,16 +500,9 @@
                 }
             }
 
-            const qClean = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
             const filtered = query === '' 
                 ? allProducts.slice(0, 5) 
-                : allProducts.filter(p => {
-                    const nameClean = (p.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    const familyClean = (p.family || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    const catClean = (p.categoryName || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    return nameClean.includes(qClean) || familyClean.includes(qClean) || catClean.includes(qClean);
-                });
+                : allProducts.filter(p => p.name.toLowerCase().includes(query) || (p.family && p.family.toLowerCase().includes(query)));
 
             if (filtered.length === 0) {
                 resultsDiv.innerHTML = `<p class="text-xs text-slate-400 p-2 text-center">No se encontraron productos.</p>`;
@@ -518,7 +511,7 @@
 
             filtered.forEach(item => {
                 resultsDiv.innerHTML += `
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition cursor-pointer border border-transparent hover:border-slate-200" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.sellPrice}, '${item.categoryName}')">
+                    <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition cursor-pointer border border-transparent hover:border-slate-200" onclick="addToCart('${item.name}', ${item.sellPrice}, '${item.categoryName}')">
                         <div>
                             <p class="font-semibold text-slate-800 text-xs">${item.name}</p>
                             <span class="text-[10px] text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded-md font-medium">${item.categoryName}</span>
