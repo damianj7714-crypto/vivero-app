@@ -128,10 +128,23 @@
                     <h2 class="text-xl font-bold text-slate-900">Macetas y Contenedores</h2>
                     <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de macetas (en $).</p>
                 </div>
-                <button onclick="openItemModal('pots')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Nueva Maceta
-                </button>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openPotExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openPotModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Maceta
+                    </button>
+                </div>
             </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="potSearch" oninput="renderPots()" placeholder="Buscar macetas por nombre, medida o material..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
             <div id="potsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
@@ -479,7 +492,58 @@
         </div>
     </div>
 
-    <!-- GENERAL ITEM MODAL -->
+    <!-- POT MODAL COMPLETO -->
+    <div id="potModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="potModalTitle" class="font-bold text-slate-900 text-lg">Nueva Maceta</h3>
+                <button onclick="closePotModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="potForm" onsubmit="savePot(event)" class="space-y-4">
+                <input type="hidden" id="potEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
+                        <input type="text" id="potName" required placeholder="Ej: Maceta Premium Redonda" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Tamaño</label>
+                        <input type="text" id="potMedida" placeholder="Ej: N° 18 (18 cm)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Material</label>
+                        <input type="text" id="potMaterial" placeholder="Ej: Plástico Reforzado, Barro, Cerámica" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Actualización</label>
+                        <input type="date" id="potUpdateDate" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="potBuyPrice" min="0" step="100" value="3000" required oninput="autoUpdatePotSell()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="potSellPrice" min="0" step="100" value="6000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen (Archivo local)</label>
+                    <input type="file" id="potImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closePotModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Guardar Maceta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GENERAL ITEM MODAL (Para tierras, accesorios, químicos) -->
     <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -509,13 +573,13 @@
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
                     <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Guardar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- EXCEL IMPORT MODAL CON COLUMNAS DE PRECIO COMPRA Y PRECIO VENTA -->
+    <!-- EXCEL IMPORT MODAL PARA PLANTAS -->
     <div id="excelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -525,10 +589,9 @@
                 <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-4 text-sm text-slate-600">
-                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) incluyendo la columna de <strong class="text-slate-900 font-semibold">Precio de Compra</strong>:</p>
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con el siguiente formato de columnas:</p>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
                     <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Familia, Ubicacion, Maceta, PrecioCompra, PrecioVenta, FechaActualizacion, Imagen</code></p>
-                    <p class="text-[11px] text-slate-500 mt-1">* Admite nombres de columna como <code class="bg-white px-1 py-0.5 rounded border">Precio Compra</code>, <code class="bg-white px-1 py-0.5 rounded border">Precio de Compra</code> o <code class="bg-white px-1 py-0.5 rounded border">PrecioCompra</code>. Si no se especifica Precio de Venta, se calculará al doble del precio de compra.</p>
                 </div>
                 <button onclick="downloadExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
                     <i class="fa-solid fa-download"></i> Descargar Plantilla de Ejemplo (.xlsx)
@@ -541,6 +604,36 @@
             </div>
             <div class="pt-2 flex justify-end">
                 <button onclick="closeExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA MACETAS -->
+    <div id="potExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Macetas desde Excel / CSV
+                </h3>
+                <button onclick="closePotExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las siguientes columnas requeridas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Medida, PrecioVenta, PrecioCompra, Material, Imagen, FechaActualizacion</code></p>
+                    <p class="text-[11px] text-slate-500 mt-1">* Admite variantes con espacios en encabezados como <code class="bg-white px-1 py-0.5 rounded border">Precio Venta</code>, <code class="bg-white px-1 py-0.5 rounded border">Precio Compra</code>, <code class="bg-white px-1 py-0.5 rounded border">Fecha Actualización</code>, etc.</p>
+                </div>
+                <button onclick="downloadPotExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Macetas (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('potExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de macetas</p>
+                    <input type="file" id="potExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handlePotExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closePotExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
             </div>
         </div>
     </div>
@@ -724,15 +817,12 @@
             return '$ ' + num.toLocaleString('es-AR');
         }
 
+        // PLANTAS VACÍAS POR DEFECTO Y MACETAS CON NUEVA ESTRUCTURA
         let dbData = {
-            plants: [
-                { id: 'p1', name: 'Monstera Deliciosa', family: 'Araceae', location: 'Interior', pot: 'Maceta N° 16', buyPrice: 8000, sellPrice: 16000, updateDate: '2026-03-01', image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400' },
-                { id: 'p2', name: 'Ficus Lyrata', family: 'Moraceae', location: 'Interior / Exterior', pot: 'Maceta N° 18', buyPrice: 15000, sellPrice: 30000, updateDate: '2026-03-02', image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=400' },
-                { id: 'p3', name: 'Sansevieria', family: 'Asparagaceae', location: 'Interior', pot: 'Maceta N° 12', buyPrice: 4000, sellPrice: 8000, updateDate: '2026-03-03', image: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=400' }
-            ],
+            plants: [],
             pots: [
-                { id: 'pt1', name: 'Maceta Plástica N° 14', buyPrice: 1500, sellPrice: 3000, image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400' },
-                { id: 'pt2', name: 'Maceta Barro N° 18', buyPrice: 3000, sellPrice: 6000, image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400' }
+                { id: 'pt1', name: 'Maceta Plástica Redonda', medida: 'N° 14 (14 cm)', material: 'Plástico', buyPrice: 1500, sellPrice: 3000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400' },
+                { id: 'pt2', name: 'Maceta Barro Clásica', medida: 'N° 18 (18 cm)', material: 'Barro', buyPrice: 3000, sellPrice: 6000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400' }
             ],
             tierras: [
                 { id: 'tr1', name: 'Sustrato Universal 10L', buyPrice: 2000, sellPrice: 4000, image: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400' }
@@ -743,9 +833,7 @@
             chemicals: [
                 { id: 'ch1', name: 'Fertilizante Líquido 250cc', buyPrice: 4000, sellPrice: 8000, image: 'https://images.unsplash.com/photo-1585336261022-6fc0e69de2a3?w=400' }
             ],
-            sales: [
-                { id: 's1', date: '2026-03-03 10:30', dateOnly: '2026-03-03', itemName: 'Monstera Deliciosa (x2)', qty: 2, total: 32000, paymentMethod: 'Efectivo', items: [{ name: 'Monstera Deliciosa', qty: 2, unitPrice: 16000, subtotal: 32000, cat: 'Planta' }] }
-            ]
+            sales: []
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -880,8 +968,10 @@
                     updateStatusUI(true, config.projectId);
                     if (docRef.exists) {
                         const cloudData = docRef.data();
-                        if (cloudData && cloudData.plants) {
+                        if (cloudData) {
                             dbData = cloudData;
+                            if (!dbData.plants) dbData.plants = [];
+                            if (!dbData.pots) dbData.pots = [];
                             renderCurrentTab();
                             lastSyncTime = new Date().toLocaleTimeString();
                         }
@@ -933,7 +1023,7 @@
             if (!activeTabBtn) return;
             const activeTab = activeTabBtn.id.replace('tab-', '');
             if (activeTab === 'plants') renderPlants();
-            else if (activeTab === 'pots') renderItems('pots');
+            else if (activeTab === 'pots') renderPots();
             else if (activeTab === 'tierras') renderItems('tierras');
             else if (activeTab === 'accessories') renderItems('accessories');
             else if (activeTab === 'chemicals') renderItems('chemicals');
@@ -1033,7 +1123,7 @@
             if (locFilter) list = list.filter(p => p.location === locFilter);
 
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No se encontraron plantas.</div>`;
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay plantas cargadas en el sistema.</div>`;
                 return;
             }
 
@@ -1181,7 +1271,257 @@
             });
         }
 
-        // --- ITEMS LOGIC ---
+        // --- POTS RENDERING & MANAGEMENT ---
+        function renderPots() {
+            const grid = document.getElementById('potsGrid');
+            if (!grid) return;
+            const searchInput = document.getElementById('potSearch');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+            let list = [...(dbData.pots || [])];
+            if (search) {
+                list = list.filter(p => 
+                    (p.name && p.name.toLowerCase().includes(search)) || 
+                    (p.medida && p.medida.toLowerCase().includes(search)) ||
+                    (p.material && p.material.toLowerCase().includes(search))
+                );
+            }
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No se encontraron macetas.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Maceta';
+                const buyP = Number(p.buyPrice) || 0;
+                const sellP = Number(p.sellPrice) || (buyP * 2);
+
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Maceta'">
+                            ${p.material ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-xs">${p.material}</span>` : ''}
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Medida: ${p.medida || 'S/D'} • Act: ${p.updateDate || 'N/D'}</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Compra</span>
+                                    <span class="font-bold text-slate-800 text-sm">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[10px] uppercase font-semibold">Venta</span>
+                                    <span class="font-bold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="editPot('${p.id}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
+                                <button onclick="deletePot('${p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function autoUpdatePotSell() {
+            const buyInput = document.getElementById('potBuyPrice');
+            const sellInput = document.getElementById('potSellPrice');
+            if (buyInput && sellInput) {
+                const buyVal = parseFloat(buyInput.value) || 0;
+                sellInput.value = buyVal * 2;
+            }
+        }
+
+        function openPotModal(id = null) {
+            const form = document.getElementById('potForm');
+            if (form) form.reset();
+            const editIdInput = document.getElementById('potEditId');
+            if (editIdInput) editIdInput.value = '';
+            const titleEl = document.getElementById('potModalTitle');
+            if (titleEl) titleEl.textContent = 'Nueva Maceta';
+            const dateInput = document.getElementById('potUpdateDate');
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+            const sellInput = document.getElementById('potSellPrice');
+            if (sellInput) sellInput.value = 6000;
+            const buyInput = document.getElementById('potBuyPrice');
+            if (buyInput) buyInput.value = 3000;
+
+            if (id) {
+                const p = (dbData.pots || []).find(x => x.id === id);
+                if (p) {
+                    if (titleEl) titleEl.textContent = 'Editar Maceta';
+                    if (editIdInput) editIdInput.value = p.id;
+                    const nameInput = document.getElementById('potName');
+                    if (nameInput) nameInput.value = p.name || '';
+                    const medidaInput = document.getElementById('potMedida');
+                    if (medidaInput) medidaInput.value = p.medida || '';
+                    const materialInput = document.getElementById('potMaterial');
+                    if (materialInput) materialInput.value = p.material || '';
+                    if (buyInput) buyInput.value = p.buyPrice || 3000;
+                    if (sellInput) sellInput.value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 3000) * 2);
+                    if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
+                }
+            }
+            const modal = document.getElementById('potModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closePotModal() {
+            const modal = document.getElementById('potModal');
+            if (modal) modal.classList.add('hidden');
+        }
+        function editPot(id) { openPotModal(id); }
+
+        function savePot(e) {
+            e.preventDefault();
+            const id = document.getElementById('potEditId').value;
+            const name = document.getElementById('potName').value.trim();
+            const medida = document.getElementById('potMedida').value.trim();
+            const material = document.getElementById('potMaterial').value.trim();
+            const buyPrice = parseFloat(document.getElementById('potBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('potSellPrice').value) || (buyPrice * 2);
+            const updateDate = document.getElementById('potUpdateDate').value || new Date().toISOString().split('T')[0];
+            const fileInput = document.getElementById('potImageFile');
+
+            const processSave = (imgUrl) => {
+                if (id) {
+                    const idx = dbData.pots.findIndex(x => x.id === id);
+                    if (idx !== -1) {
+                        dbData.pots[idx] = { ...dbData.pots[idx], name, medida, material, buyPrice, sellPrice, updateDate };
+                        if (imgUrl) dbData.pots[idx].image = imgUrl;
+                    }
+                } else {
+                    const newPot = {
+                        id: 'pt_' + Date.now(),
+                        name, medida, material, buyPrice, sellPrice, updateDate,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400'
+                    };
+                    if (!dbData.pots) dbData.pots = [];
+                    dbData.pots.push(newPot);
+                }
+                saveDb();
+                closePotModal();
+                renderPots();
+            };
+
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(evt) { processSave(evt.target.result); };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processSave(id ? null : 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400');
+            }
+        }
+
+        function deletePot(id) {
+            const p = (dbData.pots || []).find(x => x.id === id);
+            const name = p ? p.name : 'esta maceta';
+            openTimedDeleteModal(`Estás a punto de eliminar la maceta "${name}".`, () => {
+                dbData.pots = dbData.pots.filter(x => x.id !== id);
+                saveDb();
+                renderPots();
+            });
+        }
+
+        // --- EXCEL LOGIC PARA MACETAS ---
+        function openPotExcelModal() {
+            const modal = document.getElementById('potExcelModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closePotExcelModal() {
+            const modal = document.getElementById('potExcelModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function downloadPotExcelTemplate() {
+            const templateData = [
+                { 
+                    Nombre: "Maceta Premium Redonda", 
+                    Medida: "N° 18 (18 cm)", 
+                    PrecioVenta: 6000, 
+                    PrecioCompra: 3000, 
+                    Material: "Plástico Reforzado", 
+                    Imagen: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400", 
+                    FechaActualizacion: "2026-03-20" 
+                }
+            ];
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Macetas");
+            XLSX.writeFile(wb, "Plantilla_Macetas_ViveroApp.xlsx");
+        }
+
+        function handlePotExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    let count = 0;
+                    if (!dbData.pots) dbData.pots = [];
+
+                    json.forEach(row => {
+                        const name = row.Nombre || row.nombre || row.NAME || row.Maceta || row.maceta;
+                        if (name) {
+                            // Extraer Precio de Compra
+                            let rawBuy = row.PrecioCompra ?? row.preciocompra ?? row['Precio Compra'] ?? row['precio compra'] ?? row['Precio de Compra'] ?? row['precio de compra'] ?? row.Precio ?? row.precio;
+                            if (typeof rawBuy === 'string') {
+                                rawBuy = rawBuy.replace(/[^0-9,.-]/g, '').replace(',', '.');
+                            }
+                            const buy = parseFloat(rawBuy) || 0;
+
+                            // Extraer Precio de Venta
+                            let rawSell = row.PrecioVenta ?? row.precioventa ?? row['Precio Venta'] ?? row['precio venta'] ?? row['Precio de Venta'] ?? row['precio de venta'];
+                            if (typeof rawSell === 'string') {
+                                rawSell = rawSell.replace(/[^0-9,.-]/g, '').replace(',', '.');
+                            }
+                            const sell = parseFloat(rawSell) || (buy * 2);
+
+                            const medida = row.Medida || row.medida || row.MEDIDA || row.Tamaño || row.tamaño || '';
+                            const material = row.Material || row.material || row.MATERIAL || '';
+                            const fecha = row.FechaActualizacion || row.fechaactualizacion || row['Fecha Actualizacion'] || row['Fecha Actualización'] || row.Fecha || row.fecha || new Date().toISOString().split('T')[0];
+                            const imgUrl = row.Imagen || row.imagen || row.IMAGE || row.foto || row.Foto;
+
+                            dbData.pots.push({
+                                id: 'pt_ex_' + Date.now() + Math.random().toString(36).substring(2, 6),
+                                name: String(name),
+                                medida: String(medida),
+                                material: String(material),
+                                buyPrice: buy,
+                                sellPrice: sell,
+                                updateDate: String(fecha),
+                                image: (imgUrl && String(imgUrl).startsWith('http')) ? String(imgUrl) : 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400'
+                            });
+                            count++;
+                        }
+                    });
+                    saveDb();
+                    closePotExcelModal();
+                    renderPots();
+                    alert(`¡Se importaron ${count} macetas exitosamente!`);
+                } catch(err) {
+                    console.error(err);
+                    alert('Error al procesar el archivo Excel de macetas.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- ITEMS LOGIC (TIERRAS, ACCESORIOS, QUÍMICOS) ---
         function renderItems(type) {
             const gridId = type + 'Grid';
             const grid = document.getElementById(gridId);
@@ -1246,7 +1586,7 @@
             if (typeInput) typeInput.value = type;
             const editIdInput = document.getElementById('itemEditId');
             if (editIdInput) editIdInput.value = '';
-            const titles = { pots: 'Maceta', tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
+            const titles = { tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
             const titleEl = document.getElementById('itemModalTitle');
             if (titleEl) titleEl.textContent = id ? 'Editar ' + titles[type] : 'Nuevo ' + titles[type];
             const sellInput = document.getElementById('itemSellPrice');
@@ -1296,6 +1636,7 @@
                         name, buyPrice, sellPrice,
                         image: imgUrl || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
                     };
+                    if (!dbData[type]) dbData[type] = [];
                     dbData[type].push(newItem);
                 }
                 saveDb();
@@ -1322,7 +1663,7 @@
             });
         }
 
-        // --- EXCEL LOGIC (ACTUALIZADO CON PRECIO DE COMPRA Y PRECIO DE VENTA) ---
+        // --- EXCEL LOGIC PARA PLANTAS ---
         function openExcelModal() {
             const modal = document.getElementById('excelModal');
             if (modal) modal.classList.remove('hidden');
@@ -1363,17 +1704,17 @@
                     const json = XLSX.utils.sheet_to_json(worksheet);
 
                     let count = 0;
+                    if (!dbData.plants) dbData.plants = [];
+
                     json.forEach(row => {
                         const name = row.Nombre || row.nombre || row.NAME || row.Planta || row.planta;
                         if (name) {
-                            // Extraer Precio de Compra probando distintas variantes de encabezados
                             let rawBuy = row.PrecioCompra ?? row.preciocompra ?? row['Precio Compra'] ?? row['precio compra'] ?? row['Precio de Compra'] ?? row['precio de compra'] ?? row.Precio ?? row.precio;
                             if (typeof rawBuy === 'string') {
                                 rawBuy = rawBuy.replace(/[^0-9,.-]/g, '').replace(',', '.');
                             }
                             const buy = parseFloat(rawBuy) || 0;
 
-                            // Extraer Precio de Venta (si no se indica en Excel, calcula por defecto el doble del precio de compra)
                             let rawSell = row.PrecioVenta ?? row.precioventa ?? row['Precio Venta'] ?? row['precio venta'] ?? row['Precio de Venta'] ?? row['precio de venta'];
                             if (typeof rawSell === 'string') {
                                 rawSell = rawSell.replace(/[^0-9,.-]/g, '').replace(',', '.');
@@ -1472,7 +1813,7 @@
 
             const allInventory = [
                 ...(dbData.plants || []).map(p => ({ id: p.id, Categoria: 'Planta', Nombre: p.name, Familia: p.family || '', Ubicacion: p.location || '', Maceta: p.pot || '', PrecioVenta: p.sellPrice, itemObj: p })),
-                ...(dbData.pots || []).map(p => ({ id: p.id, Categoria: 'Maceta', Nombre: p.name, PrecioVenta: p.sellPrice, itemObj: p })),
+                ...(dbData.pots || []).map(p => ({ id: p.id, Categoria: 'Maceta', Nombre: p.name, Medida: p.medida || '', Material: p.material || '', PrecioVenta: p.sellPrice, itemObj: p })),
                 ...(dbData.tierras || []).map(t => ({ id: t.id, Categoria: 'Tierra/Sustrato', Nombre: t.name, PrecioVenta: t.sellPrice, itemObj: t })),
                 ...(dbData.accessories || []).map(a => ({ id: a.id, Categoria: 'Accesorio', Nombre: a.name, PrecioVenta: a.sellPrice, itemObj: a })),
                 ...(dbData.chemicals || []).map(c => ({ id: c.id, Categoria: 'Químico', Nombre: c.name, PrecioVenta: c.sellPrice, itemObj: c }))
@@ -1485,6 +1826,8 @@
                 Familia: item.Familia,
                 Ubicacion: item.Ubicacion,
                 Maceta: item.Maceta,
+                Medida: item.Medida,
+                Material: item.Material,
                 PrecioVenta: item.PrecioVenta
             }));
 
@@ -1559,9 +1902,9 @@
                                         </div>
                                         <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
                                             <div>
-                                                ${item.family ? `<span class="text-xs font-semibold text-emerald-600 block uppercase tracking-wider">${item.family}</span>` : ''}
+                                                ${item.family || item.material ? `<span class="text-xs font-semibold text-emerald-600 block uppercase tracking-wider">${item.family || item.material}</span>` : ''}
                                                 <h4 class="font-bold text-slate-900 text-base leading-snug">${item.name || inv.Nombre}</h4>
-                                                ${item.location || item.pot ? `<p class="text-xs text-slate-500 mt-1">${[item.location, item.pot].filter(Boolean).join(' • ')}</p>` : ''}
+                                                ${item.location || item.pot || item.medida ? `<p class="text-xs text-slate-500 mt-1">${[item.location, item.pot, item.medida].filter(Boolean).join(' • ')}</p>` : ''}
                                             </div>
                                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                                 <div>
@@ -1650,20 +1993,24 @@
         function filterCartInventory() {
             const container = document.getElementById('cartSearchResults');
             if (!container) return;
-            const searchInput = document.getElementById('cartSearchInput');
-            const search = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+            const query = (document.getElementById('cartSearchInput').value || '').toLowerCase().trim();
 
             const allInventory = [
-                ...(dbData.plants || []).map(p => ({ id: p.id, cat: 'Planta', name: p.name, price: p.sellPrice || (p.buyPrice * 2), img: p.image })),
-                ...(dbData.pots || []).map(p => ({ id: p.id, cat: 'Maceta', name: p.name, price: p.sellPrice || (p.buyPrice * 2), img: p.image })),
-                ...(dbData.tierras || []).map(t => ({ id: t.id, cat: 'Tierra', name: t.name, price: t.sellPrice || (t.buyPrice * 2), img: t.image })),
-                ...(dbData.accessories || []).map(a => ({ id: a.id, cat: 'Accesorio', name: a.name, price: a.sellPrice || (a.buyPrice * 2), img: a.image })),
-                ...(dbData.chemicals || []).map(c => ({ id: c.id, cat: 'Químico', name: c.name, price: c.sellPrice || (c.buyPrice * 2), img: c.image }))
+                ...(dbData.plants || []).map(p => ({ id: p.id, name: p.name, price: p.sellPrice || (p.buyPrice * 2), cat: 'Planta', img: p.image })),
+                ...(dbData.pots || []).map(p => ({ id: p.id, name: p.name, price: p.sellPrice || (p.buyPrice * 2), cat: 'Maceta', img: p.image })),
+                ...(dbData.tierras || []).map(t => ({ id: t.id, name: t.name, price: t.sellPrice || (t.buyPrice * 2), cat: 'Tierra', img: t.image })),
+                ...(dbData.accessories || []).map(a => ({ id: a.id, name: a.name, price: a.sellPrice || (a.buyPrice * 2), cat: 'Accesorio', img: a.image })),
+                ...(dbData.chemicals || []).map(c => ({ id: c.id, name: c.name, price: c.sellPrice || (c.buyPrice * 2), cat: 'Químico', img: c.image }))
             ];
 
-            const filtered = allInventory.filter(item => 
-                !search || item.name.toLowerCase().includes(search) || item.cat.toLowerCase().includes(search)
-            );
+            let filtered = allInventory;
+            if (query) {
+                filtered = allInventory.filter(item => 
+                    item.name.toLowerCase().includes(query) || 
+                    item.cat.toLowerCase().includes(query)
+                );
+            }
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No se encontraron productos coincidentes.</div>`;
@@ -1671,18 +2018,18 @@
             }
 
             container.innerHTML = filtered.map(item => {
-                const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 return `
-                    <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 hover:border-emerald-200 transition shadow-2xs">
+                    <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 transition">
                         <div class="flex items-center gap-3">
-                            <img src="${item.img || 'https://placehold.co/100x100'}" class="w-10 h-10 rounded-lg object-cover bg-slate-100">
+                            <img src="${item.img || 'https://placehold.co/100'}" class="w-10 h-10 object-cover rounded-lg bg-slate-100">
                             <div>
-                                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">${item.cat}</span>
-                                <h5 class="text-xs font-bold text-slate-800 leading-tight">${item.name}</h5>
-                                <span class="text-xs font-semibold text-slate-600">${formatMoney(item.price)}</span>
+                                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">${item.cat}</span>
+                                <h5 class="font-bold text-slate-900 text-xs">${item.name}</h5>
+                                <span class="text-xs font-semibold text-slate-700">${formatMoney(item.price)}</span>
                             </div>
                         </div>
-                        <button type="button" onclick="addToCart('${item.id}', '${safeName}', ${item.price}, '${item.cat}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition flex items-center gap-1">
+                        <button type="button" onclick="addItemToCart('${item.id}', '${safeName}', ${item.price}, '${item.cat}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-lg transition flex items-center gap-1">
                             <i class="fa-solid fa-plus text-[10px]"></i> Agregar
                         </button>
                     </div>
@@ -1690,12 +2037,13 @@
             }).join('');
         }
 
-        function addToCart(id, name, price, cat) {
+        function addItemToCart(id, name, price, cat) {
             const existing = cart.find(x => x.id === id);
             if (existing) {
                 existing.qty++;
+                existing.subtotal = existing.qty * existing.unitPrice;
             } else {
-                cart.push({ id, name, price, qty: 1, cat });
+                cart.push({ id, name, unitPrice: Number(price), qty: 1, subtotal: Number(price), cat });
             }
             renderCartUI();
         }
@@ -1710,137 +2058,120 @@
             const qty = parseInt(qtyInput.value) || 1;
 
             if (!name) {
-                alert('Por favor ingresa una descripción para el ítem.');
+                alert('Ingresa una descripción para el ítem.');
                 return;
             }
 
-            cart.push({
-                id: 'm_' + Date.now(),
-                name,
-                price,
-                qty,
-                cat: 'Manual'
-            });
+            const id = 'manual_' + Date.now();
+            cart.push({ id, name, unitPrice: price, qty, subtotal: price * qty, cat: 'Personalizado' });
 
             nameInput.value = '';
             priceInput.value = '';
             qtyInput.value = '1';
+
             renderCartUI();
         }
 
-        function updateCartQty(index, delta) {
-            if (cart[index]) {
-                cart[index].qty += delta;
-                if (cart[index].qty <= 0) {
-                    cart.splice(index, 1);
-                }
+        function updateCartQty(id, delta) {
+            const item = cart.find(x => x.id === id);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(x => x.id !== id);
+            } else {
+                item.subtotal = item.qty * item.unitPrice;
             }
             renderCartUI();
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
+        function removeCartItem(id) {
+            cart = cart.filter(x => x.id !== id);
             renderCartUI();
         }
 
         function renderCartUI() {
-            const listContainer = document.getElementById('cartItemsList');
-            const badgeCount = document.getElementById('cartBadgeCount');
-            const totalDisplay = document.getElementById('cartTotalDisplay');
+            const listEl = document.getElementById('cartItemsList');
+            const badgeEl = document.getElementById('cartBadgeCount');
+            const totalEl = document.getElementById('cartTotalDisplay');
 
-            if (!listContainer) return;
+            if (!listEl) return;
 
-            let total = 0;
-            let totalItemsCount = 0;
+            const totalUnits = cart.reduce((acc, curr) => acc + curr.qty, 0);
+            const totalSum = cart.reduce((acc, curr) => acc + curr.subtotal, 0);
+
+            if (badgeEl) badgeEl.textContent = `${totalUnits} ítems`;
+            if (totalEl) totalEl.textContent = formatMoney(totalSum);
 
             if (cart.length === 0) {
-                listContainer.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">El carrito está vacío.</div>`;
-            } else {
-                listContainer.innerHTML = cart.map((item, idx) => {
-                    const subtotal = item.price * item.qty;
-                    total += subtotal;
-                    totalItemsCount += item.qty;
-
-                    return `
-                        <div class="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-100 text-xs">
-                            <div class="flex-1 pr-2">
-                                <h5 class="font-bold text-slate-800 leading-tight">${item.name}</h5>
-                                <span class="text-[10px] text-slate-400 font-medium">${formatMoney(item.price)} c/u</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="flex items-center bg-slate-100 rounded-lg">
-                                    <button onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded-l-lg font-bold">-</button>
-                                    <span class="w-6 text-center font-bold text-slate-800 text-[11px]">${item.qty}</span>
-                                    <button onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded-r-lg font-bold">+</button>
-                                </div>
-                                <span class="font-bold text-slate-900 min-w-[60px] text-right">${formatMoney(subtotal)}</span>
-                                <button onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 px-1"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                listEl.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">El carrito está vacío. Agrega productos.</div>`;
+                return;
             }
 
-            if (badgeCount) badgeCount.textContent = `${totalItemsCount} ítems`;
-            if (totalDisplay) totalDisplay.textContent = formatMoney(total);
+            listEl.innerHTML = cart.map(item => `
+                <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl">
+                    <div class="flex-1 pr-2">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase block">${item.cat}</span>
+                        <h5 class="font-bold text-slate-800 text-xs leading-snug">${item.name}</h5>
+                        <span class="text-xs font-semibold text-emerald-600">${formatMoney(item.unitPrice)} c/u</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center border border-slate-200 rounded-lg bg-slate-50">
+                            <button type="button" onclick="updateCartQty('${item.id}', -1)" class="px-2 py-0.5 text-slate-600 hover:bg-slate-200 rounded-l-lg font-bold text-xs">-</button>
+                            <span class="px-2 text-xs font-bold text-slate-800">${item.qty}</span>
+                            <button type="button" onclick="updateCartQty('${item.id}', 1)" class="px-2 py-0.5 text-slate-600 hover:bg-slate-200 rounded-r-lg font-bold text-xs">+</button>
+                        </div>
+                        <span class="text-xs font-bold text-slate-900 w-16 text-right">${formatMoney(item.subtotal)}</span>
+                        <button type="button" onclick="removeCartItem('${item.id}')" class="text-rose-500 hover:text-rose-700 p-1 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function completeCartSale() {
             if (cart.length === 0) {
-                alert('El carrito está vacío. Agrega al menos un ítem para completar la venta.');
+                alert('El carrito de compra está vacío.');
                 return;
             }
 
             const paymentMethod = document.getElementById('salePaymentMethod').value;
+            const totalSum = cart.reduce((acc, curr) => acc + curr.subtotal, 0);
+            const totalUnits = cart.reduce((acc, curr) => acc + curr.qty, 0);
+
             const now = new Date();
-            const dateStr = now.toISOString().replace('T', ' ').substring(0, 16);
-            const dateOnlyStr = now.toISOString().split('T')[0];
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+            const fullDateStr = `${dateStr} ${timeStr}`;
 
-            let total = 0;
-            let totalQty = 0;
-            const itemsSummary = cart.map(item => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                totalQty += item.qty;
-                return {
-                    name: item.name,
-                    qty: item.qty,
-                    unitPrice: item.price,
-                    subtotal: subtotal,
-                    cat: item.cat
-                };
-            });
-
-            const mainItemName = cart.length === 1 
-                ? `${cart[0].name} (x${cart[0].qty})`
-                : `${cart[0].name} + ${cart.length - 1} más`;
+            const summaryNames = cart.map(i => `${i.name} (x${i.qty})`).join(', ');
 
             const newSale = {
                 id: 's_' + Date.now(),
-                date: dateStr,
-                dateOnly: dateOnlyStr,
-                itemName: mainItemName,
-                qty: totalQty,
-                total: total,
-                paymentMethod: paymentMethod,
-                items: itemsSummary
+                date: fullDateStr,
+                dateOnly: dateStr,
+                itemName: summaryNames,
+                qty: totalUnits,
+                total: totalSum,
+                paymentMethod,
+                items: [...cart]
             };
 
-            dbData.sales = dbData.sales || [];
+            if (!dbData.sales) dbData.sales = [];
             dbData.sales.unshift(newSale);
             saveDb();
 
             closeSaleModal();
             renderSales();
-            alert(`¡Venta registrada exitosamente por ${formatMoney(total)}!`);
+            alert('¡Venta registrada exitosamente!');
         }
 
-        // --- HISTORIAL DE VENTAS Y FILTROS ---
+        // --- CONTROL Y HISTORIAL DE VENTAS ---
         function setSalesPreset(preset) {
             currentSalesPreset = preset;
-            const today = new Date();
             const fromInput = document.getElementById('salesFilterFrom');
             const toInput = document.getElementById('salesFilterTo');
+
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
 
             document.querySelectorAll('#salesFilterPresets button').forEach(b => {
                 b.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
@@ -1854,24 +2185,23 @@
                 fromInput.value = '';
                 toInput.value = '';
             } else if (preset === 'today') {
-                const tStr = today.toISOString().split('T')[0];
-                fromInput.value = tStr;
-                toInput.value = tStr;
+                fromInput.value = todayStr;
+                toInput.value = todayStr;
             } else if (preset === 'yesterday') {
-                const y = new Date(today);
-                y.setDate(y.getDate() - 1);
-                const yStr = y.toISOString().split('T')[0];
-                fromInput.value = yStr;
-                toInput.value = yStr;
+                const yest = new Date(now);
+                yest.setDate(now.getDate() - 1);
+                const yestStr = yest.toISOString().split('T')[0];
+                fromInput.value = yestStr;
+                toInput.value = yestStr;
             } else if (preset === '7days') {
-                const d7 = new Date(today);
-                d7.setDate(d7.getDate() - 6);
+                const d7 = new Date(now);
+                d7.setDate(now.getDate() - 7);
                 fromInput.value = d7.toISOString().split('T')[0];
-                toInput.value = today.toISOString().split('T')[0];
+                toInput.value = todayStr;
             } else if (preset === 'month') {
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
                 fromInput.value = firstDay.toISOString().split('T')[0];
-                toInput.value = today.toISOString().split('T')[0];
+                toInput.value = todayStr;
             }
 
             renderSales();
@@ -1885,95 +2215,94 @@
         }
 
         function renderSales() {
-            const tableBody = document.getElementById('salesTableBody');
+            const tbody = document.getElementById('salesTableBody');
             const totalAmountEl = document.getElementById('totalSalesAmount');
             const totalCountEl = document.getElementById('totalSalesCount');
-            if (!tableBody) return;
 
-            const fromVal = document.getElementById('salesFilterFrom')?.value;
-            const toVal = document.getElementById('salesFilterTo')?.value;
-            const searchVal = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase().trim();
+            if (!tbody) return;
 
-            let sales = [...(dbData.sales || [])];
+            const fromVal = document.getElementById('salesFilterFrom')?.value || '';
+            const toVal = document.getElementById('salesFilterTo')?.value || '';
+            const query = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase().trim();
+
+            let list = [...(dbData.sales || [])];
 
             if (fromVal) {
-                sales = sales.filter(s => (s.dateOnly || s.date) >= fromVal);
+                list = list.filter(s => (s.dateOnly || s.date) >= fromVal);
             }
             if (toVal) {
-                sales = sales.filter(s => (s.dateOnly || s.date) <= toVal);
+                list = list.filter(s => (s.dateOnly || s.date) <= toVal);
             }
-            if (searchVal) {
-                sales = sales.filter(s => 
-                    (s.itemName && s.itemName.toLowerCase().includes(searchVal)) ||
-                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal))
+            if (query) {
+                list = list.filter(s => 
+                    (s.itemName && s.itemName.toLowerCase().includes(query)) ||
+                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(query))
                 );
             }
 
-            let totalSum = 0;
-            sales.forEach(s => totalSum += Number(s.total || 0));
-
+            const totalSum = list.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
             if (totalAmountEl) totalAmountEl.textContent = formatMoney(totalSum);
-            if (totalCountEl) totalCountEl.textContent = sales.length;
+            if (totalCountEl) totalCountEl.textContent = list.length;
 
-            if (sales.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="p-8 text-center text-slate-400">No se encontraron registros de ventas para el filtro seleccionado.</td>
-                    </tr>
-                `;
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-xs text-slate-400">No hay ventas registradas para el rango de filtros seleccionado.</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = sales.map(s => `
+            tbody.innerHTML = list.map(s => `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-4 font-mono text-xs text-slate-600 whitespace-nowrap">${s.date || 'N/D'}</td>
-                    <td class="p-4 font-semibold text-slate-800">
-                        ${s.itemName || 'Venta de Productos'}
-                        <span class="block text-[10px] font-normal text-slate-400">${s.paymentMethod || 'Efectivo'}</span>
+                    <td class="p-4 font-semibold text-slate-800 text-xs whitespace-nowrap">${s.date || 'N/D'}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-900 text-xs">${s.itemName || 'Venta general'}</div>
+                        <span class="inline-block px-2 py-0.5 mt-1 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold">${s.paymentMethod || 'Efectivo'}</span>
                     </td>
-                    <td class="p-4 text-center font-bold text-slate-700">${s.qty || 1}</td>
-                    <td class="p-4 font-extrabold text-emerald-700">${formatMoney(s.total)}</td>
-                    <td class="p-4 text-right space-x-1">
-                        <button onclick="viewSaleDetail('${s.id}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition" title="Ver Detalle">
-                            <i class="fa-solid fa-receipt"></i> Ticket
-                        </button>
-                        <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition" title="Eliminar Venta">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <td class="p-4 text-center font-bold text-slate-700 text-xs">${s.qty || 1}</td>
+                    <td class="p-4 font-extrabold text-emerald-600 text-sm whitespace-nowrap">${formatMoney(s.total)}</td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="viewSaleDetail('${s.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition" title="Ver Detalle"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold transition" title="Eliminar Venta"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function viewSaleDetail(saleId) {
-            const sale = (dbData.sales || []).find(s => s.id === saleId);
+        function viewSaleDetail(id) {
+            const sale = (dbData.sales || []).find(x => x.id === id);
             if (!sale) return;
 
-            const content = document.getElementById('saleDetailContent');
-            if (!content) return;
+            const contentEl = document.getElementById('saleDetailContent');
+            if (!contentEl) return;
 
-            const itemsHtml = (sale.items || []).map(i => `
-                <div class="flex justify-between py-1.5 border-b border-slate-100">
-                    <div>
-                        <p class="font-bold text-slate-800">${i.name}</p>
-                        <p class="text-[10px] text-slate-400">${i.qty} x ${formatMoney(i.unitPrice)}</p>
+            let itemsHtml = '';
+            if (sale.items && sale.items.length > 0) {
+                itemsHtml = sale.items.map(i => `
+                    <div class="flex justify-between items-center py-1 border-b border-slate-100">
+                        <div>
+                            <span class="font-bold text-slate-800">${i.name}</span>
+                            <span class="text-slate-400 block text-[10px]">${i.qty} x ${formatMoney(i.unitPrice)}</span>
+                        </div>
+                        <span class="font-bold text-slate-900">${formatMoney(i.subtotal)}</span>
                     </div>
-                    <span class="font-bold text-slate-900">${formatMoney(i.subtotal)}</span>
-                </div>
-            `).join('') || `<p class="py-2 text-slate-500">${sale.itemName}</p>`;
+                `).join('');
+            } else {
+                itemsHtml = `<p class="text-slate-600">${sale.itemName}</p>`;
+            }
 
-            content.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
-                    <p class="flex justify-between"><span class="text-slate-400">Fecha:</span> <strong class="text-slate-800">${sale.date}</strong></p>
-                    <p class="flex justify-between"><span class="text-slate-400">Forma de Pago:</span> <strong class="text-slate-800">${sale.paymentMethod || 'Efectivo'}</strong></p>
+            contentEl.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
+                    <p><strong>Fecha:</strong> ${sale.date}</p>
+                    <p><strong>Método de Pago:</strong> ${sale.paymentMethod || 'Efectivo'}</p>
+                    <p><strong>Total Unidades:</strong> ${sale.qty}</p>
                 </div>
-                <div class="space-y-1 my-3">
-                    <p class="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Detalle de Ítems</p>
+                <div class="space-y-1 pt-2">
+                    <h5 class="font-bold text-slate-800 uppercase text-[10px] tracking-wider">Desglose de Ítems</h5>
                     ${itemsHtml}
                 </div>
-                <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-xl border border-emerald-200">
-                    <span class="font-bold text-emerald-900">Total General:</span>
-                    <span class="text-lg font-black text-emerald-700">${formatMoney(sale.total)}</span>
+                <div class="flex justify-between items-center pt-3 border-t border-slate-200 font-bold text-sm text-emerald-700">
+                    <span>Monto Total:</span>
+                    <span>${formatMoney(sale.total)}</span>
                 </div>
             `;
 
@@ -1984,9 +2313,9 @@
             document.getElementById('saleDetailModal').classList.add('hidden');
         }
 
-        function deleteSale(saleId) {
-            openTimedDeleteModal('¿Estás seguro de eliminar este registro de venta?', () => {
-                dbData.sales = dbData.sales.filter(s => s.id !== saleId);
+        function deleteSale(id) {
+            openTimedDeleteModal('¿Estás seguro de eliminar el registro de esta venta?', () => {
+                dbData.sales = dbData.sales.filter(x => x.id !== id);
                 saveDb();
                 renderSales();
             });
