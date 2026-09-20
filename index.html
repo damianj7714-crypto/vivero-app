@@ -209,6 +209,8 @@
                         <i class="fa-solid fa-robot text-emerald-600"></i> Coincidencias Encontradas:
                     </h3>
                     <div id="botAnswerText" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
+                    <!-- TARJETAS DE PRODUCTOS COINCIDENTES MOSTRANDO SU IMAGEN -->
+                    <div id="botMatchedItems" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-emerald-200/60 hidden"></div>
                 </div>
             </div>
         </section>
@@ -1303,21 +1305,33 @@
             const btn = document.getElementById('searchByPhotoBtn');
             const resultBox = document.getElementById('botResult');
             const answerText = document.getElementById('botAnswerText');
+            const matchedContainer = document.getElementById('botMatchedItems');
 
             if (btn) {
                 btn.disabled = true;
                 btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Comparando e identificando...`;
             }
 
-            const inventoryList = [
-                ...(dbData.plants || []).map(p => ({ Categoria: 'Planta', Nombre: p.name, Familia: p.family || '', Ubicacion: p.location || '', Maceta: p.pot || '', PrecioVenta: p.sellPrice })),
-                ...(dbData.pots || []).map(p => ({ Categoria: 'Maceta', Nombre: p.name, PrecioVenta: p.sellPrice })),
-                ...(dbData.tierras || []).map(t => ({ Categoria: 'Tierra/Sustrato', Nombre: t.name, PrecioVenta: t.sellPrice })),
-                ...(dbData.accessories || []).map(a => ({ Categoria: 'Accesorio', Nombre: a.name, PrecioVenta: a.sellPrice })),
-                ...(dbData.chemicals || []).map(c => ({ Categoria: 'Químico', Nombre: c.name, PrecioVenta: c.sellPrice }))
+            // Recopilar inventario con sus IDs
+            const allInventory = [
+                ...(dbData.plants || []).map(p => ({ id: p.id, Categoria: 'Planta', Nombre: p.name, Familia: p.family || '', Ubicacion: p.location || '', Maceta: p.pot || '', PrecioVenta: p.sellPrice, itemObj: p })),
+                ...(dbData.pots || []).map(p => ({ id: p.id, Categoria: 'Maceta', Nombre: p.name, PrecioVenta: p.sellPrice, itemObj: p })),
+                ...(dbData.tierras || []).map(t => ({ id: t.id, Categoria: 'Tierra/Sustrato', Nombre: t.name, PrecioVenta: t.sellPrice, itemObj: t })),
+                ...(dbData.accessories || []).map(a => ({ id: a.id, Categoria: 'Accesorio', Nombre: a.name, PrecioVenta: a.sellPrice, itemObj: a })),
+                ...(dbData.chemicals || []).map(c => ({ id: c.id, Categoria: 'Químico', Nombre: c.name, PrecioVenta: c.sellPrice, itemObj: c }))
             ];
 
-            const promptText = `Analiza detalladamente la fotografía adjunta y compárala con nuestro catálogo de inventario disponible:\n\n${JSON.stringify(inventoryList, null, 2)}\n\nPor favor, responde estructuradamente:\n1. **Producto o Planta Detectada:** Indica el nombre y categoría de la coincidencia más probable o exacta de nuestro catálogo.\n2. **Grado de Similitud:** Porcentaje estimado o nivel de coincidencia (Alta, Media, Baja).\n3. **Justificación Visual:** Explica brevemente los rasgos clave observados (forma de hojas, color, textura, tipo de maceta o contenedor).\n4. **Opciones Alternativas:** Si la coincidencia no es exacta, menciona los 1 o 2 artículos más parecidos de nuestro inventario.`;
+            const inventoryListForPrompt = allInventory.map(item => ({
+                id: item.id,
+                Categoria: item.Categoria,
+                Nombre: item.Nombre,
+                Familia: item.Familia,
+                Ubicacion: item.Ubicacion,
+                Maceta: item.Maceta,
+                PrecioVenta: item.PrecioVenta
+            }));
+
+            const promptText = `Analiza detalladamente la fotografía adjunta y compárala con nuestro catálogo de inventario disponible:\n\n${JSON.stringify(inventoryListForPrompt, null, 2)}\n\nPor favor, responde estructuradamente:\n1. **Producto o Planta Detectada:** Indica el nombre y categoría de la coincidencia más probable o exacta de nuestro catálogo.\n2. **Grado de Similitud:** Porcentaje estimado o nivel de coincidencia (Alta, Media, Baja).\n3. **Justificación Visual:** Explica brevemente los rasgos clave observados (forma de hojas, color, textura, tipo de maceta o contenedor).\n4. **Opciones Alternativas:** Si la coincidencia no es exacta, menciona los 1 o 2 artículos más parecidos de nuestro inventario.\n\nIMPORTANTE: Al final de tu respuesta, incluye obligatoriamente una línea con los IDs de los artículos del inventario coincidentes o más similares (máximo 3), en este formato exacto:\nCOINCIDENCIAS_IDS: ["id1", "id2"]`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`, {
@@ -1344,13 +1358,71 @@
                 const result = await response.json();
                 if (result.error) {
                     if (answerText) answerText.textContent = `Error de API: ${result.error.message || 'Verifica tu API Key'}`;
+                    if (matchedContainer) { matchedContainer.innerHTML = ''; matchedContainer.classList.add('hidden'); }
                 } else {
-                    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    let reply = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    let matchedIds = [];
+                    const matchRegex = /COINCIDENCIAS_IDS:\s*\[(.*?)\]/i;
+                    const matchResult = reply.match(matchRegex);
+
+                    if (matchResult && matchResult[1]) {
+                        matchedIds = matchResult[1]
+                            .split(',')
+                            .map(id => id.replace(/["'\s]/g, ''))
+                            .filter(Boolean);
+                        reply = reply.replace(matchRegex, '').trim();
+                    }
+
+                    // Búsqueda de respaldo: si no devuelve etiqueta de IDs, buscamos los nombres dentro del texto
+                    if (matchedIds.length === 0) {
+                        allInventory.forEach(inv => {
+                            if (inv.Nombre && reply.toLowerCase().includes(inv.Nombre.toLowerCase())) {
+                                matchedIds.push(inv.id);
+                            }
+                        });
+                    }
+
                     if (answerText) answerText.textContent = reply || "No se pudo obtener un resultado de la búsqueda visual.";
+
+                    // Mostrar tarjetas con las imágenes del producto encontrado
+                    if (matchedContainer) {
+                        const matchedItems = allInventory.filter(inv => matchedIds.includes(inv.id));
+                        if (matchedItems.length > 0) {
+                            matchedContainer.innerHTML = matchedItems.map(inv => {
+                                const item = inv.itemObj;
+                                const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Producto';
+                                const safeName = (item.name || inv.Nombre || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                                return `
+                                    <div class="bg-white rounded-2xl border border-emerald-200 overflow-hidden shadow-xs flex flex-col p-3">
+                                        <div class="relative h-32 bg-slate-100 rounded-xl overflow-hidden cursor-pointer group" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
+                                        </div>
+                                        <div class="mt-2.5 flex-1 flex flex-col justify-between space-y-2">
+                                            <div>
+                                                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">${inv.Categoria}</span>
+                                                <h4 class="font-bold text-slate-900 text-xs leading-snug line-clamp-2">${item.name || inv.Nombre}</h4>
+                                            </div>
+                                            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                                                <span class="text-xs font-bold text-emerald-700">${formatMoney(item.sellPrice || 0)}</span>
+                                                <button onclick="openZoomImage('${safeImg}', '${safeName}')" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-semibold transition">
+                                                    Ver Foto
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                            matchedContainer.classList.remove('hidden');
+                        } else {
+                            matchedContainer.innerHTML = '';
+                            matchedContainer.classList.add('hidden');
+                        }
+                    }
                 }
                 if (resultBox) resultBox.classList.remove('hidden');
             } catch(e) {
                 if (answerText) answerText.textContent = "Ocurrió un error al procesar la imagen con el servicio de análisis visual.";
+                if (matchedContainer) { matchedContainer.innerHTML = ''; matchedContainer.classList.add('hidden'); }
                 if (resultBox) resultBox.classList.remove('hidden');
             } finally {
                 if (btn) {
