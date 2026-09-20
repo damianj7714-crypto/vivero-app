@@ -500,11 +500,10 @@
                 }
             }
 
-            // Normalización para ignorar acentos y permitir mostrar más productos en la búsqueda
             const qClean = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             const filtered = query === '' 
-                ? allProducts.slice(0, 20) // Se aumentó de 5 a 20 productos iniciales sugeridos
+                ? allProducts.slice(0, 5) 
                 : allProducts.filter(p => {
                     const nameClean = (p.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                     const familyClean = (p.family || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
