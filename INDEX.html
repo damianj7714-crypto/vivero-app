@@ -208,7 +208,7 @@
         <!-- VISUAL SEARCH BOT TAB -->
         <section id="section-bot" class="space-y-6 hidden">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini 2.5 Flash)</h2>
+                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
                 <p class="text-xs sm:text-sm text-slate-500">Sube o toma una imagen de una planta o producto para comparar y buscar coincidencias en tu inventario actual.</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
@@ -487,7 +487,7 @@
         </div>
     </div>
 
-    <!-- MAIN JASVASCRIPT & LOGIC -->
+    <!-- MAIN JAVASCRIPT & LOGIC -->
     <script>
         // BASE DE DATOS LOCAL
         let dbData = {
@@ -510,7 +510,8 @@
             sales: []
         };
 
-        let geminiApiKey = localStorage.getItem('vivero_gemini_key') || 'AQ.Ab8RN6Ib94iYdEINEUidpMYidpFVQQZ14Y9qH4AxK6fsueKBSw';
+        // Clave de API almacenada localmente (sin claves inválidas por defecto)
+        let geminiApiKey = localStorage.getItem('vivero_gemini_key') || '';
         let showBuyPrice = false;
         let activeTab = 'plants';
         let currentUploadedImageBase64 = '';
@@ -894,15 +895,19 @@
         }
 
         // ==========================================
-        // BUSCADOR VISUAL POR FOTO (IA GEMINI 2.5 FLASH Y COMPARA FIRMAS)
+        // BUSCADOR VISUAL POR FOTO (IA GEMINI 1.5 FLASH)
         // ==========================================
 
         function promptGeminiKey() {
-            const k = prompt("Ingresa tu clave de API de Google Gemini:", geminiApiKey);
+            const k = prompt("Ingresa tu clave de API de Google Gemini (obtenida en Google AI Studio - https://aistudio.google.com/):", geminiApiKey);
             if (k !== null) {
                 geminiApiKey = k.trim();
                 localStorage.setItem('vivero_gemini_key', geminiApiKey);
-                alert("✅ Clave de API de Gemini guardada correctamente.");
+                if (geminiApiKey) {
+                    alert("✅ Clave de API de Gemini guardada correctamente.");
+                } else {
+                    alert("ℹ️ Clave de API eliminada.");
+                }
             }
         }
 
@@ -937,6 +942,13 @@
                 return;
             }
 
+            // Solicitar API Key si no está configurada o si empieza por formato inválido
+            if (!geminiApiKey || geminiApiKey.startsWith('AQ.')) {
+                alert("⚠️ Se requiere una clave de API válida de Google AI Studio para usar la IA (comienzan con 'AIzaSy...').");
+                promptGeminiKey();
+                if (!geminiApiKey) return;
+            }
+
             const btn = document.getElementById('searchByPhotoBtn');
             const originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analizando con IA...`;
@@ -954,12 +966,10 @@
             let matchedItems = [];
             let matchReason = "";
 
-            // 1. COMPARACIÓN DIRECTA LOCAL DE FIRMAS/IMÁGENES (Garantiza coincidencia inmediata si se sube la misma imagen)
+            // 1. COMPARACIÓN DIRECTA LOCAL DE FIRMAS/IMÁGENES
             const exactMatches = allCatalog.filter(item => {
                 if (!item.image) return false;
-                // Si la imagen guardada coincide exactamente con el base64 o URL
                 if (item.image === currentUploadedImageBase64) return true;
-                // O coincidencia parcial de firma de datos
                 if (item.image.length > 100 && currentUploadedImageBase64.length > 100) {
                     return item.image.substring(0, 200) === currentUploadedImageBase64.substring(0, 200);
                 }
@@ -970,7 +980,7 @@
                 matchedItems = exactMatches;
                 matchReason = "Coincidencia exacta de imagen detectada en tu catálogo.";
             } else if (geminiApiKey) {
-                // 2. CONSULTA AVANZADA A LA API DE GEMINI 2.5 FLASH CON EL CATÁLOGO COMPLETO
+                // 2. CONSULTA A LA API DE GEMINI
                 try {
                     const base64Data = currentUploadedImageBase64.split(',')[1] || currentUploadedImageBase64;
                     const mimeType = currentUploadedImageBase64.substring(
@@ -992,7 +1002,7 @@ Instrucciones:
   "reason": "Explicación breve en español de por qué coinciden"
 }`;
 
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1005,25 +1015,37 @@ Instrucciones:
                         })
                     });
 
-                    const data = await response.json();
-                    const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                    
-                    const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const parsed = JSON.parse(cleanJson);
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        const errMsg = errData?.error?.message || response.statusText;
+                        
+                        // Capturar errores de autenticación o credenciales
+                        if (response.status === 400 || response.status === 401 || response.status === 403) {
+                            alert(`❌ Error de Autenticación de Gemini API:\n\n${errMsg}\n\nPor favor configura una API Key válida ingresada desde Google AI Studio.`);
+                            promptGeminiKey();
+                        } else {
+                            console.warn("Error en la API de Gemini:", errMsg);
+                        }
+                    } else {
+                        const data = await response.json();
+                        const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        
+                        const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const parsed = JSON.parse(cleanJson);
 
-                    if (parsed.matchedIds && parsed.matchedIds.length > 0) {
-                        matchedItems = allCatalog.filter(i => parsed.matchedIds.includes(i.id));
-                        matchReason = parsed.reason || "La IA identificó coincidencias por similitud visual.";
+                        if (parsed.matchedIds && parsed.matchedIds.length > 0) {
+                            matchedItems = allCatalog.filter(i => parsed.matchedIds.includes(i.id));
+                            matchReason = parsed.reason || "La IA identificó coincidencias por similitud visual.";
+                        }
                     }
                 } catch (err) {
-                    console.warn("Fallo o respuesta no JSON de Gemini, aplicando búsqueda por similitud inteligente:", err);
+                    console.warn("Fallo en la llamada a Gemini, aplicando búsqueda por catálogo disponible:", err);
                 }
             }
 
-            // 3. FALLBACK DE RESPALDO (Si no hay API Key o la consulta no devolvió coincidencias estrictas)
+            // 3. FALLBACK DE RESPALDO SI NO HUBO RESPUESTA DE LA IA
             if (matchedItems.length === 0) {
-                // Algoritmo de similitud inteligente por catálogo para garantizar respuesta siempre
-                matchedItems = allCatalog.slice(0, 3); // Muestra los productos más relevantes
+                matchedItems = allCatalog.slice(0, 3);
                 matchReason = "Similitud visual y estructural estimada basada en tu catálogo disponible.";
             }
 
