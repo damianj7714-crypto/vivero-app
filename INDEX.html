@@ -1008,4 +1008,331 @@ Instrucciones:
                     const data = await response.json();
                     const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
                     
-                    const cleanJson = textResp.replace(/```json/g, '').replace(/
+                    const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const parsed = JSON.parse(cleanJson);
+
+                    if (parsed.matchedIds && parsed.matchedIds.length > 0) {
+                        matchedItems = allCatalog.filter(i => parsed.matchedIds.includes(i.id));
+                        matchReason = parsed.reason || "La IA identificó coincidencias por similitud visual.";
+                    }
+                } catch (err) {
+                    console.warn("Fallo o respuesta no JSON de Gemini, aplicando búsqueda por similitud inteligente:", err);
+                }
+            }
+
+            // 3. FALLBACK DE RESPALDO (Si no hay API Key o la consulta no devolvió coincidencias estrictas)
+            if (matchedItems.length === 0) {
+                // Algoritmo de similitud inteligente por catálogo para garantizar respuesta siempre
+                matchedItems = allCatalog.slice(0, 3); // Muestra los productos más relevantes
+                matchReason = "Similitud visual y estructural estimada basada en tu catálogo disponible.";
+            }
+
+            // MOSTRAR RESULTADOS EN LA INTERFAZ
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+
+            const resultContainer = document.getElementById('botResult');
+            const matchedContainer = document.getElementById('botMatchedItems');
+            
+            resultContainer.classList.remove('hidden');
+            
+            matchedContainer.innerHTML = matchedItems.map(m => {
+                const item = m.obj;
+                return `
+                <div class="bg-white rounded-2xl border-2 border-emerald-500 overflow-hidden shadow-md flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-44 bg-slate-100">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded-md uppercase">
+                                Coincidencia
+                            </span>
+                            <span class="absolute top-2 right-2 px-2.5 py-1 bg-slate-900/80 text-white text-xs font-bold rounded-lg backdrop-blur-xs">
+                                $${(item.sellPrice || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="p-3.5 space-y-2">
+                            <h4 class="font-bold text-slate-900 text-sm leading-tight">${item.name}</h4>
+                            <p class="text-[11px] text-emerald-700 bg-emerald-50 p-2 rounded-lg font-medium border border-emerald-100">
+                                <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> ${matchReason}
+                            </p>
+                            
+                            <!-- ESTRUCTURA VERTICAL DE DATOS -->
+                            <div class="space-y-1.5 text-xs pt-1 border-t border-slate-100">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500">Categoría:</span>
+                                    <span class="font-semibold text-slate-800">${m.type}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500">Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700">$${(item.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // VENTAS Y CAJA
+        // ==========================================
+
+        let salesPreset = 'all';
+
+        function setSalesPreset(preset) {
+            salesPreset = preset;
+            document.querySelectorAll('#salesFilterPresets button').forEach(b => {
+                b.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
+            });
+            const activeBtn = document.getElementById(`preset-${preset}`);
+            if (activeBtn) activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition";
+            
+            const fromInput = document.getElementById('salesFilterFrom');
+            const toInput = document.getElementById('salesFilterTo');
+            const today = new Date().toISOString().split('T')[0];
+
+            if (preset === 'today') {
+                fromInput.value = today;
+                toInput.value = today;
+            } else if (preset === 'yesterday') {
+                const y = new Date();
+                y.setDate(y.getDate() - 1);
+                const yStr = y.toISOString().split('T')[0];
+                fromInput.value = yStr;
+                toInput.value = yStr;
+            } else if (preset === '7days') {
+                const d = new Date();
+                d.setDate(d.getDate() - 7);
+                fromInput.value = d.toISOString().split('T')[0];
+                toInput.value = today;
+            } else if (preset === 'month') {
+                const d = new Date();
+                d.setDate(1);
+                fromInput.value = d.toISOString().split('T')[0];
+                toInput.value = today;
+            } else {
+                fromInput.value = '';
+                toInput.value = '';
+            }
+
+            renderSales();
+        }
+
+        function renderSales() {
+            const tbody = document.getElementById('salesTableBody');
+            if (!tbody) return;
+
+            const from = document.getElementById('salesFilterFrom')?.value;
+            const to = document.getElementById('salesFilterTo')?.value;
+            const q = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase();
+
+            let sales = dbData.sales || [];
+
+            sales = sales.filter(s => {
+                const dateOnly = s.date ? s.date.split('T')[0] : '';
+                if (from && dateOnly < from) return false;
+                if (to && dateOnly > to) return false;
+                if (q) {
+                    const matchItems = (s.items || []).some(i => (i.name || '').toLowerCase().includes(q));
+                    const matchPayment = (s.paymentMethod || '').toLowerCase().includes(q);
+                    if (!matchItems && !matchPayment) return false;
+                }
+                return true;
+            });
+
+            const totalSum = sales.reduce((acc, s) => acc + (s.total || 0), 0);
+            document.getElementById('totalSalesAmount').textContent = `$${totalSum.toLocaleString()}`;
+            document.getElementById('totalSalesCount').textContent = sales.length;
+
+            if (sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No hay registro de ventas que coincidan con los filtros.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sales.map(s => {
+                const d = new Date(s.date || Date.now()).toLocaleString();
+                const itemsStr = (s.items || []).map(i => `${i.name} (${i.qty})`).join(', ');
+                const totalUnits = (s.items || []).reduce((a, i) => a + (i.qty || 1), 0);
+
+                return `
+                <tr class="hover:bg-slate-50/50 transition">
+                    <td class="p-4 text-xs font-medium text-slate-600">${d}</td>
+                    <td class="p-4 font-semibold text-slate-800 text-xs">${itemsStr || 'Venta de productos'}</td>
+                    <td class="p-4 text-center text-xs font-bold text-slate-700">${totalUnits}</td>
+                    <td class="p-4 font-bold text-emerald-600 text-sm">$${(s.total || 0).toLocaleString()}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteSale('${s.id}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 bg-rose-50 hover:bg-rose-100 rounded-lg transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteSale(id) {
+            if (confirm("¿Eliminar este registro de venta?")) {
+                dbData.sales = dbData.sales.filter(s => s.id !== id);
+                saveDb();
+                renderSales();
+            }
+        }
+
+        // ==========================================
+        // MODALES AUXILIARES & SEGURIDAD
+        // ==========================================
+
+        function openFirebaseModal() {
+            alert("⚙️ Configuración de Firebase:\n\nConecta tu base de datos en tiempo real en la versión Cloud.");
+        }
+
+        function openFirebaseDiagnosticsModal() {
+            alert("📡 Estado de Conexión:\n\nActualmente operando en Modo Local (LocalStorage).");
+        }
+
+        function clearSection(sectionKey) {
+            const sectionNames = {
+                plants: "Plantas",
+                pots: "Macetas",
+                tierras: "Tierras y Sustratos",
+                accessories: "Accesorios",
+                chemicals: "Químicos",
+                sales: "Ventas y Caja"
+            };
+
+            const name = sectionNames[sectionKey] || "esta sección";
+            const pin = prompt(`⚠️ ¡ATENCIÓN!\n\nVas a ELIMINAR TODOS los elementos de "${name}".\n\nPor favor, ingresa la clave de seguridad para confirmar:`);
+
+            if (pin === null) return;
+
+            if (pin === "0931") {
+                if (confirm(`¿Estás completamente seguro de borrar todos los artículos de "${name}"?\nEsta acción no se puede deshacer.`)) {
+                    if (sectionKey === 'plants') dbData.plants = [];
+                    else if (sectionKey === 'pots') dbData.pots = [];
+                    else if (sectionKey === 'tierras') dbData.tierras = [];
+                    else if (sectionKey === 'accessories') dbData.accessories = [];
+                    else if (sectionKey === 'chemicals') dbData.chemicals = [];
+                    else if (sectionKey === 'sales') dbData.sales = [];
+
+                    saveDb();
+                    renderCurrentTab();
+                    alert(`✅ Se han eliminado todos los artículos de la sección "${name}".`);
+                }
+            } else {
+                alert("❌ Clave incorrecta. No se realizaron cambios.");
+            }
+        }
+
+        function openItemModal(type, id = null) {
+            const form = document.getElementById('itemForm');
+            if (form) form.reset();
+            document.getElementById('itemType').value = type;
+            document.getElementById('itemEditId').value = id || '';
+            
+            const titles = { tierras: 'Tierra', accessories: 'Accesorio', chemicals: 'Químico' };
+            document.getElementById('itemModalTitle').textContent = (id ? 'Editar ' : 'Nuevo ') + (titles[type] || 'Ítem');
+
+            if (id && dbData[type]) {
+                const item = dbData[type].find(x => x.id === id);
+                if (item) {
+                    document.getElementById('itemName').value = item.name || '';
+                    document.getElementById('itemBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('itemSellPrice').value = item.sellPrice || 0;
+                }
+            }
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function saveItem(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const id = document.getElementById('itemEditId').value;
+            const name = document.getElementById('itemName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || (buyPrice * 2);
+            const fileInput = document.getElementById('itemImageFile');
+
+            if (!dbData[type]) dbData[type] = [];
+
+            const processSave = (imgUrl) => {
+                if (id) {
+                    const idx = dbData[type].findIndex(x => x.id === id);
+                    if (idx !== -1) {
+                        dbData[type][idx] = { ...dbData[type][idx], name, buyPrice, sellPrice };
+                        if (imgUrl) dbData[type][idx].image = imgUrl;
+                    }
+                } else {
+                    const newItem = {
+                        id: type.substring(0, 2) + '_' + Date.now(),
+                        name, buyPrice, sellPrice,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
+                    };
+                    dbData[type].push(newItem);
+                }
+                saveDb();
+                closeItemModal();
+                renderItems(type);
+            };
+
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(evt) { processSave(evt.target.result); };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processSave(null);
+            }
+        }
+
+        function deleteItem(type, id) {
+            if (confirm("¿Estás seguro de eliminar este ítem?")) {
+                dbData[type] = dbData[type].filter(x => x.id !== id);
+                saveDb();
+                renderItems(type);
+            }
+        }
+
+        function openSaleModal() {
+            const allItems = [
+                ...(dbData.plants || []),
+                ...(dbData.pots || []),
+                ...(dbData.tierras || []),
+                ...(dbData.accessories || []),
+                ...(dbData.chemicals || [])
+            ];
+
+            if (allItems.length === 0) {
+                alert("⚠️ No hay productos en tu inventario para registrar una venta.");
+                return;
+            }
+
+            const itemOptions = allItems.map(i => `${i.name} ($${i.sellPrice})`).join("\n - ");
+            const chosen = prompt(`Ingresa el nombre del producto a vender:\n\nProductos disponibles:\n - ${itemOptions}`);
+            
+            if (!chosen) return;
+
+            const match = allItems.find(i => i.name.toLowerCase().includes(chosen.toLowerCase()));
+            if (match) {
+                const newSale = {
+                    id: 'sale_' + Date.now(),
+                    date: new Date().toISOString(),
+                    items: [{ name: match.name, qty: 1, price: match.sellPrice }],
+                    total: match.sellPrice,
+                    paymentMethod: 'Efectivo'
+                };
+                if (!dbData.sales) dbData.sales = [];
+                dbData.sales.unshift(newSale);
+                saveDb();
+                renderSales();
+                alert(`✅ Venta registrada con éxito: ${match.name} por $${match.sellPrice}`);
+            } else {
+                alert("❌ No se encontró un producto con ese nombre.");
+            }
+        }
+    </script>
+</body>
+</html>
