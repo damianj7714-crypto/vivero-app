@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ViveroApp v9.4 - Gestión Profesional de Viveros</title>
+    <title>ViveroApp v9.8 - Gestión Profesional de Viveros</title>
     
     <!-- PWA & Mobile Settings -->
     <meta name="theme-color" content="#059669">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ViveroApp v9.4">
+    <meta name="apple-mobile-web-app-title" content="ViveroApp v9.8">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628324.png">
     
-    <!-- Web App Manifest para instalación en celulares (Versión 9.4) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"ViveroApp v9.4 - Gestión de Viveros","short_name":"ViveroApp v9.4","description":"Sistema Profesional de Gestión de Viveros v9.4","start_url":".","display":"standalone","orientation":"portrait","background_color":"#f8fafc","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
+    <!-- Web App Manifest para instalación en celulares (Versión 9.8) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"ViveroApp v9.8 - Gestión de Viveros","short_name":"ViveroApp v9.8","description":"Sistema Profesional de Gestión de Viveros v9.8","start_url":".","display":"standalone","orientation":"portrait","background_color":"#f8fafc","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS for Excel handling -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -35,7 +33,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
 
-    <!-- HEADER CON NUMERO DE VERSIÓN 9.4 -->
+    <!-- HEADER CON NUMERO DE VERSIÓN 9.8 -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
@@ -45,7 +43,8 @@
                 <div>
                     <div class="flex items-center gap-1.5">
                         <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
-                        <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">v9.4</span>
+                        <!-- ETIQUETA VISIBLE DE VERSIÓN 9.8 -->
+                        <span class="bg-emerald-100 text-emerald-800 text-[12px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-xs">v9.8</span>
                     </div>
                     <p class="text-xs text-emerald-600 font-medium">Gestión Profesional (Precios en pesos $)</p>
                 </div>
@@ -376,7 +375,7 @@
             <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
                 <i class="fa-solid fa-mobile-screen-button"></i>
             </div>
-            <h3 class="font-bold text-slate-900 text-lg">Instalar ViveroApp v9.4</h3>
+            <h3 class="font-bold text-slate-900 text-lg">Instalar ViveroApp v9.8</h3>
             <p class="text-xs text-slate-600 leading-relaxed">
                 Para instalar esta app en tu pantalla de inicio:
             </p>
@@ -542,13 +541,13 @@
         </div>
     </div>
 
-    <!-- MAIN JAVASCRIPT & LOGIC VERSIÓN 9.4 -->
+    <!-- MAIN JAVASCRIPT & LOGIC VERSIÓN 9.8 -->
     <script>
         // REGISTRO DE SERVICE WORKER COMPATIBLE CON PWA INSTALABLE EN CELULARES
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'viveroapp-v9.4';
+                    const CACHE_NAME = 'viveroapp-v9.8';
                     self.addEventListener('install', (e) => {
                         self.skipWaiting();
                     });
@@ -589,7 +588,6 @@
                     deferredPrompt = null;
                 });
             } else {
-                // Si es un dispositivo iOS o no se ha disparado beforeinstallprompt, se muestran instrucciones
                 const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
                 if (isIos || !window.matchMedia('(display-mode: standalone)').matches) {
                     const modal = document.getElementById('iosInstallModal');
@@ -954,4 +952,299 @@ Responde ÚNICAMENTE un JSON: {"matchedIds": ["id1", "id2"]}`;
                     if (response.ok) {
                         const data = await response.json();
                         const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                        const cleanJson = textResp.replace(/```json/g, '').replace(/
+                        const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const parsed = JSON.parse(cleanJson);
+                        if (parsed && Array.isArray(parsed.matchedIds)) {
+                            matchedItems = allCatalog.filter(item => parsed.matchedIds.includes(item.id));
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al consultar la API de Gemini:", err);
+                }
+            }
+
+            // Mostrar resultados
+            const resultBox = document.getElementById('botResult');
+            const container = document.getElementById('botMatchedItems');
+            if (resultBox && container) {
+                if (matchedItems.length > 0) {
+                    container.innerHTML = matchedItems.map(item => `
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-28 object-cover rounded-lg mb-2">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">${item.type}</span>
+                                <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
+                                <p class="text-xs text-slate-500 font-semibold">$${(item.obj.sellPrice || 0).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-2">No se encontraron coincidencias exactas en el catálogo.</div>`;
+                }
+                resultBox.classList.remove('hidden');
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // FUNCIONES DE VENTA Y MODALES
+        function openSaleModal() {
+            alert("Función de carrito/venta disponible.");
+        }
+
+        function clearSection(type) {
+            if (confirm(`¿Estás seguro de que deseas vaciar la sección de ${type}?`)) {
+                dbData[type] = [];
+                saveDb();
+                renderCurrentTab();
+            }
+        }
+
+        function openPlantModal() {
+            document.getElementById('plantModalTitle').innerText = 'Nueva Planta';
+            document.getElementById('plantEditId').value = '';
+            document.getElementById('plantForm').reset();
+            document.getElementById('plantModal').classList.remove('hidden');
+        }
+
+        function closePlantModal() {
+            document.getElementById('plantModal').classList.add('hidden');
+        }
+
+        function savePlant(e) {
+            e.preventDefault();
+            const id = document.getElementById('plantEditId').value || 'pl_' + Date.now();
+            const name = document.getElementById('plantName').value;
+            const family = document.getElementById('plantFamily').value;
+            const location = document.getElementById('plantLocation').value;
+            const light = document.getElementById('plantLight').value;
+            const water = document.getElementById('plantWater').value;
+            const buyPrice = parseFloat(document.getElementById('plantBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('plantSellPrice').value) || 0;
+            const fileInput = document.getElementById('plantImageFile');
+
+            const proceedSave = (imgUrl) => {
+                const existingIndex = dbData.plants.findIndex(p => p.id === id);
+                const plantObj = {
+                    id, name, family, location, light, water, buyPrice, sellPrice,
+                    image: imgUrl || (existingIndex >= 0 ? dbData.plants[existingIndex].image : 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=500')
+                };
+                if (existingIndex >= 0) {
+                    dbData.plants[existingIndex] = plantObj;
+                } else {
+                    dbData.plants.push(plantObj);
+                }
+                saveDb();
+                closePlantModal();
+                renderPlants();
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => proceedSave(ev.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                proceedSave(null);
+            }
+        }
+
+        function editPlant(id) {
+            const plant = dbData.plants.find(p => p.id === id);
+            if (!plant) return;
+            document.getElementById('plantModalTitle').innerText = 'Editar Planta';
+            document.getElementById('plantEditId').value = plant.id;
+            document.getElementById('plantName').value = plant.name || '';
+            document.getElementById('plantFamily').value = plant.family || '';
+            document.getElementById('plantLocation').value = plant.location || 'Interior';
+            document.getElementById('plantLight').value = plant.light || '';
+            document.getElementById('plantWater').value = plant.water || '';
+            document.getElementById('plantBuyPrice').value = plant.buyPrice || 0;
+            document.getElementById('plantSellPrice').value = plant.sellPrice || 0;
+            document.getElementById('plantModal').classList.remove('hidden');
+        }
+
+        function deletePlant(id) {
+            if (confirm("¿Deseas eliminar esta planta?")) {
+                dbData.plants = dbData.plants.filter(p => p.id !== id);
+                saveDb();
+                renderPlants();
+            }
+        }
+
+        function openPotModal() {
+            document.getElementById('potModalTitle').innerText = 'Nueva Maceta';
+            document.getElementById('potEditId').value = '';
+            document.getElementById('potForm').reset();
+            document.getElementById('potModal').classList.remove('hidden');
+        }
+
+        function closePotModal() {
+            document.getElementById('potModal').classList.add('hidden');
+        }
+
+        function savePot(e) {
+            e.preventDefault();
+            const id = document.getElementById('potEditId').value || 'po_' + Date.now();
+            const name = document.getElementById('potName').value;
+            const material = document.getElementById('potMaterial').value;
+            const size = document.getElementById('potSize').value;
+            const color = document.getElementById('potColor').value;
+            const buyPrice = parseFloat(document.getElementById('potBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('potSellPrice').value) || 0;
+            const fileInput = document.getElementById('potImageFile');
+
+            const proceedSave = (imgUrl) => {
+                const existingIndex = dbData.pots.findIndex(p => p.id === id);
+                const potObj = {
+                    id, name, material, size, color, buyPrice, sellPrice,
+                    image: imgUrl || (existingIndex >= 0 ? dbData.pots[existingIndex].image : 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500')
+                };
+                if (existingIndex >= 0) {
+                    dbData.pots[existingIndex] = potObj;
+                } else {
+                    dbData.pots.push(potObj);
+                }
+                saveDb();
+                closePotModal();
+                renderPots();
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => proceedSave(ev.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                proceedSave(null);
+            }
+        }
+
+        function editPot(id) {
+            const pot = dbData.pots.find(p => p.id === id);
+            if (!pot) return;
+            document.getElementById('potModalTitle').innerText = 'Editar Maceta';
+            document.getElementById('potEditId').value = pot.id;
+            document.getElementById('potName').value = pot.name || '';
+            document.getElementById('potMaterial').value = pot.material || '';
+            document.getElementById('potSize').value = pot.size || '';
+            document.getElementById('potColor').value = pot.color || '';
+            document.getElementById('potBuyPrice').value = pot.buyPrice || 0;
+            document.getElementById('potSellPrice').value = pot.sellPrice || 0;
+            document.getElementById('potModal').classList.remove('hidden');
+        }
+
+        function deletePot(id) {
+            if (confirm("¿Deseas eliminar esta maceta?")) {
+                dbData.pots = dbData.pots.filter(p => p.id !== id);
+                saveDb();
+                renderPots();
+            }
+        }
+
+        function openItemModal(type, id = '') {
+            document.getElementById('itemType').value = type;
+            document.getElementById('itemEditId').value = id;
+            document.getElementById('itemForm').reset();
+            const titleMap = { tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
+            document.getElementById('itemModalTitle').innerText = id ? `Editar ${titleMap[type] || 'Ítem'}` : `Nuevo ${titleMap[type] || 'Ítem'}`;
+
+            if (id) {
+                const item = (dbData[type] || []).find(i => i.id === id);
+                if (item) {
+                    document.getElementById('itemName').value = item.name || '';
+                    document.getElementById('itemBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('itemSellPrice').value = item.sellPrice || 0;
+                }
+            }
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function saveItem(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const id = document.getElementById('itemEditId').value || (type.substring(0, 2) + '_' + Date.now());
+            const name = document.getElementById('itemName').value;
+            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || 0;
+            const fileInput = document.getElementById('itemImageFile');
+
+            if (!dbData[type]) dbData[type] = [];
+
+            const proceedSave = (imgUrl) => {
+                const existingIndex = dbData[type].findIndex(i => i.id === id);
+                const itemObj = {
+                    id, name, buyPrice, sellPrice,
+                    image: imgUrl || (existingIndex >= 0 ? dbData[type][existingIndex].image : 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=500')
+                };
+                if (existingIndex >= 0) {
+                    dbData[type][existingIndex] = itemObj;
+                } else {
+                    dbData[type].push(itemObj);
+                }
+                saveDb();
+                closeItemModal();
+                renderItems(type);
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => proceedSave(ev.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                proceedSave(null);
+            }
+        }
+
+        function deleteItem(type, id) {
+            if (confirm("¿Deseas eliminar este ítem?")) {
+                dbData[type] = (dbData[type] || []).filter(i => i.id !== id);
+                saveDb();
+                renderItems(type);
+            }
+        }
+
+        function renderSales() {
+            const tbody = document.getElementById('salesTableBody');
+            if (!tbody) return;
+            const sales = dbData.sales || [];
+            if (sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay ventas registradas.</td></tr>`;
+                document.getElementById('totalSalesAmount').innerText = '$0';
+                document.getElementById('totalSalesCount').innerText = '0';
+                return;
+            }
+            let total = 0;
+            tbody.innerHTML = sales.map(s => {
+                total += (s.total || 0);
+                return `
+                    <tr>
+                        <td class="p-4 text-slate-600 text-xs">${s.date || 'N/A'}</td>
+                        <td class="p-4 font-semibold text-slate-800">${s.items || 'Venta'}</td>
+                        <td class="p-4 text-center">${s.qty || 1}</td>
+                        <td class="p-4 font-bold text-emerald-700">$${(s.total || 0).toLocaleString()}</td>
+                        <td class="p-4 text-right"><button class="text-rose-600 hover:text-rose-800 text-xs font-semibold"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('totalSalesAmount').innerText = `$${total.toLocaleString()}`;
+            document.getElementById('totalSalesCount').innerText = sales.length.toString();
+        }
+
+        function setSalesPreset(preset) {
+            console.log('Preset seleccionado:', preset);
+        }
+
+        function openFirebaseModal() {
+            alert("Configuración de Firebase.");
+        }
+
+        function openFirebaseDiagnosticsModal() {
+            alert("Diagnóstico de conexión Firebase.");
+        }
+    </script>
+</body>
+</html>
