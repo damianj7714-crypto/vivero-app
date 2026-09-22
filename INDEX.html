@@ -252,9 +252,6 @@
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-end gap-2">
-                    <button onclick="promptGeminiKey()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-key text-amber-500"></i> Clave API Gemini
-                    </button>
                     <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Similitudes en Inventario
                     </button>
@@ -588,7 +585,7 @@
         };
 
         // Variables de Estado
-        let geminiApiKey = localStorage.getItem('vivero_gemini_key') || '';
+        const geminiApiKey = 'AQ.Ab8RN6KFjZrTvmj4hJpRlkRLYA25I1ltRXb7auD05qXpHO4Iuw';
         let showBuyPrice = false;
         let activeTab = 'plants';
         let currentUploadedImageBase64 = '';
@@ -815,14 +812,13 @@
         }
 
         // ==========================================
-        // GESTIÓN DE CÁMARA Y ARCHIVOS (CORREGIDO)
+        // GESTIÓN DE CÁMARA Y ARCHIVOS
         // ==========================================
 
         async function openCameraModal() {
             const cameraModal = document.getElementById('cameraModal');
             const video = document.getElementById('cameraVideo');
             
-            // Intenta acceder a la cámara en vivo del celular via WebRTC
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
@@ -838,7 +834,6 @@
                 }
             }
             
-            // Fallback: activa el input nativo de cámara
             const input = document.getElementById('visualSearchCameraInput');
             if (input) {
                 input.value = '';
@@ -860,7 +855,7 @@
             if (img) img.src = currentUploadedImageBase64;
             
             const container = document.getElementById('previewContainer');
-            if (container) container.classList.remove('hidden'); // CORREGIDO: Muestra la vista previa
+            if (container) container.classList.remove('hidden');
             
             closeCameraModal();
         }
@@ -884,7 +879,7 @@
                 const img = document.getElementById('visualSearchPreview');
                 if (img) img.src = currentUploadedImageBase64;
                 const container = document.getElementById('previewContainer');
-                if (container) container.classList.remove('hidden'); // CORREGIDO: Remueve la clase hidden para ver la foto
+                if (container) container.classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         }
@@ -904,19 +899,6 @@
         function getRawBase64(str) {
             if (!str) return '';
             return str.includes(',') ? str.split(',')[1].trim() : str.trim();
-        }
-
-        function promptGeminiKey() {
-            const k = prompt("Ingresa tu clave de API de Google Gemini (obtenida en Google AI Studio):", geminiApiKey);
-            if (k !== null) {
-                geminiApiKey = k.trim();
-                localStorage.setItem('vivero_gemini_key', geminiApiKey);
-                if (geminiApiKey) {
-                    alert("✅ Clave de API de Gemini guardada correctamente.");
-                } else {
-                    alert("ℹ️ Clave de API eliminada.");
-                }
-            }
         }
 
         async function searchByPhoto() {
@@ -951,14 +933,6 @@
             if (exactMatches.length > 0) {
                 matchedItems = exactMatches;
             } else {
-                if (!geminiApiKey) {
-                    alert("⚠️ Se requiere una clave de API válida de Google AI Studio para usar la IA.");
-                    promptGeminiKey();
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    if (!geminiApiKey) return;
-                }
-
                 try {
                     const mimeType = currentUploadedImageBase64.substring(
                         currentUploadedImageBase64.indexOf(":") + 1,
