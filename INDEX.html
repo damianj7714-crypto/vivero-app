@@ -213,23 +213,12 @@
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                    
-                    <!-- BOTONES DUALES: CÁMARA Y GALERÍA -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/50 hover:bg-emerald-100/50 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]" onclick="document.getElementById('visualSearchCameraInput').click()">
-                            <i class="fa-solid fa-camera text-3xl text-emerald-600 mb-2"></i>
-                            <p class="font-semibold text-slate-800 text-sm">Tomar Foto con Cámara</p>
-                            <p class="text-xs text-slate-500 mt-1">Abre la cámara del celular</p>
-                            <input type="file" id="visualSearchCameraInput" accept="image/*" capture="environment" onchange="previewSearchImage(event)" class="hidden">
-                        </div>
-                        <div class="border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]" onclick="document.getElementById('visualSearchInput').click()">
-                            <i class="fa-solid fa-images text-3xl text-slate-500 mb-2"></i>
-                            <p class="font-semibold text-slate-800 text-sm">Elegir de Galería</p>
-                            <p class="text-xs text-slate-400 mt-1">Seleccionar foto guardada</p>
-                            <input type="file" id="visualSearchInput" accept="image/*" onchange="previewSearchImage(event)" class="hidden">
-                        </div>
+                    <div class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50 flex flex-col items-center justify-center min-h-[180px]" onclick="document.getElementById('visualSearchInput').click()">
+                        <i class="fa-solid fa-camera text-3xl text-emerald-600 mb-2"></i>
+                        <p class="font-semibold text-slate-800 text-sm">Haz clic para tomar o subir una foto</p>
+                        <p class="text-xs text-slate-400 mt-1">Formatos soportados: JPG, PNG, WEBP</p>
+                        <input type="file" id="visualSearchInput" accept="image/*" onchange="previewSearchImage(event)" class="hidden">
                     </div>
-
                     <div id="previewContainer" class="hidden flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200 relative">
                         <img id="visualSearchPreview" src="" alt="Vista previa" class="max-h-48 rounded-xl object-contain shadow-xs">
                         <button onclick="clearSearchImage()" class="mt-2 text-xs text-rose-600 hover:underline font-semibold"><i class="fa-solid fa-trash mr-1"></i> Quitar foto</button>
@@ -378,7 +367,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen (Archivo local)</label>
-                    <input type="file" id="itemImageFile" accept="image/*" capture="environment" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    <input type="file" id="itemImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
                     <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
@@ -437,7 +426,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen (Foto)</label>
-                    <input type="file" id="plantImageFile" accept="image/*" capture="environment" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    <input type="file" id="plantImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
                     <button type="button" onclick="closePlantModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
@@ -488,7 +477,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen (Foto)</label>
-                    <input type="file" id="potImageFile" accept="image/*" capture="environment" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    <input type="file" id="potImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
                     <button type="button" onclick="closePotModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
@@ -918,7 +907,7 @@
                 const img = document.getElementById('visualSearchPreview');
                 if (img) img.src = currentUploadedImageBase64;
                 const container = document.getElementById('previewContainer');
-                if (container) container.classList.add('hidden');
+                if (container) container.classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         }
@@ -927,8 +916,6 @@
             currentUploadedImageBase64 = '';
             const fileInput = document.getElementById('visualSearchInput');
             if (fileInput) fileInput.value = '';
-            const cameraInput = document.getElementById('visualSearchCameraInput');
-            if (cameraInput) cameraInput.value = '';
             const container = document.getElementById('previewContainer');
             if (container) container.classList.add('hidden');
             const resultBox = document.getElementById('botResult');
@@ -982,6 +969,7 @@
                 const itemRawBase64 = getRawBase64(item.image);
                 if (itemRawBase64 && uploadedRawBase64 && itemRawBase64 === uploadedRawBase64) return true;
 
+                // Comparación de prefijo cuando la imagen guardada es una cadena Base64 extensa
                 if (itemRawBase64.length > 200 && uploadedRawBase64.length > 200) {
                     return itemRawBase64.substring(0, 300) === uploadedRawBase64.substring(0, 300);
                 }
@@ -992,6 +980,7 @@
                 matchedItems = exactMatches;
                 matchReason = "Coincidencia exacta de imagen detectada directamente en el catálogo.";
             } else {
+                // 2. CONSULTA A LA IA (GEMINI) SI NO HUBO COINCIDENCIA EXACTA DE ARCHIVO
                 if (!geminiApiKey || geminiApiKey.startsWith('AQ.')) {
                     alert("⚠️ Se requiere una clave de API válida de Google AI Studio para usar la IA (comienzan con 'AIzaSy...').");
                     promptGeminiKey();
@@ -1056,45 +1045,4 @@ INSTRUCCIONES DE RESPUESTA:
                         const data = await response.json();
                         const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
                         
-                        const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
-                        let parsed = null;
-                        try { parsed = JSON.parse(cleanJson); } catch(e){}
-
-                        if (parsed && Array.isArray(parsed.matchedIds)) {
-                            matchedItems = allCatalog.filter(i => parsed.matchedIds.includes(i.id));
-                            matchReason = parsed.reason || "Coincidencias encontradas por la Inteligencia Artificial.";
-                        }
-                    }
-                } catch(e) {
-                    console.error("Error al consultar la API:", e);
-                }
-            }
-
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-
-            const botResult = document.getElementById('botResult');
-            const botMatchedItems = document.getElementById('botMatchedItems');
-
-            if (botResult && botMatchedItems) {
-                if (matchedItems.length > 0) {
-                    botMatchedItems.innerHTML = matchedItems.map(item => `
-                        <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs flex flex-col justify-between">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-32 object-cover rounded-lg mb-2">
-                            <div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">${item.type}</span>
-                                <h4 class="font-bold text-slate-800 text-sm leading-tight">${item.name}</h4>
-                                <p class="text-xs text-slate-600 font-semibold mt-1">$${(item.obj?.sellPrice || 0).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                    botResult.classList.remove('hidden');
-                } else {
-                    botMatchedItems.innerHTML = `<p class="text-xs text-slate-500 col-span-full">No se encontraron coincidencias claras en el inventario actual.</p>`;
-                    botResult.classList.remove('hidden');
-                }
-            }
-        }
-    </script>
-</body>
-</html>
+                        const cleanJson = textResp.replace(/```json/g, '').replace(/
