@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
     
     <!-- Manifest inline vía Data URI para instalación directa PWA -->
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSBWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzIjo1MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSBWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzI5JkNpbS01MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -191,6 +191,12 @@
                     </button>
                 </div>
             </div>
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="tierrasSearch" oninput="renderItems('tierras')" placeholder="Buscar tierras por nombre, marca o tipo..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
             <div id="tierrasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
@@ -210,6 +216,12 @@
                     </button>
                 </div>
             </div>
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="accessoriesSearch" oninput="renderItems('accessories')" placeholder="Buscar accesorios por nombre o tipo..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
             <div id="accessoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
@@ -227,6 +239,12 @@
                     <button onclick="openItemModal('chemicals')" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-plus"></i> Nuevo Químico
                     </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="chemicalsSearch" oninput="renderItems('chemicals')" placeholder="Buscar químicos por nombre, tipo o uso..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
             </div>
             <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
@@ -1088,7 +1106,6 @@
             renderPlants();
             checkIOS();
 
-            // Registro dinámico de Service Worker con Blob Inline para máxima compatibilidad móvil
             if ('serviceWorker' in navigator) {
                 const swCode = `
                     const CACHE_NAME = 'viveroapp-pwa-v1';
@@ -1771,7 +1788,19 @@
         function renderItems(type) {
             const grid = document.getElementById(type + 'Grid');
             if (!grid) return;
-            const list = dbData[type] || [];
+            const searchInput = document.getElementById(type + 'Search');
+            const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            let list = dbData[type] || [];
+            if (search) {
+                list = list.filter(item => 
+                    (item.name && item.name.toLowerCase().includes(search)) ||
+                    (item.marca && item.marca.toLowerCase().includes(search)) ||
+                    (item.tipo && item.tipo.toLowerCase().includes(search)) ||
+                    (item.medida && item.medida.toLowerCase().includes(search)) ||
+                    (item.uso && item.uso.toLowerCase().includes(search))
+                );
+            }
 
             if (list.length === 0) {
                 grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay registros cargados.</div>`;
@@ -2160,8 +2189,8 @@
             }
             if (searchVal) {
                 salesList = salesList.filter(s => 
-                    s.paymentMethod.toLowerCase().includes(searchVal) || 
-                    s.items.some(i => i.name.toLowerCase().includes(searchVal))
+                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal)) || 
+                    (s.items && s.items.some(i => i.name && i.name.toLowerCase().includes(searchVal)))
                 );
             }
 
