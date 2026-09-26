@@ -321,7 +321,7 @@
                         <label class="block text-[11px] font-semibold text-slate-500 mb-1">Buscar por Producto / Cliente</label>
                         <div class="relative">
                             <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                            <input type="text" id="salesFilterSearch" oninput="renderSales()" placeholder="Buscar por concepto o método..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" id="salesFilterSearch" oninput="renderSales()" placeholder="Buscar por concepto o cliente..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
                 </div>
@@ -351,6 +351,73 @@
         </section>
 
     </main>
+
+    <!-- FIREBASE MODAL -->
+    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">Configurar Firebase</h3>
+                <button onclick="closeFirebaseModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="saveFirebaseConfig(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">API Key</label>
+                    <input type="text" id="fbApiKey" placeholder="AIzaSy..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Auth Domain</label>
+                    <input type="text" id="fbAuthDomain" placeholder="tu-app.firebaseapp.com" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Project ID</label>
+                    <input type="text" id="fbProjectId" placeholder="tu-app-id" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Storage Bucket</label>
+                    <input type="text" id="fbStorageBucket" placeholder="tu-app.appspot.com" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Messaging Sender ID</label>
+                    <input type="text" id="fbMessagingSenderId" placeholder="123456789" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">App ID</label>
+                    <input type="text" id="fbAppId" placeholder="1:123456789:web:abcdef" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeFirebaseModal()" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-xl transition">Guardar Configuración</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE DIAGNOSTICS MODAL -->
+    <div id="firebaseDiagnosticsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">Diagnóstico de Sincronización</h3>
+                <button onclick="closeFirebaseDiagnosticsModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-600">
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                    <span class="font-semibold">Estado de Conexión:</span>
+                    <span id="diagStatus" class="font-bold text-amber-600">Modo Local (Sin Configurar)</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                    <span class="font-semibold">Modo de Operación:</span>
+                    <span>LocalStorage (Offline First)</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                    <span class="font-semibold">Registros Almacenados:</span>
+                    <span id="diagTotalRecords">0 ítems</span>
+                </div>
+            </div>
+            <div class="pt-3 flex justify-end">
+                <button onclick="closeFirebaseDiagnosticsModal()" class="px-5 py-2 bg-slate-800 text-white text-xs font-semibold rounded-xl">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- GENERAL ITEM MODAL (Para tierras, accesorios, químicos) -->
     <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
@@ -498,6 +565,78 @@
         </div>
     </div>
 
+    <!-- SALE / CART MODAL -->
+    <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">Nueva Venta / Carrito de Compras</h3>
+                <button onclick="closeSaleModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4">
+                <!-- Selector de productos -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Producto</label>
+                        <select id="saleProductSelect" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Cantidad</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="saleProductQty" min="1" value="1" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-center focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <button onclick="addToCart()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carrito actual -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="bg-slate-100 px-4 py-2 font-bold text-xs text-slate-700 flex justify-between">
+                        <span>Productos en Carrito</span>
+                        <span id="cartItemCount">0 ítems</span>
+                    </div>
+                    <div class="max-h-48 overflow-y-auto divide-y divide-slate-100">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase">
+                                <tr>
+                                    <th class="p-2.5">Producto</th>
+                                    <th class="p-2.5 text-center">Cant.</th>
+                                    <th class="p-2.5 text-right">P. Unit</th>
+                                    <th class="p-2.5 text-right">Subtotal</th>
+                                    <th class="p-2.5 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400">El carrito está vacío</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detalle de pago / Totales -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Cliente / Detalle (Opcional)</label>
+                        <input type="text" id="saleClientName" placeholder="Ej: Juan Pérez / Mostrador" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-200 flex flex-col justify-between">
+                        <span class="text-xs font-semibold text-emerald-800">Total a Cobrar:</span>
+                        <span id="cartTotalDisplay" class="text-2xl font-bold text-emerald-700">$0</span>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeSaleModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button onclick="saveSale()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Confirmar Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN JAVASCRIPT & LOGIC -->
     <script>
         // BASE DE DATOS LOCAL
@@ -526,6 +665,7 @@
         let showBuyPrice = false;
         let activeTab = 'plants';
         let currentUploadedImageBase64 = '';
+        let currentCart = [];
 
         // INICIALIZACIÓN
         window.addEventListener('DOMContentLoaded', () => {
@@ -568,6 +708,73 @@
             else if (activeTab === 'sales') renderSales();
         }
 
+        function clearSection(section) {
+            const names = {
+                plants: 'Plantas',
+                pots: 'Macetas',
+                tierras: 'Tierras',
+                accessories: 'Accesorios',
+                chemicals: 'Químicos',
+                sales: 'Ventas'
+            };
+            if (confirm(`¿Estás seguro de que deseas vaciar completamente la sección "${names[section] || section}"? Esta acción no se puede deshacer.`)) {
+                dbData[section] = [];
+                saveDb();
+                renderCurrentTab();
+            }
+        }
+
+        // FIREBASE MODALS LOGIC
+        function openFirebaseModal() {
+            const cfg = JSON.parse(localStorage.getItem('vivero_fb_config') || '{}');
+            document.getElementById('fbApiKey').value = cfg.apiKey || '';
+            document.getElementById('fbAuthDomain').value = cfg.authDomain || '';
+            document.getElementById('fbProjectId').value = cfg.projectId || '';
+            document.getElementById('fbStorageBucket').value = cfg.storageBucket || '';
+            document.getElementById('fbMessagingSenderId').value = cfg.messagingSenderId || '';
+            document.getElementById('fbAppId').value = cfg.appId || '';
+            document.getElementById('firebaseModal').classList.remove('hidden');
+        }
+
+        function closeFirebaseModal() {
+            document.getElementById('firebaseModal').classList.add('hidden');
+        }
+
+        function saveFirebaseConfig(e) {
+            e.preventDefault();
+            const cfg = {
+                apiKey: document.getElementById('fbApiKey').value.trim(),
+                authDomain: document.getElementById('fbAuthDomain').value.trim(),
+                projectId: document.getElementById('fbProjectId').value.trim(),
+                storageBucket: document.getElementById('fbStorageBucket').value.trim(),
+                messagingSenderId: document.getElementById('fbMessagingSenderId').value.trim(),
+                appId: document.getElementById('fbAppId').value.trim()
+            };
+            localStorage.setItem('vivero_fb_config', JSON.stringify(cfg));
+            closeFirebaseModal();
+            alert("✅ Configuración de Firebase guardada correctamente.");
+        }
+
+        function openFirebaseDiagnosticsModal() {
+            const total = (dbData.plants?.length || 0) + (dbData.pots?.length || 0) + (dbData.tierras?.length || 0) + (dbData.accessories?.length || 0) + (dbData.chemicals?.length || 0) + (dbData.sales?.length || 0);
+            document.getElementById('diagTotalRecords').textContent = `${total} ítems`;
+            const cfg = JSON.parse(localStorage.getItem('vivero_fb_config') || '{}');
+            const statusEl = document.getElementById('diagStatus');
+            if (cfg.projectId) {
+                statusEl.textContent = `Configurado (${cfg.projectId})`;
+                statusEl.className = "font-bold text-emerald-600";
+            } else {
+                statusEl.textContent = "Modo Local (Sin Firebase)";
+                statusEl.className = "font-bold text-amber-600";
+            }
+            document.getElementById('firebaseDiagnosticsModal').classList.remove('hidden');
+        }
+
+        function closeFirebaseDiagnosticsModal() {
+            document.getElementById('firebaseDiagnosticsModal').classList.add('hidden');
+        }
+
+        // PLANTS RENDER & ACTIONS
         function renderPlants() {
             const grid = document.getElementById('plantsGrid');
             if (!grid) return;
@@ -630,116 +837,6 @@
                             <i class="fa-solid fa-pen"></i> Editar
                         </button>
                         <button onclick="deletePlant('${p.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderPots() {
-            const grid = document.getElementById('potsGrid');
-            if (!grid) return;
-            const q = (document.getElementById('potSearch')?.value || '').toLowerCase();
-
-            const list = (dbData.pots || []).filter(p => {
-                return (p.name || '').toLowerCase().includes(q) || (p.material || '').toLowerCase().includes(q) || (p.size || '').toLowerCase().includes(q);
-            });
-
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay macetas registradas.</div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(p => `
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 bg-slate-100 overflow-hidden">
-                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">
-                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
-                                $${(p.sellPrice || 0).toLocaleString()}
-                            </span>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
-                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
-                                <div class="flex items-center justify-between pt-1.5">
-                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-cube text-slate-400 w-4"></i> Material:</span>
-                                    <span class="font-semibold text-slate-800">${p.material || 'N/A'}</span>
-                                </div>
-                                <div class="flex items-center justify-between pt-1.5">
-                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-indigo-500 w-4"></i> Medida:</span>
-                                    <span class="font-semibold text-slate-800">${p.size || 'N/A'}</span>
-                                </div>
-                                <div class="flex items-center justify-between pt-1.5">
-                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-palette text-pink-500 w-4"></i> Color:</span>
-                                    <span class="font-semibold text-slate-800">${p.color || 'N/A'}</span>
-                                </div>
-                                <div class="flex items-center justify-between pt-1.5">
-                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
-                                    <span class="font-bold text-emerald-700">$${(p.sellPrice || 0).toLocaleString()}</span>
-                                </div>
-                                ${showBuyPrice ? `
-                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
-                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
-                                    <span class="font-bold text-amber-900">$${(p.buyPrice || 0).toLocaleString()}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                        <button onclick="editPot('${p.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                        <button onclick="deletePot('${p.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderItems(type) {
-            const grid = document.getElementById(`${type}Grid`);
-            if (!grid) return;
-            const list = dbData[type] || [];
-
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay ítems guardados en esta categoría.</div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(item => `
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
-                    <div>
-                        <div class="relative h-48 bg-slate-100 overflow-hidden">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
-                                $${(item.sellPrice || 0).toLocaleString()}
-                            </span>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-bold text-slate-900 text-base leading-snug">${item.name}</h3>
-                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
-                                <div class="flex items-center justify-between pt-1.5">
-                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
-                                    <span class="font-bold text-emerald-700 text-sm">$${(item.sellPrice || 0).toLocaleString()}</span>
-                                </div>
-                                ${showBuyPrice ? `
-                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
-                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
-                                    <span class="font-bold text-amber-900">$${(item.buyPrice || 0).toLocaleString()}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                        <button onclick="openItemModal('${type}', '${item.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                        <button onclick="deleteItem('${type}', '${item.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -821,6 +918,70 @@
             }
         }
 
+        // POTS RENDER & ACTIONS
+        function renderPots() {
+            const grid = document.getElementById('potsGrid');
+            if (!grid) return;
+            const q = (document.getElementById('potSearch')?.value || '').toLowerCase();
+
+            const list = (dbData.pots || []).filter(p => {
+                return (p.name || '').toLowerCase().includes(q) || (p.material || '').toLowerCase().includes(q) || (p.size || '').toLowerCase().includes(q);
+            });
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay macetas registradas.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-slate-100 overflow-hidden">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
+                                $${(p.sellPrice || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
+                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-cube text-slate-400 w-4"></i> Material:</span>
+                                    <span class="font-semibold text-slate-800">${p.material || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-indigo-500 w-4"></i> Medida:</span>
+                                    <span class="font-semibold text-slate-800">${p.size || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-palette text-pink-500 w-4"></i> Color:</span>
+                                    <span class="font-semibold text-slate-800">${p.color || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700">$${(p.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ${showBuyPrice ? `
+                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
+                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
+                                    <span class="font-bold text-amber-900">$${(p.buyPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        <button onclick="editPot('${p.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="deletePot('${p.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function openPotModal(id = null) {
             const form = document.getElementById('potForm');
             if (form) form.reset();
@@ -891,10 +1052,371 @@
             }
         }
 
-        // ==========================================
-        // BUSCADOR VISUAL POR FOTO (LÓGICA MEJORADA)
-        // ==========================================
+        // GENERAL ITEMS (TIERRAS, ACCESSORIES, CHEMICALS) RENDER & ACTIONS
+        function renderItems(type) {
+            const grid = document.getElementById(`${type}Grid`);
+            if (!grid) return;
+            const list = dbData[type] || [];
 
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay ítems guardados en esta categoría.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(item => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-slate-100 overflow-hidden">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
+                                $${(item.sellPrice || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-slate-900 text-base leading-snug">${item.name}</h3>
+                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700 text-sm">$${(item.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ${showBuyPrice ? `
+                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
+                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
+                                    <span class="font-bold text-amber-900">$${(item.buyPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        <button onclick="openItemModal('${type}', '${item.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="deleteItem('${type}', '${item.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openItemModal(type, id = null) {
+            const form = document.getElementById('itemForm');
+            if (form) form.reset();
+            document.getElementById('itemType').value = type;
+            document.getElementById('itemEditId').value = id || '';
+
+            const titles = {
+                tierras: 'Tierra / Sustrato',
+                accessories: 'Accesorio / Herramienta',
+                chemicals: 'Fertilizante / Químico'
+            };
+            document.getElementById('itemModalTitle').textContent = (id ? 'Editar ' : 'Nuevo ') + (titles[type] || 'Ítem');
+
+            if (id && dbData[type]) {
+                const item = dbData[type].find(i => i.id === id);
+                if (item) {
+                    document.getElementById('itemName').value = item.name || '';
+                    document.getElementById('itemBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('itemSellPrice').value = item.sellPrice || 0;
+                }
+            }
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function saveItem(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const id = document.getElementById('itemEditId').value;
+            const name = document.getElementById('itemName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || 0;
+            const fileInput = document.getElementById('itemImageFile');
+
+            if (!dbData[type]) dbData[type] = [];
+
+            const commit = (imgUrl) => {
+                if (id) {
+                    const idx = dbData[type].findIndex(i => i.id === id);
+                    if (idx !== -1) {
+                        dbData[type][idx] = { ...dbData[type][idx], name, buyPrice, sellPrice };
+                        if (imgUrl) dbData[type][idx].image = imgUrl;
+                    }
+                } else {
+                    const prefixMap = { tierras: 'ti_', accessories: 'ac_', chemicals: 'ch_' };
+                    const prefix = prefixMap[type] || 'it_';
+                    dbData[type].push({
+                        id: prefix + Date.now(),
+                        name, buyPrice, sellPrice,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=500'
+                    });
+                }
+                saveDb();
+                closeItemModal();
+                renderItems(type);
+            };
+
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => commit(e.target.result);
+                r.readAsDataURL(fileInput.files[0]);
+            } else {
+                commit(null);
+            }
+        }
+
+        function deleteItem(type, id) {
+            if (confirm("¿Borrar este ítem?")) {
+                if (dbData[type]) {
+                    dbData[type] = dbData[type].filter(i => i.id !== id);
+                    saveDb();
+                    renderItems(type);
+                }
+            }
+        }
+
+        // SALES & CART MANAGEMENT
+        function openSaleModal() {
+            currentCart = [];
+            document.getElementById('saleClientName').value = '';
+            populateSaleProductSelect();
+            renderCart();
+            document.getElementById('saleModal').classList.remove('hidden');
+        }
+
+        function closeSaleModal() {
+            document.getElementById('saleModal').classList.add('hidden');
+        }
+
+        function getAllProducts() {
+            const list = [];
+            (dbData.plants || []).forEach(p => list.push({ id: p.id, name: `[Planta] ${p.name}`, price: p.sellPrice || 0 }));
+            (dbData.pots || []).forEach(p => list.push({ id: p.id, name: `[Maceta] ${p.name}`, price: p.sellPrice || 0 }));
+            (dbData.tierras || []).forEach(t => list.push({ id: t.id, name: `[Tierra] ${t.name}`, price: t.sellPrice || 0 }));
+            (dbData.accessories || []).forEach(a => list.push({ id: a.id, name: `[Accesorio] ${a.name}`, price: a.sellPrice || 0 }));
+            (dbData.chemicals || []).forEach(c => list.push({ id: c.id, name: `[Químico] ${c.name}`, price: c.sellPrice || 0 }));
+            return list;
+        }
+
+        function populateSaleProductSelect() {
+            const select = document.getElementById('saleProductSelect');
+            if (!select) return;
+            const products = getAllProducts();
+            if (products.length === 0) {
+                select.innerHTML = `<option value="">No hay productos disponibles en el catálogo</option>`;
+                return;
+            }
+            select.innerHTML = products.map(p => `
+                <option value="${p.id}" data-name="${p.name}" data-price="${p.price}">
+                    ${p.name} - $${p.price.toLocaleString()}
+                </option>
+            `).join('');
+        }
+
+        function addToCart() {
+            const select = document.getElementById('saleProductSelect');
+            if (!select || !select.value) {
+                alert("Selecciona un producto.");
+                return;
+            }
+            const opt = select.options[select.selectedIndex];
+            const id = select.value;
+            const name = opt.getAttribute('data-name');
+            const price = parseFloat(opt.getAttribute('data-price')) || 0;
+            const qty = parseInt(document.getElementById('saleProductQty').value) || 1;
+
+            const existingIdx = currentCart.findIndex(item => item.id === id);
+            if (existingIdx !== -1) {
+                currentCart[existingIdx].qty += qty;
+                currentCart[existingIdx].subtotal = currentCart[existingIdx].qty * currentCart[existingIdx].price;
+            } else {
+                currentCart.push({ id, name, price, qty, subtotal: qty * price });
+            }
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            currentCart.splice(index, 1);
+            renderCart();
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cartTableBody');
+            const countEl = document.getElementById('cartItemCount');
+            const totalEl = document.getElementById('cartTotalDisplay');
+            if (!tbody) return;
+
+            if (currentCart.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">El carrito está vacío</td></tr>`;
+                if (countEl) countEl.textContent = '0 ítems';
+                if (totalEl) totalEl.textContent = '$0';
+                return;
+            }
+
+            let totalAmount = 0;
+            let totalItems = 0;
+
+            tbody.innerHTML = currentCart.map((item, idx) => {
+                totalAmount += item.subtotal;
+                totalItems += item.qty;
+                return `
+                    <tr>
+                        <td class="p-2.5 font-medium text-slate-800">${item.name}</td>
+                        <td class="p-2.5 text-center font-bold text-slate-700">${item.qty}</td>
+                        <td class="p-2.5 text-right text-slate-600">$${item.price.toLocaleString()}</td>
+                        <td class="p-2.5 text-right font-bold text-emerald-700">$${item.subtotal.toLocaleString()}</td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            if (countEl) countEl.textContent = `${totalItems} ítems`;
+            if (totalEl) totalEl.textContent = `$${totalAmount.toLocaleString()}`;
+        }
+
+        function saveSale() {
+            if (currentCart.length === 0) {
+                alert("El carrito está vacío.");
+                return;
+            }
+            const client = document.getElementById('saleClientName').value.trim() || 'Venta General';
+            const now = new Date();
+            const dateStr = now.toISOString();
+
+            const totalAmount = currentCart.reduce((acc, item) => acc + item.subtotal, 0);
+            const totalUnits = currentCart.reduce((acc, item) => acc + item.qty, 0);
+            const itemsDetail = currentCart.map(item => `${item.qty}x ${item.name}`).join(', ');
+
+            if (!dbData.sales) dbData.sales = [];
+
+            dbData.sales.unshift({
+                id: 'sa_' + Date.now(),
+                date: dateStr,
+                client,
+                itemsDetail,
+                totalUnits,
+                total: totalAmount,
+                cart: [...currentCart]
+            });
+
+            saveDb();
+            closeSaleModal();
+            renderSales();
+        }
+
+        function renderSales() {
+            const tbody = document.getElementById('salesTableBody');
+            if (!tbody) return;
+
+            const fromVal = document.getElementById('salesFilterFrom')?.value;
+            const toVal = document.getElementById('salesFilterTo')?.value;
+            const searchVal = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase();
+
+            let sales = dbData.sales || [];
+
+            sales = sales.filter(s => {
+                const sDate = s.date ? s.date.substring(0, 10) : '';
+                if (fromVal && sDate < fromVal) return false;
+                if (toVal && sDate > toVal) return false;
+
+                if (searchVal) {
+                    const matchDetail = (s.itemsDetail || '').toLowerCase().includes(searchVal);
+                    const matchClient = (s.client || '').toLowerCase().includes(searchVal);
+                    if (!matchDetail && !matchClient) return false;
+                }
+                return true;
+            });
+
+            const totalSales = sales.reduce((acc, s) => acc + (s.total || 0), 0);
+            document.getElementById('totalSalesAmount').textContent = `$${totalSales.toLocaleString()}`;
+            document.getElementById('totalSalesCount').textContent = sales.length;
+
+            if (sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No hay ventas registradas que coincidan con el filtro.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sales.map(s => {
+                const d = new Date(s.date);
+                const formattedDate = isNaN(d) ? (s.date || 'N/A') : d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-xs font-semibold text-slate-600 whitespace-nowrap">${formattedDate}</td>
+                        <td class="p-4 text-xs">
+                            <div class="font-bold text-slate-800">${s.client || 'Cliente General'}</div>
+                            <div class="text-slate-500 text-[11px] mt-0.5">${s.itemsDetail || 'Venta de productos'}</div>
+                        </td>
+                        <td class="p-4 text-xs font-bold text-center text-slate-700">${s.totalUnits || 1}</td>
+                        <td class="p-4 text-xs font-bold text-emerald-700 whitespace-nowrap">$${(s.total || 0).toLocaleString()}</td>
+                        <td class="p-4 text-xs text-right whitespace-nowrap">
+                            <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-lg transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function setSalesPreset(preset) {
+            const today = new Date();
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            const fromInput = document.getElementById('salesFilterFrom');
+            const toInput = document.getElementById('salesFilterTo');
+
+            const presets = ['all', 'today', 'yesterday', '7days', 'month'];
+            presets.forEach(p => {
+                const btn = document.getElementById(`preset-${p}`);
+                if (btn) {
+                    if (p === preset) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
+                    }
+                }
+            });
+
+            if (preset === 'all') {
+                fromInput.value = '';
+                toInput.value = '';
+            } else if (preset === 'today') {
+                fromInput.value = formatDate(today);
+                toInput.value = formatDate(today);
+            } else if (preset === 'yesterday') {
+                const yest = new Date(today);
+                yest.setDate(yest.getDate() - 1);
+                fromInput.value = formatDate(yest);
+                toInput.value = formatDate(yest);
+            } else if (preset === '7days') {
+                const d7 = new Date(today);
+                d7.setDate(d7.getDate() - 7);
+                fromInput.value = formatDate(d7);
+                toInput.value = formatDate(today);
+            } else if (preset === 'month') {
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                fromInput.value = formatDate(firstDay);
+                toInput.value = formatDate(today);
+            }
+
+            renderSales();
+        }
+
+        function deleteSale(id) {
+            if (confirm("¿Estás seguro de eliminar este registro de venta?")) {
+                dbData.sales = (dbData.sales || []).filter(s => s.id !== id);
+                saveDb();
+                renderSales();
+            }
+        }
+
+        // BUSCADOR VISUAL POR FOTO (IA GEMINI)
         function promptGeminiKey() {
             const k = prompt("Ingresa tu clave de API de Google Gemini (obtenida en Google AI Studio - https://aistudio.google.com/):", geminiApiKey);
             if (k !== null) {
@@ -918,7 +1440,7 @@
                 const img = document.getElementById('visualSearchPreview');
                 if (img) img.src = currentUploadedImageBase64;
                 const container = document.getElementById('previewContainer');
-                if (container) container.classList.add('hidden');
+                if (container) container.classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         }
@@ -935,7 +1457,6 @@
             if (resultBox) resultBox.classList.add('hidden');
         }
 
-        // Función auxiliar para extraer el base64 puro sin cabecera MIME
         function getRawBase64(str) {
             if (!str) return '';
             return str.includes(',') ? str.split(',')[1].trim() : str.trim();
@@ -952,7 +1473,6 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analizando con IA...`;
             btn.disabled = true;
 
-            // Recopilar el catálogo con atributos visuales extendidos
             const allCatalog = [
                 ...(dbData.plants || []).map(p => ({ 
                     id: p.id, type: 'Planta', name: p.name, 
@@ -974,7 +1494,6 @@
 
             const uploadedRawBase64 = getRawBase64(currentUploadedImageBase64);
 
-            // 1. VERIFICACIÓN DE COINCIDENCIA EXACTA POR BASE64 O URL
             const exactMatches = allCatalog.filter(item => {
                 if (!item.image) return false;
                 if (item.image === currentUploadedImageBase64) return true;
