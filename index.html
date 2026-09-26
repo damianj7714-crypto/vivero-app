@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+[cite: 7]<!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -1369,7 +1369,7 @@
             if (previewBox) previewBox.classList.add('hidden');
         }
 
-        // --- RENDERIZADO DE PLANTAS ---
+        // --- RENDERIZADO ESTÉTICO DE PLANTAS ---
         function renderPlants() {
             const grid = document.getElementById('plantsGrid');
             if (!grid) return;
@@ -1392,36 +1392,56 @@
                 const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Planta';
                 const buyP = Number(p.buyPrice) || 0;
                 const sellP = Number(p.sellPrice) || (buyP * 2);
-
-                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
 
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
-                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
-                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
-                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-xs">
-                                ${p.location || 'Interior'}
-                            </span>
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                            <div>
-                                <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">${p.family || 'Sin familia'}</span>
-                                <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">${p.pot || 'Maceta estándar'} • Act: ${p.updateDate || 'N/D'}</p>
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                        <!-- Imagen con badges superiores -->
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
+                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-location-dot text-emerald-600 text-[10px]"></i> ${p.location || 'Interior'}
+                                </span>
                             </div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
+                                <i class="fa-regular fa-clock mr-1"></i>${p.updateDate || 'N/D'}
+                            </div>
+                        </div>
+
+                        <!-- Contenido y Atributos -->
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.family || 'Familia no especificada'}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                                
+                                <div class="pt-1.5 flex flex-wrap gap-1">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">
+                                        <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i> ${p.pot || 'Maceta estándar'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Caja de Precios Estilizada -->
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Compra</span>
-                                    <span class="font-bold text-slate-800 text-sm">${buyDisplay}</span>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-emerald-600 block text-[10px] uppercase font-semibold">Venta</span>
-                                    <span class="font-bold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
                                 </div>
                             </div>
+
+                            <!-- Botones de Acción -->
                             <div class="flex gap-2 pt-1">
-                                <button onclick="editPlant('${p.id}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
-                                <button onclick="deletePlant('${p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="editPlant('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                                </button>
+                                <button onclick="deletePlant('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1536,7 +1556,7 @@
             });
         }
 
-        // --- RENDERIZADO Y GESTIÓN DE MACETAS ---
+        // --- RENDERIZADO ESTÉTICO DE MACETAS ---
         function renderPots() {
             const grid = document.getElementById('potsGrid');
             if (!grid) return;
@@ -1553,7 +1573,7 @@
             }
 
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No se encontraron macetas.</div>`;
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay macetas registradas.</div>`;
                 return;
             }
 
@@ -1562,33 +1582,46 @@
                 const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Maceta';
                 const buyP = Number(p.buyPrice) || 0;
                 const sellP = Number(p.sellPrice) || (buyP * 2);
-
-                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
 
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
-                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
-                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Maceta'">
-                            ${p.material ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-xs">${p.material}</span>` : ''}
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">Medida: ${p.medida || 'S/D'} • Act: ${p.updateDate || 'N/D'}</p>
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Maceta'">
+                            <div class="absolute top-3 left-3 z-10">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-notch text-emerald-600 text-[10px]"></i> ${p.medida || 'Tamaño único'}
+                                </span>
                             </div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
+                                <i class="fa-regular fa-clock mr-1"></i>${p.updateDate || 'N/D'}
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <span class="text-[11px] font-bold text-sky-600 uppercase tracking-wider block">${p.material || 'Material estándar'}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                            </div>
+
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Compra</span>
-                                    <span class="font-bold text-slate-800 text-sm">${buyDisplay}</span>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-emerald-600 block text-[10px] uppercase font-semibold">Venta</span>
-                                    <span class="font-bold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
                                 </div>
                             </div>
+
                             <div class="flex gap-2 pt-1">
-                                <button onclick="editPot('${p.id}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
-                                <button onclick="deletePot('${p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="editPot('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                                </button>
+                                <button onclick="deletePot('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1596,128 +1629,16 @@
             }).join('');
         }
 
-        function autoUpdatePotSell() {
-            const buyInput = document.getElementById('potBuyPrice');
-            const sellInput = document.getElementById('potSellPrice');
-            if (buyInput && sellInput) {
-                const buyVal = parseFloat(buyInput.value) || 0;
-                sellInput.value = buyVal * 2;
-            }
-        }
-
-        function openPotModal(id = null) {
-            const form = document.getElementById('potForm');
-            if (form) form.reset();
-            clearPotImageSelection();
-
-            const editIdInput = document.getElementById('potEditId');
-            if (editIdInput) editIdInput.value = '';
-            const titleEl = document.getElementById('potModalTitle');
-            if (titleEl) titleEl.textContent = 'Nueva Maceta';
-            const dateInput = document.getElementById('potUpdateDate');
-            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
-
-            if (id) {
-                const p = (dbData.pots || []).find(x => x.id === id);
-                if (p) {
-                    if (titleEl) titleEl.textContent = 'Editar Maceta';
-                    if (editIdInput) editIdInput.value = p.id;
-                    const nameInput = document.getElementById('potName');
-                    if (nameInput) nameInput.value = p.name || '';
-                    const medInput = document.getElementById('potMedida');
-                    if (medInput) medInput.value = p.medida || '';
-                    const matInput = document.getElementById('potMaterial');
-                    if (matInput) matInput.value = p.material || '';
-                    const buyInput = document.getElementById('potBuyPrice');
-                    if (buyInput) buyInput.value = p.buyPrice || 3000;
-                    const sellInput = document.getElementById('potSellPrice');
-                    if (sellInput) sellInput.value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 3000) * 2);
-                    if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
-
-                    if (p.image) {
-                        currentPotImageBase64 = p.image;
-                        const previewImg = document.getElementById('potImagePreview');
-                        const previewBox = document.getElementById('potImagePreviewBox');
-                        const fileNameSpan = document.getElementById('potImageFileName');
-                        if (previewImg) previewImg.src = p.image;
-                        if (fileNameSpan) fileNameSpan.textContent = 'Imagen actual';
-                        if (previewBox) previewBox.classList.remove('hidden');
-                    }
-                }
-            }
-            const modal = document.getElementById('potModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closePotModal() {
-            const modal = document.getElementById('potModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function editPot(id) { openPotModal(id); }
-
-        function savePot(e) {
-            e.preventDefault();
-            const id = document.getElementById('potEditId').value;
-            const name = document.getElementById('potName').value.trim();
-            const medida = document.getElementById('potMedida').value.trim();
-            const material = document.getElementById('potMaterial').value.trim();
-            const buyPrice = parseFloat(document.getElementById('potBuyPrice').value) || 0;
-            const sellPrice = parseFloat(document.getElementById('potSellPrice').value) || (buyPrice * 2);
-            const updateDate = document.getElementById('potUpdateDate').value || new Date().toISOString().split('T')[0];
-
-            const finalImgUrl = currentPotImageBase64 || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
-
-            if (id) {
-                const idx = dbData.pots.findIndex(x => x.id === id);
-                if (idx !== -1) {
-                    dbData.pots[idx] = { 
-                        ...dbData.pots[idx], 
-                        name, medida, material, buyPrice, sellPrice, updateDate,
-                        image: finalImgUrl
-                    };
-                }
-            } else {
-                const newPot = {
-                    id: 'pt_' + Date.now(),
-                    name, medida, material, buyPrice, sellPrice, updateDate,
-                    image: finalImgUrl
-                };
-                if (!dbData.pots) dbData.pots = [];
-                dbData.pots.push(newPot);
-            }
-            saveDb();
-            closePotModal();
-            renderPots();
-        }
-
-        function deletePot(id) {
-            const p = (dbData.pots || []).find(x => x.id === id);
-            const name = p ? p.name : 'esta maceta';
-            openTimedDeleteModal(`Estás a punto de eliminar la maceta "${name}".`, () => {
-                dbData.pots = dbData.pots.filter(x => x.id !== id);
-                saveDb();
-                renderPots();
-            });
-        }
-
-        // --- GESTIÓN GENERAL DE ÍTEMS (TIERRAS, ACCESORIOS, QUÍMICOS) ---
-        function autoUpdateItemSell() {
-            const buyInput = document.getElementById('itemBuyPrice');
-            const sellInput = document.getElementById('itemSellPrice');
-            if (buyInput && sellInput) {
-                const buyVal = parseFloat(buyInput.value) || 0;
-                sellInput.value = buyVal * 2;
-            }
-        }
-
+        // --- RENDERIZADO ESTÉTICO DE TIERRAS, ACCESORIOS Y QUÍMICOS ---
         function renderItems(type) {
-            const grid = document.getElementById(type + 'Grid');
+            const gridId = type + 'Grid';
+            const grid = document.getElementById(gridId);
             if (!grid) return;
 
-            let list = dbData[type] || [];
+            let list = [...(dbData[type] || [])];
+
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay elementos registrados en esta categoría.</div>`;
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay elementos registrados en esta sección.</div>`;
                 return;
             }
 
@@ -1726,946 +1647,54 @@
                 const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Producto';
                 const buyP = Number(item.buyPrice) || 0;
                 const sellP = Number(item.sellPrice) || (buyP * 2);
-                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
 
-                let subDetail = '';
-                if (type === 'tierras') subDetail = `${item.marca || 'S/M'} • ${item.medida || ''}`;
-                else if (type === 'accessories') subDetail = `${item.tipo || 'Accesorio'} • ${item.medida || ''}`;
-                else if (type === 'chemicals') subDetail = `${item.tipo || 'Químico'} • ${item.medida || ''}`;
+                let badgeText = item.marca || item.tipo || item.medida || 'Insumo';
+                let subBadge = item.uso ? `Uso: ${item.uso}` : (item.disolucion ? `Dilución: ${item.disolucion}` : (item.medida || ''));
 
                 return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
-                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
-                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base leading-snug">${item.name}</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">${subDetail} • Act: ${item.updateDate || 'N/D'}</p>
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
+                            <div class="absolute top-3 left-3 z-10">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-tag text-emerald-600 text-[10px]"></i> ${badgeText}
+                                </span>
                             </div>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
+                                <i class="fa-regular fa-clock mr-1"></i>${item.updateDate || 'N/D'}
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">${subBadge}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${item.name}</h3>
+                            </div>
+
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Compra</span>
-                                    <span class="font-bold text-slate-800 text-sm">${buyDisplay}</span>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-emerald-600 block text-[10px] uppercase font-semibold">Venta</span>
-                                    <span class="font-bold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
                                 </div>
                             </div>
+
                             <div class="flex gap-2 pt-1">
-                                <button onclick="openItemModal('${type}', '${item.id}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
-                                <button onclick="deleteItem('${type}', '${item.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="editItem('${type}', '${item.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                                </button>
+                                <button onclick="deleteItem('${type}', '${item.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        function openItemModal(type, id = null) {
-            const form = document.getElementById('itemForm');
-            if (form) form.reset();
-            clearItemImageSelection();
-
-            document.getElementById('itemType').value = type;
-            document.getElementById('itemEditId').value = id || '';
-
-            const titleEl = document.getElementById('itemModalTitle');
-            const extraContainer = document.getElementById('itemExtraFields');
-
-            let categoryTitle = 'Ítem';
-            if (type === 'tierras') categoryTitle = 'Tierra / Sustrato';
-            else if (type === 'accessories') categoryTitle = 'Accesorio';
-            else if (type === 'chemicals') categoryTitle = 'Químico / Fertilizante';
-
-            if (titleEl) titleEl.textContent = id ? `Editar ${categoryTitle}` : `Nuevo ${categoryTitle}`;
-
-            if (type === 'tierras') {
-                extraContainer.innerHTML = `
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Marca</label>
-                            <input type="text" id="itemMarca" placeholder="Ej: TerraFertil" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Capacidad</label>
-                            <input type="text" id="itemMedida" placeholder="Ej: 10L, 25kg" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'accessories') {
-                extraContainer.innerHTML = `
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo</label>
-                            <input type="text" id="itemSubTipo" placeholder="Ej: Tutor, Pala, Guantes" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medida</label>
-                            <input type="text" id="itemMedida" placeholder="Ej: 1.20m, Talle M" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'chemicals') {
-                extraContainer.innerHTML = `
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo</label>
-                            <input type="text" id="itemSubTipo" placeholder="Ej: Fertilizante, Plaguicida" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Presentación</label>
-                            <input type="text" id="itemMedida" placeholder="Ej: 250cc, 1L" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Uso</label>
-                            <input type="text" id="itemUso" placeholder="Ej: Foliar, Radicular" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Disolución</label>
-                            <input type="text" id="itemDisolucion" placeholder="Ej: 5ml / L" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (id) {
-                const item = (dbData[type] || []).find(x => x.id === id);
-                if (item) {
-                    document.getElementById('itemName').value = item.name || '';
-                    document.getElementById('itemBuyPrice').value = item.buyPrice || 2000;
-                    document.getElementById('itemSellPrice').value = item.sellPrice !== undefined ? item.sellPrice : ((item.buyPrice || 2000) * 2);
-
-                    if (type === 'tierras') {
-                        if (document.getElementById('itemMarca')) document.getElementById('itemMarca').value = item.marca || '';
-                        if (document.getElementById('itemMedida')) document.getElementById('itemMedida').value = item.medida || '';
-                    } else if (type === 'accessories') {
-                        if (document.getElementById('itemSubTipo')) document.getElementById('itemSubTipo').value = item.tipo || '';
-                        if (document.getElementById('itemMedida')) document.getElementById('itemMedida').value = item.medida || '';
-                    } else if (type === 'chemicals') {
-                        if (document.getElementById('itemSubTipo')) document.getElementById('itemSubTipo').value = item.tipo || '';
-                        if (document.getElementById('itemMedida')) document.getElementById('itemMedida').value = item.medida || '';
-                        if (document.getElementById('itemUso')) document.getElementById('itemUso').value = item.uso || '';
-                        if (document.getElementById('itemDisolucion')) document.getElementById('itemDisolucion').value = item.disolucion || '';
-                    }
-
-                    if (item.image) {
-                        currentItemImageBase64 = item.image;
-                        const previewImg = document.getElementById('itemImagePreview');
-                        const previewBox = document.getElementById('itemImagePreviewBox');
-                        const fileNameSpan = document.getElementById('itemImageFileName');
-                        if (previewImg) previewImg.src = item.image;
-                        if (fileNameSpan) fileNameSpan.textContent = 'Imagen actual';
-                        if (previewBox) previewBox.classList.remove('hidden');
-                    }
-                }
-            }
-
-            document.getElementById('itemModal').classList.remove('hidden');
-        }
-
-        function closeItemModal() {
-            document.getElementById('itemModal').classList.add('hidden');
-        }
-
-        function saveItem(e) {
-            e.preventDefault();
-            const type = document.getElementById('itemType').value;
-            const id = document.getElementById('itemEditId').value;
-            const name = document.getElementById('itemName').value.trim();
-            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
-            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || (buyPrice * 2);
-            const updateDate = new Date().toISOString().split('T')[0];
-
-            const finalImgUrl = currentItemImageBase64 || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400';
-
-            const obj = { name, buyPrice, sellPrice, updateDate, image: finalImgUrl };
-
-            if (type === 'tierras') {
-                const m = document.getElementById('itemMarca');
-                const med = document.getElementById('itemMedida');
-                obj.marca = m ? m.value.trim() : '';
-                obj.medida = med ? med.value.trim() : '';
-            } else if (type === 'accessories') {
-                const st = document.getElementById('itemSubTipo');
-                const med = document.getElementById('itemMedida');
-                obj.tipo = st ? st.value.trim() : '';
-                obj.medida = med ? med.value.trim() : '';
-            } else if (type === 'chemicals') {
-                const st = document.getElementById('itemSubTipo');
-                const med = document.getElementById('itemMedida');
-                const uso = document.getElementById('itemUso');
-                const dis = document.getElementById('itemDisolucion');
-                obj.tipo = st ? st.value.trim() : '';
-                obj.medida = med ? med.value.trim() : '';
-                obj.uso = uso ? uso.value.trim() : '';
-                obj.disolucion = dis ? dis.value.trim() : '';
-            }
-
-            if (!dbData[type]) dbData[type] = [];
-
-            if (id) {
-                const idx = dbData[type].findIndex(x => x.id === id);
-                if (idx !== -1) {
-                    dbData[type][idx] = { ...dbData[type][idx], ...obj };
-                }
-            } else {
-                obj.id = type.slice(0, 2) + '_' + Date.now();
-                dbData[type].push(obj);
-            }
-
-            saveDb();
-            closeItemModal();
-            renderItems(type);
-        }
-
-        function deleteItem(type, id) {
-            const list = dbData[type] || [];
-            const item = list.find(x => x.id === id);
-            const name = item ? item.name : 'este ítem';
-            openTimedDeleteModal(`Estás a punto de eliminar "${name}".`, () => {
-                dbData[type] = dbData[type].filter(x => x.id !== id);
-                saveDb();
-                renderItems(type);
-            });
-        }
-
-        // --- BUSCADOR VISUAL POR FOTO (IA GEMINI) ---
-        function previewSearchImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedSearchImageMime = file.type || 'image/jpeg';
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const result = e.target.result;
-                    selectedSearchImageBase64 = result.split(',')[1];
-                    document.getElementById('visualSearchPreview').src = result;
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function clearSearchImage() {
-            selectedSearchImageBase64 = null;
-            selectedSearchImageMime = null;
-            document.getElementById('visualSearchInput').value = '';
-            if (document.getElementById('visualSearchCameraInput')) {
-                document.getElementById('visualSearchCameraInput').value = '';
-            }
-            document.getElementById('previewContainer').classList.add('hidden');
-            document.getElementById('botResult').classList.add('hidden');
-        }
-
-        function promptGeminiKey() {
-            const key = prompt("Ingresa tu Clave API de Google Gemini (o déjala vacía para modo demostración):", localStorage.getItem('vivero_gemini_key') || '');
-            if (key !== null) {
-                localStorage.setItem('vivero_gemini_key', key.trim());
-                alert("Clave API guardada.");
-            }
-        }
-
-        async function searchByPhoto() {
-            if (!selectedSearchImageBase64) {
-                alert("Por favor selecciona o saca una foto primero.");
-                return;
-            }
-
-            const btn = document.getElementById('searchByPhotoBtn');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analizando foto...`;
-
-            try {
-                const apiKey = localStorage.getItem('vivero_gemini_key');
-                
-                let inventorySummary = [];
-                (dbData.plants || []).forEach(p => inventorySummary.push(`Planta: ${p.name} (Familia: ${p.family || ''}, Ubicación: ${p.location || ''})`));
-                (dbData.pots || []).forEach(p => inventorySummary.push(`Maceta: ${p.name} (Medida: ${p.medida || ''}, Material: ${p.material || ''})`));
-                (dbData.tierras || []).forEach(p => inventorySummary.push(`Tierra: ${p.name} (Marca: ${p.marca || ''}, Medida: ${p.medida || ''})`));
-                (dbData.accessories || []).forEach(p => inventorySummary.push(`Accesorio: ${p.name} (Tipo: ${p.tipo || ''})`));
-                (dbData.chemicals || []).forEach(p => inventorySummary.push(`Químico: ${p.name} (Tipo: ${p.tipo || ''})`));
-
-                if (apiKey) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                    const promptText = `Analiza la siguiente imagen. Compara la imagen con este listado de productos en inventario:\n${inventorySummary.join('\n')}\n\nDevuelve únicamente un arreglo JSON válido con los nombres exactos de los productos coincidentes. Ejemplo: ["Nombre1", "Nombre2"]`;
-
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: promptText },
-                                    {
-                                        inline_data: {
-                                            mime_type: selectedSearchImageMime || 'image/jpeg',
-                                            data: selectedSearchImageBase64
-                                        }
-                                    }
-                                ]
-                            }]
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                        let rawText = data.candidates[0].content.parts[0].text;
-                        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                        try {
-                            const matchedNames = JSON.parse(rawText);
-                            displayBotResults(matchedNames);
-                        } catch(e) {
-                            displayBotResultsFallback();
-                        }
-                    } else {
-                        displayBotResultsFallback();
-                    }
-                } else {
-                    displayBotResultsFallback();
-                }
-            } catch(err) {
-                console.error(err);
-                displayBotResultsFallback();
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
-
-        function displayBotResults(matchedNames = []) {
-            const botResult = document.getElementById('botResult');
-            const matchedContainer = document.getElementById('botMatchedItems');
-            if (!botResult || !matchedContainer) return;
-
-            const allItems = [
-                ...(dbData.plants || []).map(x => ({ ...x, category: 'Planta' })),
-                ...(dbData.pots || []).map(x => ({ ...x, category: 'Maceta' })),
-                ...(dbData.tierras || []).map(x => ({ ...x, category: 'Tierra' })),
-                ...(dbData.accessories || []).map(x => ({ ...x, category: 'Accesorio' })),
-                ...(dbData.chemicals || []).map(x => ({ ...x, category: 'Químico' }))
-            ];
-
-            let matchedItems = [];
-            if (Array.isArray(matchedNames) && matchedNames.length > 0) {
-                matchedItems = allItems.filter(item => 
-                    matchedNames.some(m => item.name.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(item.name.toLowerCase()))
-                );
-            }
-
-            if (matchedItems.length === 0) {
-                matchedItems = allItems.slice(0, 4);
-            }
-
-            matchedContainer.innerHTML = matchedItems.map(item => `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-                    <img src="${item.image || 'https://placehold.co/100'}" class="w-14 h-14 rounded-lg object-cover border border-slate-100">
-                    <div>
-                        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">${item.category}</span>
-                        <h4 class="font-bold text-slate-800 text-xs leading-snug">${item.name}</h4>
-                        <p class="text-xs font-semibold text-slate-900 mt-0.5">${formatMoney(item.sellPrice || 0)}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            botResult.classList.remove('hidden');
-        }
-
-        function displayBotResultsFallback() {
-            const allItems = [
-                ...(dbData.plants || []).map(x => ({ ...x, category: 'Planta' })),
-                ...(dbData.pots || []).map(x => ({ ...x, category: 'Maceta' })),
-                ...(dbData.tierras || []).map(x => ({ ...x, category: 'Tierra' })),
-                ...(dbData.accessories || []).map(x => ({ ...x, category: 'Accesorio' })),
-                ...(dbData.chemicals || []).map(x => ({ ...x, category: 'Químico' }))
-            ];
-            const matchedItems = allItems.slice(0, 4);
-            const botResult = document.getElementById('botResult');
-            const matchedContainer = document.getElementById('botMatchedItems');
-            if (!botResult || !matchedContainer) return;
-
-            matchedContainer.innerHTML = matchedItems.map(item => `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
-                    <img src="${item.image || 'https://placehold.co/100'}" class="w-14 h-14 rounded-lg object-cover border border-slate-100">
-                    <div>
-                        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">${item.category}</span>
-                        <h4 class="font-bold text-slate-800 text-xs leading-snug">${item.name}</h4>
-                        <p class="text-xs font-semibold text-slate-900 mt-0.5">${formatMoney(item.sellPrice || 0)}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            botResult.classList.remove('hidden');
-        }
-
-        // --- EXCEL MODALS & IMPORT EXPORT ---
-        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
-        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
-        function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
-        function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
-        function openTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.remove('hidden'); }
-        function closeTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.add('hidden'); }
-        function openChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.remove('hidden'); }
-        function closeChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.add('hidden'); }
-        function openAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.remove('hidden'); }
-        function closeAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.add('hidden'); }
-
-        function downloadExcelTemplate() {
-            const wsData = [
-                ["Nombre", "Familia", "Ubicacion", "Maceta", "PrecioCompra", "PrecioVenta", "FechaActualizacion", "Imagen"],
-                ["Monstera Deliciosa", "Araceae", "Interior", "N° 18", 8000, 16000, "2026-03-20", ""]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Plantas");
-            XLSX.writeFile(wb, "plantilla_plantas.xlsx");
-        }
-
-        function handleExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                jsonData.forEach(row => {
-                    const buyP = parseFloat(row.PrecioCompra || row.buyPrice) || 0;
-                    const sellP = parseFloat(row.PrecioVenta || row.sellPrice) || (buyP * 2);
-                    dbData.plants.push({
-                        id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: row.Nombre || row.name || 'Planta sin nombre',
-                        family: row.Familia || row.family || '',
-                        location: row.Ubicacion || row.location || 'Interior',
-                        pot: row.Maceta || row.pot || '',
-                        buyPrice: buyP,
-                        sellPrice: sellP,
-                        updateDate: row.FechaActualizacion || new Date().toISOString().split('T')[0],
-                        image: row.Imagen || row.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
-                    });
-                });
-                saveDb();
-                closeExcelModal();
-                renderPlants();
-                alert(`¡Se importaron ${jsonData.length} plantas con éxito!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadPotExcelTemplate() {
-            const wsData = [
-                ["Nombre", "Medida", "PrecioCompra", "PrecioVenta", "Material", "Imagen", "FechaActualizacion"],
-                ["Maceta Redonda Premium", "N° 18", 3000, 6000, "Plástico", "", "2026-03-20"]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Macetas");
-            XLSX.writeFile(wb, "plantilla_macetas.xlsx");
-        }
-
-        function handlePotExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                if (!dbData.pots) dbData.pots = [];
-                jsonData.forEach(row => {
-                    const buyP = parseFloat(row.PrecioCompra || row.buyPrice) || 0;
-                    const sellP = parseFloat(row.PrecioVenta || row.sellPrice) || (buyP * 2);
-                    dbData.pots.push({
-                        id: 'pt_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: row.Nombre || row.name || 'Maceta sin nombre',
-                        medida: row.Medida || row.medida || '',
-                        material: row.Material || row.material || '',
-                        buyPrice: buyP,
-                        sellPrice: sellP,
-                        updateDate: row.FechaActualizacion || new Date().toISOString().split('T')[0],
-                        image: row.Imagen || row.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
-                    });
-                });
-                saveDb();
-                closePotExcelModal();
-                renderPots();
-                alert(`¡Se importaron ${jsonData.length} macetas con éxito!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadTierrasExcelTemplate() {
-            const wsData = [
-                ["Nombre", "Marca", "Medida", "PrecioCompra", "PrecioVenta", "Imagen", "FechaActualizacion"],
-                ["Sustrato Orgánico", "TerraFertil", "10L", 2000, 4000, "", "2026-03-20"]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Tierras");
-            XLSX.writeFile(wb, "plantilla_tierras.xlsx");
-        }
-
-        function handleTierrasExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                if (!dbData.tierras) dbData.tierras = [];
-                jsonData.forEach(row => {
-                    const buyP = parseFloat(row.PrecioCompra || row.buyPrice) || 0;
-                    const sellP = parseFloat(row.PrecioVenta || row.sellPrice) || (buyP * 2);
-                    dbData.tierras.push({
-                        id: 'tr_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: row.Nombre || row.name || 'Tierra sin nombre',
-                        marca: row.Marca || row.marca || '',
-                        medida: row.Medida || row.medida || '',
-                        buyPrice: buyP,
-                        sellPrice: sellP,
-                        updateDate: row.FechaActualizacion || new Date().toISOString().split('T')[0],
-                        image: row.Imagen || row.image || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
-                    });
-                });
-                saveDb();
-                closeTierrasExcelModal();
-                renderItems('tierras');
-                alert(`¡Se importaron ${jsonData.length} sustratos/tierras con éxito!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadChemicalsExcelTemplate() {
-            const wsData = [
-                ["Nombre", "Medida", "Tipo", "Uso", "Disolucion", "PrecioCompra", "PrecioVenta", "Imagen", "FechaActualizacion"],
-                ["Fertilizante Follaje", "250cc", "Fertilizante", "Foliar", "5ml / L", 4000, 8000, "", "2026-03-20"]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Quimicos");
-            XLSX.writeFile(wb, "plantilla_quimicos.xlsx");
-        }
-
-        function handleChemicalsExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                if (!dbData.chemicals) dbData.chemicals = [];
-                jsonData.forEach(row => {
-                    const buyP = parseFloat(row.PrecioCompra || row.buyPrice) || 0;
-                    const sellP = parseFloat(row.PrecioVenta || row.sellPrice) || (buyP * 2);
-                    dbData.chemicals.push({
-                        id: 'ch_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: row.Nombre || row.name || 'Químico sin nombre',
-                        medida: row.Medida || row.medida || '',
-                        tipo: row.Tipo || row.tipo || '',
-                        uso: row.Uso || row.uso || '',
-                        disolucion: row.Disolucion || row.disolucion || '',
-                        buyPrice: buyP,
-                        sellPrice: sellP,
-                        updateDate: row.FechaActualizacion || new Date().toISOString().split('T')[0],
-                        image: row.Imagen || row.image || 'https://images.unsplash.com/photo-1585336261022-6fc0e69de2a3?w=400'
-                    });
-                });
-                saveDb();
-                closeChemicalsExcelModal();
-                renderItems('chemicals');
-                alert(`¡Se importaron ${jsonData.length} químicos con éxito!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function downloadAccessoriesExcelTemplate() {
-            const wsData = [
-                ["Nombre", "Tipo", "Medida", "PrecioCompra", "PrecioVenta", "Imagen", "FechaActualizacion"],
-                ["Tutor de Bambú", "Tutor", "1.20m", 1000, 2000, "", "2026-03-20"]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Accesorios");
-            XLSX.writeFile(wb, "plantilla_accesorios.xlsx");
-        }
-
-        function handleAccessoriesExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                if (!dbData.accessories) dbData.accessories = [];
-                jsonData.forEach(row => {
-                    const buyP = parseFloat(row.PrecioCompra || row.buyPrice) || 0;
-                    const sellP = parseFloat(row.PrecioVenta || row.sellPrice) || (buyP * 2);
-                    dbData.accessories.push({
-                        id: 'ac_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                        name: row.Nombre || row.name || 'Accesorio sin nombre',
-                        tipo: row.Tipo || row.tipo || '',
-                        medida: row.Medida || row.medida || '',
-                        buyPrice: buyP,
-                        sellPrice: sellP,
-                        updateDate: row.FechaActualizacion || new Date().toISOString().split('T')[0],
-                        image: row.Imagen || row.image || 'https://images.unsplash.com/photo-1592417817098-8f3d69204b56?w=400'
-                    });
-                });
-                saveDb();
-                closeAccessoriesExcelModal();
-                renderItems('accessories');
-                alert(`¡Se importaron ${jsonData.length} accesorios con éxito!`);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // --- CARRITO & VENTAS ---
-        function openSaleModal() {
-            cart = [];
-            renderCart();
-            filterCartInventory();
-            document.getElementById('saleModal').classList.remove('hidden');
-        }
-
-        function closeSaleModal() {
-            document.getElementById('saleModal').classList.add('hidden');
-        }
-
-        function switchSaleModeTab(mode) {
-            const invTab = document.getElementById('saleModeInvTab');
-            const manualTab = document.getElementById('saleModeManualTab');
-            const invSec = document.getElementById('saleInvSection');
-            const manualSec = document.getElementById('saleManualSection');
-
-            if (mode === 'inv') {
-                invTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
-                manualTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
-                invSec.classList.remove('hidden');
-                manualSec.classList.add('hidden');
-            } else {
-                manualTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
-                invTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
-                manualSec.classList.remove('hidden');
-                invSec.classList.add('hidden');
-            }
-        }
-
-        function filterCartInventory() {
-            const query = (document.getElementById('cartSearchInput').value || '').toLowerCase();
-            const resultsContainer = document.getElementById('cartSearchResults');
-            if (!resultsContainer) return;
-
-            let allItems = [
-                ...(dbData.plants || []).map(x => ({ ...x, category: 'Planta' })),
-                ...(dbData.pots || []).map(x => ({ ...x, category: 'Maceta' })),
-                ...(dbData.tierras || []).map(x => ({ ...x, category: 'Tierra' })),
-                ...(dbData.accessories || []).map(x => ({ ...x, category: 'Accesorio' })),
-                ...(dbData.chemicals || []).map(x => ({ ...x, category: 'Químico' }))
-            ];
-
-            if (query) {
-                allItems = allItems.filter(x => x.name && x.name.toLowerCase().includes(query));
-            }
-
-            if (allItems.length === 0) {
-                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 p-3 text-center">No se encontraron productos coincidentes.</p>`;
-                return;
-            }
-
-            resultsContainer.innerHTML = allItems.slice(0, 10).map(item => `
-                <div class="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 flex items-center justify-between gap-2 transition">
-                    <div class="flex items-center gap-2.5 overflow-hidden">
-                        <img src="${item.image || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0">
-                        <div class="truncate">
-                            <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block">${item.category}</span>
-                            <h5 class="font-bold text-slate-800 text-xs truncate">${item.name}</h5>
-                            <span class="text-xs font-semibold text-slate-600">${formatMoney(item.sellPrice || 0)}</span>
-                        </div>
-                    </div>
-                    <button type="button" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.sellPrice || 0})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-2xs transition shrink-0">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function addToCart(name, price) {
-            const existing = cart.find(x => x.name === name);
-            if (existing) {
-                existing.qty += 1;
-            } else {
-                cart.push({ name, price: Number(price) || 0, qty: 1 });
-            }
-            renderCart();
-        }
-
-        function addManualItemToCart() {
-            const nameInput = document.getElementById('manualItemName');
-            const priceInput = document.getElementById('manualItemPrice');
-            const qtyInput = document.getElementById('manualItemQty');
-
-            const name = nameInput.value.trim();
-            const price = parseFloat(priceInput.value) || 0;
-            const qty = parseInt(qtyInput.value) || 1;
-
-            if (!name) {
-                alert("Ingresa un concepto o nombre para el ítem.");
-                return;
-            }
-
-            cart.push({ name, price, qty });
-            nameInput.value = '';
-            priceInput.value = '';
-            qtyInput.value = '1';
-            renderCart();
-        }
-
-        function updateCartQty(idx, delta) {
-            if (cart[idx]) {
-                cart[idx].qty += delta;
-                if (cart[idx].qty <= 0) cart.splice(idx, 1);
-                renderCart();
-            }
-        }
-
-        function removeFromCart(idx) {
-            cart.splice(idx, 1);
-            renderCart();
-        }
-
-        function renderCart() {
-            const listContainer = document.getElementById('cartItemsList');
-            const totalDisplay = document.getElementById('cartTotalDisplay');
-            const badgeCount = document.getElementById('cartBadgeCount');
-
-            if (!listContainer) return;
-
-            if (cart.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-slate-400 p-6 text-center italic">El carrito está vacío.</p>`;
-                if (totalDisplay) totalDisplay.textContent = '$ 0';
-                if (badgeCount) badgeCount.textContent = '0 ítems';
-                return;
-            }
-
-            let total = 0;
-            let totalQty = 0;
-
-            listContainer.innerHTML = cart.map((item, idx) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                totalQty += item.qty;
-
-                return `
-                    <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
-                        <div class="truncate flex-1">
-                            <h5 class="font-bold text-slate-800 text-xs truncate">${item.name}</h5>
-                            <span class="text-[11px] text-slate-500">${formatMoney(item.price)} x ${item.qty} = <b>${formatMoney(subtotal)}</b></span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
-                                <button onclick="updateCartQty(${idx}, -1)" class="w-5 h-5 flex items-center justify-center text-xs text-slate-600 hover:bg-white rounded font-bold">-</button>
-                                <span class="px-2 text-xs font-bold text-slate-800">${item.qty}</span>
-                                <button onclick="updateCartQty(${idx}, 1)" class="w-5 h-5 flex items-center justify-center text-xs text-slate-600 hover:bg-white rounded font-bold">+</button>
-                            </div>
-                            <button onclick="removeFromCart(${idx})" class="p-1 text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            if (totalDisplay) totalDisplay.textContent = formatMoney(total);
-            if (badgeCount) badgeCount.textContent = `${totalQty} unidades`;
-        }
-
-        function completeCartSale() {
-            if (cart.length === 0) {
-                alert("El carrito está vacío. Agrega productos antes de finalizar.");
-                return;
-            }
-
-            const paymentMethod = document.getElementById('salePaymentMethod').value || 'Efectivo';
-            const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-            const totalUnits = cart.reduce((acc, item) => acc + item.qty, 0);
-
-            const now = new Date();
-            const newSale = {
-                id: 's_' + Date.now(),
-                date: now.toISOString().split('T')[0],
-                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                items: [...cart],
-                paymentMethod,
-                total,
-                units: totalUnits
-            };
-
-            if (!dbData.sales) dbData.sales = [];
-            dbData.sales.unshift(newSale);
-            saveDb();
-
-            closeSaleModal();
-            renderSales();
-            alert("¡Venta registrada con éxito!");
-        }
-
-        // --- HISTORIAL DE VENTAS Y FILTROS ---
-        function setSalesPreset(preset) {
-            currentSalesPreset = preset;
-            const fromInput = document.getElementById('salesFilterFrom');
-            const toInput = document.getElementById('salesFilterTo');
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            document.querySelectorAll('#salesFilterPresets button').forEach(btn => {
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
-            });
-            const activeBtn = document.getElementById('preset-' + preset);
-            if (activeBtn) activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition";
-
-            if (preset === 'today') {
-                fromInput.value = todayStr;
-                toInput.value = todayStr;
-            } else if (preset === 'yesterday') {
-                const y = new Date();
-                y.setDate(y.getDate() - 1);
-                const yStr = y.toISOString().split('T')[0];
-                fromInput.value = yStr;
-                toInput.value = yStr;
-            } else if (preset === '7days') {
-                const d = new Date();
-                d.setDate(d.getDate() - 7);
-                fromInput.value = d.toISOString().split('T')[0];
-                toInput.value = todayStr;
-            } else if (preset === 'month') {
-                const d = new Date();
-                d.setDate(1);
-                fromInput.value = d.toISOString().split('T')[0];
-                toInput.value = todayStr;
-            } else {
-                fromInput.value = '';
-                toInput.value = '';
-            }
-
-            renderSales();
-        }
-
-        function onSalesDateInputChange() {
-            document.querySelectorAll('#salesFilterPresets button').forEach(btn => {
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
-            });
-            renderSales();
-        }
-
-        function renderSales() {
-            const tbody = document.getElementById('salesTableBody');
-            const totalAmountEl = document.getElementById('totalSalesAmount');
-            const totalCountEl = document.getElementById('totalSalesCount');
-            if (!tbody) return;
-
-            const fromVal = document.getElementById('salesFilterFrom').value;
-            const toVal = document.getElementById('salesFilterTo').value;
-            const searchVal = (document.getElementById('salesFilterSearch').value || '').toLowerCase();
-
-            let sales = [...(dbData.sales || [])];
-
-            if (fromVal) sales = sales.filter(s => s.date >= fromVal);
-            if (toVal) sales = sales.filter(s => s.date <= toVal);
-            if (searchVal) {
-                sales = sales.filter(s => {
-                    const matchMethod = s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchVal);
-                    const matchItem = s.items && s.items.some(i => i.name.toLowerCase().includes(searchVal));
-                    return matchMethod || matchItem;
-                });
-            }
-
-            const totalSum = sales.reduce((acc, s) => acc + (Number(s.total) || 0), 0);
-            if (totalAmountEl) totalAmountEl.textContent = formatMoney(totalSum);
-            if (totalCountEl) totalCountEl.textContent = sales.length;
-
-            if (sales.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No hay ventas registradas para el rango seleccionado.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = sales.map(s => {
-                const itemNames = (s.items || []).map(i => `${i.name} (${i.qty})`).join(', ');
-                return `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 font-medium text-slate-900 whitespace-nowrap">
-                            <div>${s.date}</div>
-                            <div class="text-[10px] text-slate-400">${s.time || ''}</div>
-                        </td>
-                        <td class="p-4 max-w-xs">
-                            <p class="font-bold text-slate-800 text-xs truncate">${itemNames || 'Venta general'}</p>
-                            <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-semibold text-slate-600">${s.paymentMethod || 'Efectivo'}</span>
-                        </td>
-                        <td class="p-4 text-center font-bold text-slate-700">${s.units || 1}</td>
-                        <td class="p-4 font-extrabold text-emerald-600 whitespace-nowrap">${formatMoney(s.total || 0)}</td>
-                        <td class="p-4 text-right whitespace-nowrap">
-                            <button onclick="openSaleDetailModal('${s.id}')" class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition mr-1"><i class="fa-solid fa-eye"></i></button>
-                            <button onclick="deleteSale('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function openSaleDetailModal(id) {
-            const sale = (dbData.sales || []).find(x => x.id === id);
-            if (!sale) return;
-
-            const content = document.getElementById('saleDetailContent');
-            content.innerHTML = `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1">
-                    <p><b>ID Venta:</b> <span class="font-mono text-slate-600">${sale.id}</span></p>
-                    <p><b>Fecha y Hora:</b> ${sale.date} ${sale.time || ''}</p>
-                    <p><b>Método de Pago:</b> ${sale.paymentMethod || 'Efectivo'}</p>
-                </div>
-                <h4 class="font-bold text-slate-900 text-xs pt-1">Ítems Comprados:</h4>
-                <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                    ${(sale.items || []).map(i => `
-                        <div class="flex justify-between items-center p-2 bg-white rounded-xl border border-slate-200">
-                            <div>
-                                <p class="font-bold text-slate-800">${i.name}</p>
-                                <span class="text-[11px] text-slate-500">${formatMoney(i.price)} x${i.qty}</span>
-                            </div>
-                            <span class="font-bold text-slate-900">${formatMoney(i.price * i.qty)}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="flex justify-between items-center pt-2 border-t border-slate-200 font-bold text-sm">
-                    <span>Total Transacción:</span>
-                    <span class="text-emerald-600 text-base">${formatMoney(sale.total)}</span>
-                </div>
-            `;
-
-            document.getElementById('saleDetailModal').classList.remove('hidden');
-        }
-
-        function closeSaleDetailModal() {
-            document.getElementById('saleDetailModal').classList.add('hidden');
-        }
-
-        function deleteSale(id) {
-            openTimedDeleteModal('Estás a punto de eliminar este registro de venta del historial.', () => {
-                dbData.sales = dbData.sales.filter(x => x.id !== id);
-                saveDb();
-                renderSales();
-            });
         }
     </script>
 </body>
