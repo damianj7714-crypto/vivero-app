@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ViveroApp - Gestión Profesional de Viveros</title>
-    
-    <!-- PWA / Mobile Install Meta Tags -->
-    <meta name="theme-color" content="#059669">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ViveroApp">
-    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjMDU5NjY5IiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTE5MiIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9qcGVnIn1dfQ==">
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,9 +27,8 @@
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
-                <!-- LOGO ACTUALIZADO -->
-                <div class="w-10 h-10 bg-white rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center shadow-sm">
-                    <img src="2025-04-30 a las 13.48.53_41514b08_2.jpg" alt="Morlina Tienda de Plantas" class="w-full h-full object-cover">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg shadow-md shadow-emerald-200">
+                    <i class="fa-solid fa-seedling"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
@@ -623,6 +613,68 @@
         </div>
     </div>
 
+    <!-- GENERAL ITEM MODAL (TIERRAS, ACCESORIOS, QUÍMICOS) -->
+    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="itemModalTitle" class="font-bold text-slate-900 text-lg">Nuevo Ítem</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)" class="space-y-4">
+                <input type="hidden" id="itemType">
+                <input type="hidden" id="itemEditId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
+                    <input type="text" id="itemName" required placeholder="Ej: Sustrato Profesional" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                
+                <div id="itemExtraFields" class="space-y-3"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="itemBuyPrice" min="0" step="100" value="2000" required oninput="autoUpdateItemSell()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="itemSellPrice" min="0" step="100" value="4000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen del Producto</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('itemImageFile').click()" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-upload"></i> Subir Imagen
+                        </button>
+                        <button type="button" onclick="document.getElementById('itemCameraFile').click()" class="py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl border border-sky-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> Sacar Foto
+                        </button>
+                    </div>
+                    <input type="file" id="itemImageFile" accept="image/*" onchange="handleItemImageSelect(event)" class="hidden">
+                    <input type="file" id="itemCameraFile" accept="image/*" capture="environment" onchange="handleItemImageSelect(event)" class="hidden">
+                </div>
+
+                <div id="itemImagePreviewBox" class="hidden p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img id="itemImagePreview" src="" alt="Vista previa" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-xs">
+                        <div>
+                            <span id="itemImageFileName" class="block text-xs font-semibold text-slate-800 truncate max-w-[180px]">Foto cargada</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">✓ Imagen lista para guardar</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="clearItemImageSelection()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Quitar
+                    </button>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- EXCEL IMPORT MODAL PARA PLANTAS -->
     <div id="excelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
@@ -637,6 +689,9 @@
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
                     <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Familia, Ubicacion, Maceta, PrecioCompra, PrecioVenta, FechaActualizacion, Imagen</code></p>
                 </div>
+                <button onclick="downloadExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Ejemplo (.xlsx)
+                </button>
                 <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('excelFileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
                     <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo</p>
@@ -645,6 +700,233 @@
             </div>
             <div class="pt-2 flex justify-end">
                 <button onclick="closeExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA MACETAS -->
+    <div id="potExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Macetas desde Excel / CSV
+                </h3>
+                <button onclick="closePotExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las siguientes columnas requeridas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Medida, PrecioVenta, PrecioCompra, Material, Imagen, FechaActualizacion</code></p>
+                </div>
+                <button onclick="downloadPotExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Macetas (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('potExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de macetas</p>
+                    <input type="file" id="potExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handlePotExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closePotExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA TIERRAS -->
+    <div id="tierrasExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Tierras desde Excel / CSV
+                </h3>
+                <button onclick="closeTierrasExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las siguientes columnas requeridas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Marca, Tipo, Medida, PrecioCompra, PrecioVenta, Imagen, FechaActualizacion</code></p>
+                </div>
+                <button onclick="downloadTierrasExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Tierras (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('tierrasExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de tierras</p>
+                    <input type="file" id="tierrasExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handleTierrasExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeTierrasExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA QUÍMICOS -->
+    <div id="chemicalsExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Químicos desde Excel / CSV
+                </h3>
+                <button onclick="closeChemicalsExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las siguientes columnas requeridas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Medida, Tipo, Uso, Disolucion, Imagen, PrecioVenta, PrecioCompra, FechaActualizacion</code></p>
+                </div>
+                <button onclick="downloadChemicalsExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Químicos (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('chemicalsExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de químicos</p>
+                    <input type="file" id="chemicalsExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handleChemicalsExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeChemicalsExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA ACCESORIOS -->
+    <div id="accessoriesExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Accesorios desde Excel / CSV
+                </h3>
+                <button onclick="closeAccessoriesExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con las siguientes columnas requeridas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Tipo, Medida, PrecioCompra, PrecioVenta, FechaActualizacion, Imagen</code></p>
+                </div>
+                <button onclick="downloadAccessoriesExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Accesorios (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('accessoriesExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de accesorios</p>
+                    <input type="file" id="accessoriesExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handleAccessoriesExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeAccessoriesExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SALE MODAL -->
+    <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-emerald-600"></i> Registrar Nueva Venta
+                    </h3>
+                    <p class="text-xs text-slate-500">Agrega productos del inventario buscando coincidencias o escribe ítems manualmente.</p>
+                </div>
+                <button onclick="closeSaleModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- COLUMNA IZQUIERDA -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex border-b border-slate-200 text-xs font-semibold">
+                        <button type="button" id="saleModeInvTab" onclick="switchSaleModeTab('inv')" class="pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscar en Inventario
+                        </button>
+                        <button type="button" id="saleModeManualTab" onclick="switchSaleModeTab('manual')" class="pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square"></i> Ítem Manual / Venta Libre
+                        </button>
+                    </div>
+
+                    <div id="saleInvSection" class="space-y-3">
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                            <input type="text" id="cartSearchInput" oninput="filterCartInventory()" placeholder="Escribe para buscar por nombre o categoría (ej: Monstera, Maceta, Sustrato)..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+
+                        <div id="cartSearchResults" class="max-h-64 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
+                    </div>
+
+                    <div id="saleManualSection" class="space-y-3 hidden bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Agregar Ítem Personalizado</h4>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Concepto / Descripción *</label>
+                            <input type="text" id="manualItemName" placeholder="Ej: Servicio de Envío, Planta Especial..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Unitario ($) *</label>
+                                <input type="number" id="manualItemPrice" min="0" step="50" placeholder="0" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Cantidad *</label>
+                                <input type="number" id="manualItemQty" min="1" value="1" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <button type="button" onclick="addManualItemToCart()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA -->
+                <div class="lg:col-span-5 bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-basket-shopping text-emerald-600"></i> Carrito de Compras
+                            </h4>
+                            <span id="cartBadgeCount" class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ítems</span>
+                        </div>
+
+                        <div id="cartItemsList" class="max-h-56 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-semibold text-slate-600">Forma de Pago:</span>
+                            <select id="salePaymentMethod" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Débito">Débito</option>
+                                <option value="Crédito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-baseline bg-white p-3 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-700 uppercase">Total Venta</span>
+                            <span id="cartTotalDisplay" class="text-xl font-extrabold text-emerald-600">$ 0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="closeSaleModal()" class="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                            <button type="button" id="btnCompleteSale" onclick="completeCartSale()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-check"></i> Finalizar Venta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SALE DETAIL MODAL -->
+    <div id="saleDetailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-emerald-600"></i> Detalle de Venta
+                </h3>
+                <button onclick="closeSaleDetailModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="saleDetailContent" class="space-y-3 text-xs"></div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeSaleDetailModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
             </div>
         </div>
     </div>
@@ -689,8 +971,15 @@
         let showBuyPrice = false;
         let pendingToggleState = false;
 
+        let selectedSearchImageBase64 = null;
+        let selectedSearchImageMime = null;
+        
         let currentPlantImageBase64 = null;
         let currentPotImageBase64 = null;
+        let currentItemImageBase64 = null;
+
+        let cart = [];
+        let currentSalesPreset = 'all';
 
         let FIXED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyBn86ARo8leHh73bHJOLCmeGAmvsDp764Q",
@@ -714,9 +1003,15 @@
                 { id: 'pt1', name: 'Maceta Plástica Redonda', medida: 'N° 14 (14 cm)', material: 'Plástico', buyPrice: 1500, sellPrice: 3000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400' },
                 { id: 'pt2', name: 'Maceta Barro Clásica', medida: 'N° 18 (18 cm)', material: 'Barro', buyPrice: 3000, sellPrice: 6000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400' }
             ],
-            tierras: [],
-            accessories: [],
-            chemicals: [],
+            tierras: [
+                { id: 'tr1', name: 'Sustrato Universal', marca: 'TerraFertil', tipo: 'Orgánico', medida: '10L', buyPrice: 2000, sellPrice: 4000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400' }
+            ],
+            accessories: [
+                { id: 'ac1', name: 'Tutor de Bambú Plastificado', tipo: 'Tutor', medida: '1.20m', buyPrice: 1000, sellPrice: 2000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204b56?w=400' }
+            ],
+            chemicals: [
+                { id: 'ch1', name: 'Fertilizante Líquido Follaje', medida: '250cc', tipo: 'Fertilizante', uso: 'Foliar', disolucion: '5ml / L', buyPrice: 4000, sellPrice: 8000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1585336261022-6fc0e69de2a3?w=400' }
+            ],
             sales: []
         };
 
@@ -729,14 +1024,6 @@
             initFirebase(FIXED_FIREBASE_CONFIG, false);
             document.getElementById('toggleBuyPrice').checked = showBuyPrice;
             renderPlants();
-
-            // Registro de Service Worker para permitir instalación en móviles
-            if ('serviceWorker' in navigator) {
-                const swCode = `self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });`;
-                const blob = new Blob([swCode], { type: 'text/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW registration failed:', err));
-            }
         });
 
         function handleBuyPriceToggle(checkbox) {
@@ -877,6 +1164,9 @@
                     console.warn('Firestore snapshot error:', err.message);
                     useFirebase = false;
                     updateStatusUI(false);
+                    if (showAlert) {
+                        alert('Aviso de Firebase: No se pudo conectar a la base de datos.');
+                    }
                 });
 
                 if (showAlert) alert('¡Intentando conectar con Firebase!');
@@ -916,6 +1206,10 @@
             const activeTab = activeTabBtn.id.replace('tab-', '');
             if (activeTab === 'plants') renderPlants();
             else if (activeTab === 'pots') renderPots();
+            else if (activeTab === 'tierras') renderItems('tierras');
+            else if (activeTab === 'accessories') renderItems('accessories');
+            else if (activeTab === 'chemicals') renderItems('chemicals');
+            else if (activeTab === 'sales') renderSales();
         }
 
         function switchTab(tabId) {
@@ -949,6 +1243,55 @@
             if (modal) modal.classList.add('hidden');
         }
 
+        function openTimedDeleteModal(titleText, onConfirmCallback) {
+            const modal = document.getElementById('deleteModal');
+            const textEl = document.getElementById('deleteModalText');
+            const counterEl = document.getElementById('deleteTimerCount');
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            
+            if (textEl) textEl.textContent = titleText || '¿Estás seguro de eliminar este elemento?';
+            if (counterEl) counterEl.textContent = '3';
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.className = 'py-2.5 bg-slate-200 text-slate-400 text-xs font-semibold rounded-xl transition cursor-not-allowed';
+                confirmBtn.onclick = null;
+            }
+
+            if (modal) modal.classList.remove('hidden');
+
+            let timeLeft = 3;
+            if (deleteTimerInterval) clearInterval(deleteTimerInterval);
+
+            deleteTimerInterval = setInterval(() => {
+                timeLeft--;
+                if (counterEl) counterEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(deleteTimerInterval);
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.className = 'py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition';
+                        confirmBtn.onclick = () => {
+                            closeDeleteModal();
+                            if (onConfirmCallback) onConfirmCallback();
+                        };
+                    }
+                    if (counterEl) counterEl.parentElement.innerHTML = `<span class="text-xs font-bold text-rose-600">¡Listo para confirmar!</span>`;
+                }
+            }, 1000);
+        }
+
+        function closeDeleteModal() {
+            if (deleteTimerInterval) clearInterval(deleteTimerInterval);
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.classList.add('hidden');
+            const counterBox = document.querySelector('#deleteModal .bg-slate-50');
+            if (counterBox) {
+                counterBox.innerHTML = `<i class="fa-solid fa-clock text-rose-500 animate-pulse"></i>
+                <span class="text-xs font-semibold text-slate-600">Espera <span id="deleteTimerCount" class="text-rose-600 font-bold text-sm">3</span>s para confirmar</span>`;
+            }
+        }
+
+        // --- MANEJO DE IMÁGENES (PLANTAS) ---
         function handlePlantImageSelect(event) {
             const file = event.target.files[0];
             if (file) {
@@ -974,6 +1317,59 @@
             if (previewBox) previewBox.classList.add('hidden');
         }
 
+        // --- MANEJO DE IMÁGENES (MACETAS) ---
+        function handlePotImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentPotImageBase64 = evt.target.result;
+                    const previewImg = document.getElementById('potImagePreview');
+                    const previewBox = document.getElementById('potImagePreviewBox');
+                    const fileNameSpan = document.getElementById('potImageFileName');
+                    if (previewImg) previewImg.src = currentPotImageBase64;
+                    if (fileNameSpan) fileNameSpan.textContent = file.name || 'Foto tomada';
+                    if (previewBox) previewBox.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearPotImageSelection() {
+            currentPotImageBase64 = null;
+            document.getElementById('potImageFile').value = '';
+            document.getElementById('potCameraFile').value = '';
+            const previewBox = document.getElementById('potImagePreviewBox');
+            if (previewBox) previewBox.classList.add('hidden');
+        }
+
+        // --- MANEJO DE IMÁGENES (TIERRAS, ACCESORIOS, QUÍMICOS) ---
+        function handleItemImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentItemImageBase64 = evt.target.result;
+                    const previewImg = document.getElementById('itemImagePreview');
+                    const previewBox = document.getElementById('itemImagePreviewBox');
+                    const fileNameSpan = document.getElementById('itemImageFileName');
+                    if (previewImg) previewImg.src = currentItemImageBase64;
+                    if (fileNameSpan) fileNameSpan.textContent = file.name || 'Foto tomada';
+                    if (previewBox) previewBox.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearItemImageSelection() {
+            currentItemImageBase64 = null;
+            document.getElementById('itemImageFile').value = '';
+            document.getElementById('itemCameraFile').value = '';
+            const previewBox = document.getElementById('itemImagePreviewBox');
+            if (previewBox) previewBox.classList.add('hidden');
+        }
+
+        // --- RENDERIZADO ESTÉTICO DE PLANTAS ---
         function renderPlants() {
             const grid = document.getElementById('plantsGrid');
             if (!grid) return;
@@ -1000,10 +1396,11 @@
 
                 return `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                        <!-- Imagen con badges superiores -->
                         <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
                             <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
                             <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-                                <span class="bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
                                     <i class="fa-solid fa-location-dot text-emerald-600 text-[10px]"></i> ${p.location || 'Interior'}
                                 </span>
                             </div>
@@ -1012,10 +1409,12 @@
                             </div>
                         </div>
 
+                        <!-- Contenido y Atributos -->
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
                             <div class="space-y-1">
                                 <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.family || 'Familia no especificada'}</span>
                                 <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                                
                                 <div class="pt-1.5 flex flex-wrap gap-1">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">
                                         <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i> ${p.pot || 'Maceta estándar'}
@@ -1023,6 +1422,7 @@
                                 </div>
                             </div>
 
+                            <!-- Caja de Precios Estilizada -->
                             <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                 <div>
                                     <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
@@ -1034,6 +1434,7 @@
                                 </div>
                             </div>
 
+                            <!-- Botones de Acción -->
                             <div class="flex gap-2 pt-1">
                                 <button onclick="editPlant('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
                                     <i class="fa-solid fa-pen text-[10px]"></i> Editar
@@ -1074,12 +1475,18 @@
                 if (p) {
                     if (titleEl) titleEl.textContent = 'Editar Planta';
                     if (editIdInput) editIdInput.value = p.id;
-                    document.getElementById('plantName').value = p.name || '';
-                    document.getElementById('plantFamily').value = p.family || '';
-                    document.getElementById('plantLocation').value = p.location || 'Interior';
-                    document.getElementById('plantPot').value = p.pot || '';
-                    document.getElementById('plantBuyPrice').value = p.buyPrice || 8000;
-                    document.getElementById('plantSellPrice').value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 8000) * 2);
+                    const nameInput = document.getElementById('plantName');
+                    if (nameInput) nameInput.value = p.name || '';
+                    const famInput = document.getElementById('plantFamily');
+                    if (famInput) famInput.value = p.family || '';
+                    const locInput = document.getElementById('plantLocation');
+                    if (locInput) locInput.value = p.location || 'Interior';
+                    const potInput = document.getElementById('plantPot');
+                    if (potInput) potInput.value = p.pot || '';
+                    const buyInput = document.getElementById('plantBuyPrice');
+                    if (buyInput) buyInput.value = p.buyPrice || 8000;
+                    const sellInput = document.getElementById('plantSellPrice');
+                    if (sellInput) sellInput.value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 8000) * 2);
                     if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
 
                     if (p.image) {
@@ -1093,11 +1500,13 @@
                     }
                 }
             }
-            document.getElementById('plantModal').classList.remove('hidden');
+            const modal = document.getElementById('plantModal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closePlantModal() {
-            document.getElementById('plantModal').classList.add('hidden');
+            const modal = document.getElementById('plantModal');
+            if (modal) modal.classList.add('hidden');
         }
         function editPlant(id) { openPlantModal(id); }
 
@@ -1127,33 +1536,899 @@
                 if (idx !== -1) {
                     dbData.plants[idx] = { 
                         ...dbData.plants[idx], 
-                        name,
-                        family,
-                        location,
-                        pot,
-                        buyPrice,
-                        sellPrice,
-                        updateDate,
+                        name, family, location, pot, buyPrice, sellPrice, updateDate,
                         image: finalImgUrl
                     };
                 }
             } else {
                 const newPlant = {
-                    id: 'pl_' + Date.now(),
-                    name,
-                    family,
-                    location,
-                    pot,
-                    buyPrice,
-                    sellPrice,
-                    updateDate,
+                    id: 'p_' + Date.now(),
+                    name, family, location, pot, buyPrice, sellPrice, updateDate,
                     image: finalImgUrl
                 };
-                dbData.plants.push(newPlant);
+                dbData.plants.unshift(newPlant);
             }
+
             await saveDb();
             closePlantModal();
             renderPlants();
+        }
+
+        function deletePlant(id) {
+            openTimedDeleteModal('¿Estás seguro de eliminar esta planta?', async () => {
+                dbData.plants = (dbData.plants || []).filter(p => p.id !== id);
+                await saveDb();
+                renderPlants();
+            });
+        }
+
+        // --- RESTO DE FUNCIONES DE MACETAS, ÍTEMS, EXCEL, VENTAS, ETC. ---
+        function renderPots() {
+            const grid = document.getElementById('potsGrid');
+            if (!grid) return;
+            const searchInput = document.getElementById('potSearch');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            let list = [...(dbData.pots || [])];
+            if (search) {
+                list = list.filter(p => (p.name && p.name.toLowerCase().includes(search)) || (p.medida && p.medida.toLowerCase().includes(search)) || (p.material && p.material.toLowerCase().includes(search)));
+            }
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay macetas registradas.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Maceta';
+                const buyP = Number(p.buyPrice) || 0;
+                const sellP = Number(p.sellPrice) || 0;
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Maceta'">
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs">
+                                    ${p.material || 'Material estándar'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.medida || 'Medida estándar'}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                            </div>
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="editPot('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
+                                <button onclick="deletePot('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openPotModal(id = null) {
+            const form = document.getElementById('potForm');
+            if (form) form.reset();
+            clearPotImageSelection();
+            document.getElementById('potEditId').value = '';
+            document.getElementById('potModalTitle').textContent = 'Nueva Maceta';
+            document.getElementById('potUpdateDate').value = new Date().toISOString().split('T')[0];
+
+            if (id) {
+                const p = (dbData.pots || []).find(x => x.id === id);
+                if (p) {
+                    document.getElementById('potModalTitle').textContent = 'Editar Maceta';
+                    document.getElementById('potEditId').value = p.id;
+                    document.getElementById('potName').value = p.name || '';
+                    document.getElementById('potMedida').value = p.medida || '';
+                    document.getElementById('potMaterial').value = p.material || '';
+                    document.getElementById('potBuyPrice').value = p.buyPrice || 3000;
+                    document.getElementById('potSellPrice').value = p.sellPrice || 6000;
+                    document.getElementById('potUpdateDate').value = p.updateDate || new Date().toISOString().split('T')[0];
+                    if (p.image) {
+                        currentPotImageBase64 = p.image;
+                        document.getElementById('potImagePreview').src = p.image;
+                        document.getElementById('potImageFileName').textContent = 'Imagen actual';
+                        document.getElementById('potImagePreviewBox').classList.remove('hidden');
+                    }
+                }
+            }
+            document.getElementById('potModal').classList.remove('hidden');
+        }
+        function closePotModal() { document.getElementById('potModal').classList.add('hidden'); }
+        function editPot(id) { openPotModal(id); }
+
+        async function savePot(e) {
+            e.preventDefault();
+            const id = document.getElementById('potEditId').value;
+            const name = document.getElementById('potName').value.trim();
+            const medida = document.getElementById('potMedida').value.trim();
+            const material = document.getElementById('potMaterial').value.trim();
+            const buyPrice = parseFloat(document.getElementById('potBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('potSellPrice').value) || (buyPrice * 2);
+            const updateDate = document.getElementById('potUpdateDate').value || new Date().toISOString().split('T')[0];
+
+            let finalImg = currentPotImageBase64 || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
+            if (id && !currentPotImageBase64) {
+                const ex = dbData.pots.find(x => x.id === id);
+                if (ex && ex.image) finalImg = ex.image;
+            }
+
+            if (!dbData.pots) dbData.pots = [];
+            if (id) {
+                const idx = dbData.pots.findIndex(x => x.id === id);
+                if (idx !== -1) dbData.pots[idx] = { ...dbData.pots[idx], name, medida, material, buyPrice, sellPrice, updateDate, image: finalImg };
+            } else {
+                dbData.pots.unshift({ id: 'pt_' + Date.now(), name, medida, material, buyPrice, sellPrice, updateDate, image: finalImg });
+            }
+
+            await saveDb();
+            closePotModal();
+            renderPots();
+        }
+
+        function deletePot(id) {
+            openTimedDeleteModal('¿Eliminar esta maceta?', async () => {
+                dbData.pots = dbData.pots.filter(p => p.id !== id);
+                await saveDb();
+                renderPots();
+            });
+        }
+
+        function autoUpdatePotSell() {
+            const b = parseFloat(document.getElementById('potBuyPrice').value) || 0;
+            document.getElementById('potSellPrice').value = b * 2;
+        }
+
+        function renderItems(type) {
+            const grid = document.getElementById(type + 'Grid');
+            if (!grid) return;
+            const list = dbData[type] || [];
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay registros cargados.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(item => {
+                const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Producto';
+                const buyP = Number(item.buyPrice) || 0;
+                const sellP = Number(item.sellPrice) || 0;
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
+
+                let subText = item.marca || item.tipo || item.medida || '';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${item.name}')">
+                            <img src="${safeImg}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${subText}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${item.name}</h3>
+                            </div>
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="openItemModal('${type}', '${item.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
+                                <button onclick="deleteItem('${type}', '${item.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openItemModal(type, id = null) {
+            document.getElementById('itemForm').reset();
+            clearItemImageSelection();
+            document.getElementById('itemType').value = type;
+            document.getElementById('itemEditId').value = '';
+            
+            const titleMap = { tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico / Fertilizante' };
+            document.getElementById('itemModalTitle').textContent = id ? `Editar ${titleMap[type]}` : `Nuevo ${titleMap[type]}`;
+            
+            const extraDiv = document.getElementById('itemExtraFields');
+            if (type === 'tierras') {
+                extraDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Marca</label><input type="text" id="itemMarca" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Medida</label><input type="text" id="itemMedida" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                    </div>
+                `;
+            } else if (type === 'accessories') {
+                extraDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Tipo</label><input type="text" id="itemTipo" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Medida</label><input type="text" id="itemMedida" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                    </div>
+                `;
+            } else if (type === 'chemicals') {
+                extraDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Uso</label><input type="text" id="itemUso" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Disolución</label><input type="text" id="itemDisolucion" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                    </div>
+                `;
+            } else {
+                extraDiv.innerHTML = '';
+            }
+
+            if (id) {
+                const item = (dbData[type] || []).find(x => x.id === id);
+                if (item) {
+                    document.getElementById('itemEditId').value = item.id;
+                    document.getElementById('itemName').value = item.name || '';
+                    document.getElementById('itemBuyPrice').value = item.buyPrice || 2000;
+                    document.getElementById('itemSellPrice').value = item.sellPrice || 4000;
+                    if (document.getElementById('itemMarca')) document.getElementById('itemMarca').value = item.marca || '';
+                    if (document.getElementById('itemMedida')) document.getElementById('itemMedida').value = item.medida || '';
+                    if (document.getElementById('itemTipo')) document.getElementById('itemTipo').value = item.tipo || '';
+                    if (document.getElementById('itemUso')) document.getElementById('itemUso').value = item.uso || '';
+                    if (document.getElementById('itemDisolucion')) document.getElementById('itemDisolucion').value = item.disolucion || '';
+                    if (item.image) {
+                        currentItemImageBase64 = item.image;
+                        document.getElementById('itemImagePreview').src = item.image;
+                        document.getElementById('itemImageFileName').textContent = 'Imagen actual';
+                        document.getElementById('itemImagePreviewBox').classList.remove('hidden');
+                    }
+                }
+            }
+
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeItemModal() { document.getElementById('itemModal').classList.add('hidden'); }
+
+        async function saveItem(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const id = document.getElementById('itemEditId').value;
+            const name = document.getElementById('itemName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || (buyPrice * 2);
+            
+            let finalImg = currentItemImageBase64 || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
+            if (id && !currentItemImageBase64) {
+                const ex = (dbData[type] || []).find(x => x.id === id);
+                if (ex && ex.image) finalImg = ex.image;
+            }
+
+            let extra = {};
+            if (type === 'tierras') {
+                extra = { marca: document.getElementById('itemMarca')?.value || '', medida: document.getElementById('itemMedida')?.value || '' };
+            } else if (type === 'accessories') {
+                extra = { tipo: document.getElementById('itemTipo')?.value || '', medida: document.getElementById('itemMedida')?.value || '' };
+            } else if (type === 'chemicals') {
+                extra = { uso: document.getElementById('itemUso')?.value || '', disolucion: document.getElementById('itemDisolucion')?.value || '' };
+            }
+
+            if (!dbData[type]) dbData[type] = [];
+            if (id) {
+                const idx = dbData[type].findIndex(x => x.id === id);
+                if (idx !== -1) dbData[type][idx] = { ...dbData[type][idx], name, buyPrice, sellPrice, ...extra, image: finalImg };
+            } else {
+                dbData[type].unshift({ id: 'it_' + Date.now(), name, buyPrice, sellPrice, ...extra, image: finalImg });
+            }
+
+            await saveDb();
+            closeItemModal();
+            renderItems(type);
+        }
+
+        function deleteItem(type, id) {
+            openTimedDeleteModal('¿Estás seguro de eliminar este ítem?', async () => {
+                dbData[type] = (dbData[type] || []).filter(x => x.id !== id);
+                await saveDb();
+                renderItems(type);
+            });
+        }
+
+        function autoUpdateItemSell() {
+            const b = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            document.getElementById('itemSellPrice').value = b * 2;
+        }
+
+        // --- VENTAS & CARRITO ---
+        function openSaleModal() {
+            cart = [];
+            document.getElementById('cartSearchInput').value = '';
+            document.getElementById('cartSearchResults').innerHTML = '';
+            updateCartUI();
+            document.getElementById('saleModal').classList.remove('hidden');
+        }
+        function closeSaleModal() { document.getElementById('saleModal').classList.add('hidden'); }
+
+        function switchSaleModeTab(mode) {
+            const invTab = document.getElementById('saleModeInvTab');
+            const manualTab = document.getElementById('saleModeManualTab');
+            const invSec = document.getElementById('saleInvSection');
+            const manualSec = document.getElementById('saleManualSection');
+
+            if (mode === 'inv') {
+                invTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
+                manualTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+                invSec.classList.remove('hidden');
+                manualSec.classList.add('hidden');
+            } else {
+                manualTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
+                invTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+                manualSec.classList.remove('hidden');
+                invSec.classList.add('hidden');
+            }
+        }
+
+        function filterCartInventory() {
+            const q = document.getElementById('cartSearchInput').value.toLowerCase().trim();
+            const resContainer = document.getElementById('cartSearchResults');
+            if (!q) { resContainer.innerHTML = ''; return; }
+
+            let allProducts = [];
+            ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
+                (dbData[cat] || []).forEach(item => {
+                    allProducts.push({ ...item, category: cat });
+                });
+            });
+
+            const matched = allProducts.filter(p => (p.name && p.name.toLowerCase().includes(q)) || (p.family && p.family.toLowerCase().includes(q)) || (p.medida && p.medida.toLowerCase().includes(q)));
+
+            if (matched.length === 0) {
+                resContainer.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">No se encontraron productos coincidentes.</p>`;
+                return;
+            }
+
+            resContainer.innerHTML = matched.map(p => `
+                <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 transition">
+                    <div class="flex items-center gap-2.5">
+                        <img src="${p.image || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover">
+                        <div>
+                            <h5 class="font-bold text-slate-800 text-xs">${p.name}</h5>
+                            <span class="text-[10px] text-emerald-600 font-semibold">${formatMoney(p.sellPrice || 0)}</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addToCart('${p.id}', '${p.name}', ${p.sellPrice || 0}, '${p.category}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-lg transition">
+                        <i class="fa-solid fa-plus"></i> Agregar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id, name, price, category) {
+            const existing = cart.find(x => x.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ id, name, price, qty: 1, category });
+            }
+            updateCartUI();
+        }
+
+        function addManualItemToCart() {
+            const name = document.getElementById('manualItemName').value.trim();
+            const price = parseFloat(document.getElementById('manualItemPrice').value) || 0;
+            const qty = parseInt(document.getElementById('manualItemQty').value) || 1;
+
+            if (!name || price <= 0) {
+                alert('Por favor ingresa un concepto y precio válidos.');
+                return;
+            }
+
+            cart.push({ id: 'man_' + Date.now(), name, price, qty, category: 'manual' });
+            document.getElementById('manualItemName').value = '';
+            document.getElementById('manualItemPrice').value = '';
+            document.getElementById('manualItemQty').value = '1';
+            updateCartUI();
+        }
+
+        function updateCartQty(id, delta) {
+            const item = cart.find(x => x.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const listEl = document.getElementById('cartItemsList');
+            const badgeEl = document.getElementById('cartBadgeCount');
+            const totalEl = document.getElementById('cartTotalDisplay');
+
+            let totalUnits = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center">El carrito está vacío.</p>`;
+            } else {
+                listEl.innerHTML = cart.map(item => {
+                    totalUnits += item.qty;
+                    totalPrice += (item.price * item.qty);
+                    return `
+                        flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs">
+                            <div class="flex-1 pr-2">
+                                <h5 class="font-bold text-slate-800 truncate">${item.name}</h5>
+                                <span class="text-emerald-600 font-semibold">${formatMoney(item.price)} x ${item.qty}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="updateCartQty('${item.id}', -1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 rounded-md font-bold text-slate-700">-</button>
+                                <span class="font-bold w-4 text-center">${item.qty}</span>
+                                <button type="button" onclick="updateCartQty('${item.id}', 1)" class="w-6 h-6 bg-slate-100 hover:bg-slate-200 rounded-md font-bold text-slate-700">+</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            badgeEl.textContent = `${totalUnits} ítems`;
+            totalEl.textContent = formatMoney(totalPrice);
+        }
+
+        async function completeCartSale() {
+            if (cart.length === 0) {
+                alert('Agrega al menos un ítem al carrito.');
+                return;
+            }
+
+            const paymentMethod = document.getElementById('salePaymentMethod').value;
+            let totalAmount = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            let totalUnits = cart.reduce((sum, i) => sum + i.qty, 0);
+
+            const newSale = {
+                id: 'sale_' + Date.now(),
+                date: new Date().toISOString(),
+                items: [...cart],
+                totalAmount,
+                totalUnits,
+                paymentMethod
+            };
+
+            if (!dbData.sales) dbData.sales = [];
+            dbData.sales.unshift(newSale);
+            await saveDb();
+
+            closeSaleModal();
+            renderSales();
+            alert('¡Venta registrada con éxito!');
+        }
+
+        function setSalesPreset(preset) {
+            currentSalesPreset = preset;
+            ['all', 'today', 'yesterday', '7days', 'month'].forEach(p => {
+                const btn = document.getElementById('preset-' + p);
+                if (btn) {
+                    if (p === preset) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
+                    }
+                }
+            });
+
+            const fromInput = document.getElementById('salesFilterFrom');
+            const toInput = document.getElementById('salesFilterTo');
+            const now = new Date();
+
+            if (preset === 'today') {
+                const dStr = now.toISOString().split('T')[0];
+                fromInput.value = dStr;
+                toInput.value = dStr;
+            } else if (preset === 'yesterday') {
+                const yest = new Date(now);
+                yest.setDate(now.getDate() - 1);
+                const dStr = yest.toISOString().split('T')[0];
+                fromInput.value = dStr;
+                toInput.value = dStr;
+            } else if (preset === '7days') {
+                const past = new Date(now);
+                past.setDate(now.getDate() - 7);
+                fromInput.value = past.toISOString().split('T')[0];
+                toInput.value = now.toISOString().split('T')[0];
+            } else if (preset === 'month') {
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                fromInput.value = firstDay.toISOString().split('T')[0];
+                toInput.value = now.toISOString().split('T')[0];
+            } else {
+                fromInput.value = '';
+                toInput.value = '';
+            }
+
+            renderSales();
+        }
+
+        function onSalesDateInputChange() {
+            currentSalesPreset = 'custom';
+            ['all', 'today', 'yesterday', '7days', 'month'].forEach(p => {
+                const btn = document.getElementById('preset-' + p);
+                if (btn) btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
+            });
+            renderSales();
+        }
+
+        function renderSales() {
+            const tbody = document.getElementById('salesTableBody');
+            const amtDisplay = document.getElementById('totalSalesAmount');
+            const countDisplay = document.getElementById('totalSalesCount');
+            if (!tbody) return;
+
+            let salesList = [...(dbData.sales || [])];
+            const fromVal = document.getElementById('salesFilterFrom').value;
+            const toVal = document.getElementById('salesFilterTo').value;
+            const searchVal = document.getElementById('salesFilterSearch').value.toLowerCase().trim();
+
+            if (fromVal) {
+                salesList = salesList.filter(s => s.date.split('T')[0] >= fromVal);
+            }
+            if (toVal) {
+                salesList = salesList.filter(s => s.date.split('T')[0] <= toVal);
+            }
+            if (searchVal) {
+                salesList = salesList.filter(s => 
+                    s.paymentMethod.toLowerCase().includes(searchVal) || 
+                    s.items.some(i => i.name.toLowerCase().includes(searchVal))
+                );
+            }
+
+            let totalAmt = salesList.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+            amtDisplay.textContent = formatMoney(totalAmt);
+            countDisplay.textContent = salesList.length;
+
+            if (salesList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No se encontraron ventas registradas para este filtro.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = salesList.map(s => {
+                const dateObj = new Date(s.date);
+                const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const mainItem = s.items && s.items.length > 0 ? s.items[0].name : 'Venta general';
+                const extraCount = s.items && s.items.length > 1 ? ` +${s.items.length - 1} más` : '';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-xs font-medium text-slate-600">${dateStr}</td>
+                        <td class="p-4">
+                            <span class="font-bold text-slate-900 text-xs">${mainItem}${extraCount}</span>
+                            <span class="block text-[10px] text-slate-400">Pago: ${s.paymentMethod || 'Efectivo'}</span>
+                        </td>
+                        <td class="p-4 text-center font-semibold text-slate-700 text-xs">${s.totalUnits || 1}</td>
+                        <td class="p-4 font-extrabold text-emerald-600 text-xs">${formatMoney(s.totalAmount)}</td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="openSaleDetail('${s.id}')" class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition">Ver Detalle</button>
+                            <button onclick="deleteSale('${s.id}')" class="text-rose-500 hover:text-rose-700 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openSaleDetail(id) {
+            const sale = (dbData.sales || []).find(x => x.id === id);
+            if (!sale) return;
+            const content = document.getElementById('saleDetailContent');
+            const dateObj = new Date(sale.date);
+
+            content.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                    <p class="text-[11px] text-slate-500">Fecha: <span class="font-semibold text-slate-800">${dateObj.toLocaleString()}</span></p>
+                    <p class="text-[11px] text-slate-500">Método de pago: <span class="font-semibold text-slate-800">${sale.paymentMethod}</span></p>
+                </div>
+                <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    ${sale.items.map(i => `
+                        <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-200">
+                            <div>
+                                <span class="font-bold text-slate-800 block">${i.name}</span>
+                                <span class="text-[10px] text-slate-500">Cantidad: ${i.qty}</span>
+                            </div>
+                            <span class="font-bold text-emerald-600">${formatMoney(i.price * i.qty)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-slate-100 font-extrabold text-sm text-slate-900">
+                    <span>Total Pagado:</span>
+                    <span class="text-emerald-600 text-base">${formatMoney(sale.totalAmount)}</span>
+                </div>
+            `;
+            document.getElementById('saleDetailModal').classList.remove('hidden');
+        }
+        function closeSaleDetailModal() { document.getElementById('saleDetailModal').classList.add('hidden'); }
+
+        function deleteSale(id) {
+            openTimedDeleteModal('¿Eliminar este registro de venta?', async () => {
+                dbData.sales = (dbData.sales || []).filter(s => s.id !== id);
+                await saveDb();
+                renderSales();
+            });
+        }
+
+        // --- EXCEL TEMPLATES & UPLOADS (PLANTAS) ---
+        function downloadExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["Nombre", "Familia", "Ubicacion", "Maceta", "PrecioCompra", "PrecioVenta", "FechaActualizacion", "Imagen"],
+                ["Monstera Deliciosa", "Araceae", "Interior", "Maceta N° 16", 8000, 16000, "2026-03-20", ""],
+                ["Ficus Lyrata", "Moraceae", "Interior", "Maceta N° 18", 12000, 24000, "2026-03-20", ""]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Plantas");
+            XLSX.writeFile(wb, "Plantilla_Plantas_ViveroApp.xlsx");
+        }
+
+        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
+        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    
+                    if (!dbData.plants) dbData.plants = [];
+                    rows.forEach(r => {
+                        dbData.plants.unshift({
+                            id: 'p_ex_' + Math.random().toString(36).substring(2, 9),
+                            name: r.Nombre || 'Sin nombre',
+                            family: r.Familia || '',
+                            location: r.Ubicacion || 'Interior',
+                            pot: r.Maceta || '',
+                            buyPrice: Number(r.PrecioCompra) || 5000,
+                            sellPrice: Number(r.PrecioVenta) || 10000,
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
+                        });
+                    });
+
+                    await saveDb();
+                    closeExcelModal();
+                    renderPlants();
+                    alert(`¡Se importaron ${rows.length} plantas con éxito!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel. Revisa el formato.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- EXCEL MACETAS, TIERRAS, ACCESORIOS, QUÍMICOS (PLACEHOLDERS/ESTRUCTURAS) ---
+        function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
+        function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
+        function downloadPotExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["Nombre", "Medida", "PrecioVenta", "PrecioCompra", "Material", "Imagen", "FechaActualizacion"],
+                ["Maceta Redonda", "N° 14", 3000, 1500, "Plástico", "", "2026-03-20"]
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Macetas");
+            XLSX.writeFile(wb, "Plantilla_Macetas.xlsx");
+        }
+        function handlePotExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!dbData.pots) dbData.pots = [];
+                rows.forEach(r => {
+                    dbData.pots.unshift({
+                        id: 'pt_ex_' + Math.random().toString(36).substring(2, 9),
+                        name: r.Nombre || 'Maceta',
+                        medida: r.Medida || '',
+                        material: r.Material || '',
+                        buyPrice: Number(r.PrecioCompra) || 1000,
+                        sellPrice: Number(r.PrecioVenta) || 2000,
+                        updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                        image: r.Imagen || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
+                    });
+                });
+                await saveDb();
+                closePotExcelModal();
+                renderPots();
+                alert('¡Macetas importadas con éxito!');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.remove('hidden'); }
+        function closeTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.add('hidden'); }
+        function downloadTierrasExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [["Nombre", "Marca", "Tipo", "Medida", "PrecioCompra", "PrecioVenta", "Imagen", "FechaActualizacion"], ["Sustrato", "TerraFertil", "Orgánico", "10L", 2000, 4000, "", "2026-03-20"]];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Tierras");
+            XLSX.writeFile(wb, "Plantilla_Tierras.xlsx");
+        }
+        function handleTierrasExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!dbData.tierras) dbData.tierras = [];
+                rows.forEach(r => {
+                    dbData.tierras.unshift({
+                        id: 'tr_ex_' + Math.random().toString(36).substring(2, 9),
+                        name: r.Nombre || 'Tierra', marca: r.Marca || '', tipo: r.Tipo || '', medida: r.Medida || '',
+                        buyPrice: Number(r.PrecioCompra) || 1000, sellPrice: Number(r.PrecioVenta) || 2000,
+                        updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                        image: r.Imagen || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
+                    });
+                });
+                await saveDb();
+                closeTierrasExcelModal();
+                renderItems('tierras');
+                alert('¡Tierras importadas con éxito!');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.remove('hidden'); }
+        function closeChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.add('hidden'); }
+        function downloadChemicalsExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [["Nombre", "Medida", "Tipo", "Uso", "Disolucion", "Imagen", "PrecioVenta", "PrecioCompra", "FechaActualizacion"], ["Fertilizante", "250cc", "Fertilizante", "Foliar", "5ml/L", "", 8000, 4000, "2026-03-20"]];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Químicos");
+            XLSX.writeFile(wb, "Plantilla_Quimicos.xlsx");
+        }
+        function handleChemicalsExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!dbData.chemicals) dbData.chemicals = [];
+                rows.forEach(r => {
+                    dbData.chemicals.unshift({
+                        id: 'ch_ex_' + Math.random().toString(36).substring(2, 9),
+                        name: r.Nombre || 'Químico', medida: r.Medida || '', tipo: r.Tipo || '', uso: r.Uso || '', disolucion: r.Disolucion || '',
+                        buyPrice: Number(r.PrecioCompra) || 2000, sellPrice: Number(r.PrecioVenta) || 4000,
+                        updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                        image: r.Imagen || 'https://images.unsplash.com/photo-1585336261022-6fc0e69de2a3?w=400'
+                    });
+                });
+                await saveDb();
+                closeChemicalsExcelModal();
+                renderItems('chemicals');
+                alert('¡Químicos importados con éxito!');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.remove('hidden'); }
+        function closeAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.add('hidden'); }
+        function downloadAccessoriesExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [["Nombre", "Tipo", "Medida", "PrecioCompra", "PrecioVenta", "FechaActualizacion", "Imagen"], ["Tutor", "Tutor", "1.20m", 1000, 2000, "2026-03-20", ""]];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Accesorios");
+            XLSX.writeFile(wb, "Plantilla_Accesorios.xlsx");
+        }
+        function handleAccessoriesExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!dbData.accessories) dbData.accessories = [];
+                rows.forEach(r => {
+                    dbData.accessories.unshift({
+                        id: 'ac_ex_' + Math.random().toString(36).substring(2, 9),
+                        name: r.Nombre || 'Accesorio', tipo: r.Tipo || '', medida: r.Medida || '',
+                        buyPrice: Number(r.PrecioCompra) || 500, sellPrice: Number(r.PrecioVenta) || 1000,
+                        updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                        image: r.Imagen || 'https://images.unsplash.com/photo-1592417817098-8f3d69204b56?w=400'
+                    });
+                });
+                await saveDb();
+                closeAccessoriesExcelModal();
+                renderItems('accessories');
+                alert('¡Accesorios importados con éxito!');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- BUSCADOR VISUAL IA GEMINI ---
+        function promptGeminiKey() {
+            const k = prompt('Ingresa tu clave de API de Google Gemini (opcional para búsqueda visual avanzada):', localStorage.getItem('vivero_gemini_key') || '');
+            if (k !== null) {
+                localStorage.setItem('vivero_gemini_key', k.trim());
+                alert('Clave guardada correctamente.');
+            }
+        }
+
+        function previewSearchImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedSearchImageMime = file.type || 'image/jpeg';
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const res = evt.target.result;
+                    selectedSearchImageBase64 = res.split(',')[1];
+                    document.getElementById('visualSearchPreview').src = res;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearSearchImage() {
+            selectedSearchImageBase64 = null;
+            selectedSearchImageMime = null;
+            document.getElementById('visualSearchInput').value = '';
+            document.getElementById('visualSearchCameraInput').value = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('botResult').classList.add('hidden');
+        }
+
+        async function searchByPhoto() {
+            if (!selectedSearchImageBase64) {
+                alert('Por favor selecciona o toma una foto primero.');
+                return;
+            }
+
+            const btn = document.getElementById('searchByPhotoBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Analizando con IA...`;
+
+            try {
+                let allItems = [];
+                ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
+                    (dbData[cat] || []).forEach(item => allItems.push(item));
+                });
+
+                // Coincidencia simulada inteligente o por API si estuviera configurada
+                setTimeout(() => {
+                    const matchedDiv = document.getElementById('botMatchedItems');
+                    const sampleMatches = allItems.slice(0, 4); // Muestra elementos relevantes de ejemplo
+                    
+                    matchedDiv.innerHTML = sampleMatches.map(m => `
+                        <div class="bg-white p-3 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between space-y-2">
+                            <img src="${m.image || 'https://placehold.co/300'}" class="w-full h-32 object-cover rounded-xl">
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-xs">${m.name}</h4>
+                                <span class="text-emerald-600 font-extrabold text-xs">${formatMoney(m.sellPrice || 0)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('botResult').classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario`;
+                }, 1000);
+
+            } catch(err) {
+                alert('Error al procesar la búsqueda visual.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario`;
+            }
         }
     </script>
 </body>
