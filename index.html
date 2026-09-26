@@ -1,4 +1,4 @@
-[cite: 7]<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -1539,162 +1539,20 @@
                     image: finalImgUrl
                 };
                 if (!dbData.plants) dbData.plants = [];
-                dbData.plants.push(newPlant);
+                dbData.plants.unshift(newPlant);
             }
+
             saveDb();
             closePlantModal();
             renderPlants();
         }
 
         function deletePlant(id) {
-            const p = (dbData.plants || []).find(x => x.id === id);
-            const name = p ? p.name : 'esta planta';
-            openTimedDeleteModal(`Estás a punto de eliminar la planta "${name}".`, () => {
-                dbData.plants = dbData.plants.filter(x => x.id !== id);
+            openTimedDeleteModal('¿Estás seguro de eliminar esta planta?', () => {
+                dbData.plants = (dbData.plants || []).filter(p => p.id !== id);
                 saveDb();
                 renderPlants();
             });
-        }
-
-        // --- RENDERIZADO ESTÉTICO DE MACETAS ---
-        function renderPots() {
-            const grid = document.getElementById('potsGrid');
-            if (!grid) return;
-            const searchInput = document.getElementById('potSearch');
-            const search = searchInput ? searchInput.value.toLowerCase() : '';
-
-            let list = [...(dbData.pots || [])];
-            if (search) {
-                list = list.filter(p => 
-                    (p.name && p.name.toLowerCase().includes(search)) || 
-                    (p.medida && p.medida.toLowerCase().includes(search)) ||
-                    (p.material && p.material.toLowerCase().includes(search))
-                );
-            }
-
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay macetas registradas.</div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(p => {
-                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Maceta';
-                const buyP = Number(p.buyPrice) || 0;
-                const sellP = Number(p.sellPrice) || (buyP * 2);
-                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
-
-                return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
-                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Maceta'">
-                            <div class="absolute top-3 left-3 z-10">
-                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-circle-notch text-emerald-600 text-[10px]"></i> ${p.medida || 'Tamaño único'}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
-                                <i class="fa-regular fa-clock mr-1"></i>${p.updateDate || 'N/D'}
-                            </div>
-                        </div>
-
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                            <div class="space-y-1">
-                                <span class="text-[11px] font-bold text-sky-600 uppercase tracking-wider block">${p.material || 'Material estándar'}</span>
-                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
-                            </div>
-
-                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
-                                <div>
-                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
-                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
-                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-2 pt-1">
-                                <button onclick="editPot('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
-                                </button>
-                                <button onclick="deletePot('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // --- RENDERIZADO ESTÉTICO DE TIERRAS, ACCESORIOS Y QUÍMICOS ---
-        function renderItems(type) {
-            const gridId = type + 'Grid';
-            const grid = document.getElementById(gridId);
-            if (!grid) return;
-
-            let list = [...(dbData[type] || [])];
-
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay elementos registrados en esta sección.</div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(item => {
-                const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Producto';
-                const buyP = Number(item.buyPrice) || 0;
-                const sellP = Number(item.sellPrice) || (buyP * 2);
-                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
-
-                let badgeText = item.marca || item.tipo || item.medida || 'Insumo';
-                let subBadge = item.uso ? `Uso: ${item.uso}` : (item.disolucion ? `Dilución: ${item.disolucion}` : (item.medida || ''));
-
-                return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
-                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
-                            <div class="absolute top-3 left-3 z-10">
-                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-tag text-emerald-600 text-[10px]"></i> ${badgeText}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
-                                <i class="fa-regular fa-clock mr-1"></i>${item.updateDate || 'N/D'}
-                            </div>
-                        </div>
-
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                            <div class="space-y-1">
-                                <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">${subBadge}</span>
-                                <h3 class="font-bold text-slate-900 text-base leading-tight">${item.name}</h3>
-                            </div>
-
-                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
-                                <div>
-                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
-                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
-                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-2 pt-1">
-                                <button onclick="editItem('${type}', '${item.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
-                                </button>
-                                <button onclick="deleteItem('${type}', '${item.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
         }
     </script>
 </body>
