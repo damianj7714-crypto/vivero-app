@@ -2,24 +2,24 @@
 <html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ViveroApp v9.8 - Gestión Profesional de Viveros</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViveroApp - Gestión Profesional de Viveros</title>
     
     <!-- PWA & Mobile Settings -->
     <meta name="theme-color" content="#059669">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ViveroApp v9.8">
+    <meta name="apple-mobile-web-app-title" content="ViveroApp">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628324.png">
-    
-    <!-- Web App Manifest para instalación en celulares (Versión 9.8) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"ViveroApp v9.8 - Gestión de Viveros","short_name":"ViveroApp v9.8","description":"Sistema Profesional de Gestión de Viveros v9.8","start_url":".","display":"standalone","orientation":"portrait","background_color":"#f8fafc","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"ViveroApp - Gestión de Viveros","short_name":"ViveroApp","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"512x512","type":"image/png"}]}'>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel handling -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -33,7 +33,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
 
-    <!-- HEADER CON NUMERO DE VERSIÓN 9.8 -->
+    <!-- HEADER -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
@@ -41,18 +41,14 @@
                     <i class="fa-solid fa-seedling"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-1.5">
-                        <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
-                        <!-- ETIQUETA VISIBLE DE VERSIÓN 9.8 -->
-                        <span class="bg-emerald-100 text-emerald-800 text-[12px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-xs">v9.8</span>
-                    </div>
+                    <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
                     <p class="text-xs text-emerald-600 font-medium">Gestión Profesional (Precios en pesos $)</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- BOTÓN INSTALAR APP PWA -->
-                <button id="installAppBtn" onclick="installPWA()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm active:scale-95">
+                <button id="installAppBtn" onclick="installPWA()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-xl transition animate-pulse">
                     <i class="fa-solid fa-download"></i>
                     <span>Instalar App</span>
                 </button>
@@ -229,17 +225,17 @@
         <section id="section-bot" class="space-y-6 hidden">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
-                <p class="text-xs sm:text-sm text-slate-500">Toma una foto directamente desde tu celular para identificar el producto y buscar coincidencias en tu inventario actual.</p>
+                <p class="text-xs sm:text-sm text-slate-500">Sube o toma una imagen de una planta o producto para comparar y buscar coincidencias en tu inventario actual.</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                     
-                    <!-- BOTONES DUALES: CÁMARA DIRECTA Y GALERÍA -->
+                    <!-- BOTONES DUALES: CÁMARA Y GALERÍA -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="border-2 border-dashed border-emerald-400 bg-emerald-50/70 hover:bg-emerald-100/70 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px] active:scale-98" onclick="openDirectCamera()">
-                            <i class="fa-solid fa-camera text-4xl text-emerald-600 mb-2"></i>
-                            <p class="font-bold text-slate-800 text-sm">Tomar Foto con Cámara</p>
-                            <p class="text-xs text-emerald-700 mt-1">Abre la cámara del celular</p>
+                        <div class="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/50 hover:bg-emerald-100/50 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]" onclick="openCameraModal()">
+                            <i class="fa-solid fa-camera text-3xl text-emerald-600 mb-2"></i>
+                            <p class="font-semibold text-slate-800 text-sm">Tomar Foto con Cámara</p>
+                            <p class="text-xs text-slate-500 mt-1">Abre la cámara en vivo</p>
                             <input type="file" id="visualSearchCameraInput" accept="image/*" capture="environment" onchange="previewSearchImage(event)" class="hidden">
                         </div>
                         <div class="border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]" onclick="document.getElementById('visualSearchInput').click()">
@@ -256,7 +252,7 @@
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-end gap-2">
-                    <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                    <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Similitudes en Inventario
                     </button>
                 </div>
@@ -369,28 +365,19 @@
 
     </main>
 
-    <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN (Especial iOS / Celulares) -->
-    <div id="iosInstallModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
-            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-            </div>
-            <h3 class="font-bold text-slate-900 text-lg">Instalar ViveroApp v9.8</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-                Para instalar esta app en tu pantalla de inicio:
-            </p>
-            <div class="text-left bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                <p class="flex items-center gap-2 text-slate-700">
-                    <span class="font-bold bg-emerald-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">1</span>
-                    Toca el botón <strong>Compartir</strong> <i class="fa-solid fa-share-nodes text-emerald-600"></i> en la barra de tu navegador.
-                </p>
-                <p class="flex items-center gap-2 text-slate-700">
-                    <span class="font-bold bg-emerald-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span>
-                    Selecciona <strong>"Agregar a inicio"</strong> o <strong>"Instalar aplicación"</strong>.
-                </p>
-            </div>
-            <button onclick="closeIosInstallModal()" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-sm">
-                Entendido
+    <!-- MODAL DE CÁMARA EN VIVO WEBRTC (CAPTURA GARANTIZADA) -->
+    <div id="cameraModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-between p-4">
+        <div class="w-full max-w-md flex justify-between items-center text-white py-2">
+            <span class="font-bold text-sm"><i class="fa-solid fa-camera mr-2"></i> Tomar Fotografía</span>
+            <button onclick="closeCameraModal()" class="text-white text-xl p-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="relative w-full max-w-md bg-black rounded-2xl overflow-hidden aspect-3/4 shadow-2xl flex items-center justify-center">
+            <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+        </div>
+        <div class="w-full max-w-md flex justify-center items-center py-4 gap-4">
+            <button onclick="closeCameraModal()" class="px-5 py-3 bg-slate-700 text-white rounded-xl text-xs font-bold">Cancelar</button>
+            <button onclick="takeCameraSnapshot()" class="w-16 h-16 bg-white border-4 border-emerald-500 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+                <div class="w-12 h-12 bg-emerald-600 rounded-full"></div>
             </button>
         </div>
     </div>
@@ -541,30 +528,17 @@
         </div>
     </div>
 
-    <!-- MAIN JAVASCRIPT & LOGIC VERSIÓN 9.8 -->
+    <!-- MAIN JAVASCRIPT & LOGIC -->
     <script>
-        // REGISTRO DE SERVICE WORKER COMPATIBLE CON PWA INSTALABLE EN CELULARES
+        // REGISTRO DE SERVICE WORKER PARA PWA (INSTALACIÓN CELULAR)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'viveroapp-v9.8';
-                    self.addEventListener('install', (e) => {
-                        self.skipWaiting();
-                    });
-                    self.addEventListener('activate', (e) => {
-                        e.waitUntil(clients.claim());
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(
-                            fetch(e.request).catch(() => caches.match(e.request))
-                        );
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob)).catch((err) => {
-                    console.log('Error al registrar Service Worker:', err);
-                });
-            });
+            const swCode = `
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
+                self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
         }
 
         // CONTROLADOR DE INSTALACIÓN PWA
@@ -573,9 +547,7 @@
             e.preventDefault();
             deferredPrompt = e;
             const btn = document.getElementById('installAppBtn');
-            if (btn) {
-                btn.classList.remove('hidden');
-            }
+            if (btn) btn.classList.remove('hidden');
         });
 
         function installPWA() {
@@ -583,24 +555,12 @@
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((res) => {
                     if (res.outcome === 'accepted') {
-                        console.log('El usuario aceptó la instalación.');
+                        const btn = document.getElementById('installAppBtn');
+                        if (btn) btn.classList.add('hidden');
                     }
                     deferredPrompt = null;
                 });
-            } else {
-                const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
-                if (isIos || !window.matchMedia('(display-mode: standalone)').matches) {
-                    const modal = document.getElementById('iosInstallModal');
-                    if (modal) modal.classList.remove('hidden');
-                } else {
-                    alert("La aplicación ya está instalada en tu dispositivo.");
-                }
             }
-        }
-
-        function closeIosInstallModal() {
-            const modal = document.getElementById('iosInstallModal');
-            if (modal) modal.classList.add('hidden');
         }
 
         // BASE DE DATOS LOCAL
@@ -629,6 +589,7 @@
         let showBuyPrice = false;
         let activeTab = 'plants';
         let currentUploadedImageBase64 = '';
+        let cameraStream = null;
 
         // INICIALIZACIÓN
         window.addEventListener('DOMContentLoaded', () => {
@@ -850,13 +811,62 @@
             `).join('');
         }
 
-        // GESTIÓN DE CÁMARA NATIVA Y BÚSQUEDA IA
-        function openDirectCamera() {
+        // ==========================================
+        // GESTIÓN DE CÁMARA Y ARCHIVOS
+        // ==========================================
+
+        async function openCameraModal() {
+            const cameraModal = document.getElementById('cameraModal');
+            const video = document.getElementById('cameraVideo');
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: "environment" } },
+                        audio: false
+                    });
+                    video.srcObject = stream;
+                    cameraStream = stream;
+                    cameraModal.classList.remove('hidden');
+                    return;
+                } catch (err) {
+                    console.warn("WebRTC indisponible o rechazado, usando selector nativo:", err);
+                }
+            }
+            
             const input = document.getElementById('visualSearchCameraInput');
             if (input) {
                 input.value = '';
                 input.click();
             }
+        }
+
+        function takeCameraSnapshot() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            
+            const img = document.getElementById('visualSearchPreview');
+            if (img) img.src = currentUploadedImageBase64;
+            
+            const container = document.getElementById('previewContainer');
+            if (container) container.classList.remove('hidden');
+            
+            closeCameraModal();
+        }
+
+        function closeCameraModal() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            const modal = document.getElementById('cameraModal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function previewSearchImage(event) {
@@ -870,8 +880,6 @@
                 if (img) img.src = currentUploadedImageBase64;
                 const container = document.getElementById('previewContainer');
                 if (container) container.classList.remove('hidden');
-
-                searchByPhoto();
             };
             reader.readAsDataURL(file);
         }
@@ -955,295 +963,178 @@ Responde ÚNICAMENTE un JSON: {"matchedIds": ["id1", "id2"]}`;
                         const cleanJson = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
                         const parsed = JSON.parse(cleanJson);
                         if (parsed && Array.isArray(parsed.matchedIds)) {
-                            matchedItems = allCatalog.filter(item => parsed.matchedIds.includes(item.id));
+                            matchedItems = allCatalog.filter(i => parsed.matchedIds.includes(i.id));
                         }
                     }
-                } catch (err) {
-                    console.error("Error al consultar la API de Gemini:", err);
+                } catch(e) {
+                    console.error("Error al consultar la API:", e);
                 }
-            }
-
-            // Mostrar resultados
-            const resultBox = document.getElementById('botResult');
-            const container = document.getElementById('botMatchedItems');
-            if (resultBox && container) {
-                if (matchedItems.length > 0) {
-                    container.innerHTML = matchedItems.map(item => `
-                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-28 object-cover rounded-lg mb-2">
-                            <div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">${item.type}</span>
-                                <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
-                                <p class="text-xs text-slate-500 font-semibold">$${(item.obj.sellPrice || 0).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = `<div class="col-span-full text-slate-500 text-xs py-2">No se encontraron coincidencias exactas en el catálogo.</div>`;
-                }
-                resultBox.classList.remove('hidden');
             }
 
             btn.innerHTML = originalText;
             btn.disabled = false;
-        }
 
-        // FUNCIONES DE VENTA Y MODALES
-        function openSaleModal() {
-            alert("Función de carrito/venta disponible.");
-        }
+            const botResult = document.getElementById('botResult');
+            const botMatchedItems = document.getElementById('botMatchedItems');
 
-        function clearSection(type) {
-            if (confirm(`¿Estás seguro de que deseas vaciar la sección de ${type}?`)) {
-                dbData[type] = [];
-                saveDb();
-                renderCurrentTab();
+            if (botResult && botMatchedItems) {
+                if (matchedItems.length > 0) {
+                    botMatchedItems.innerHTML = matchedItems.map(item => `
+                        <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs flex flex-col justify-between">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-32 object-cover rounded-lg mb-2">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">${item.type}</span>
+                                <h4 class="font-bold text-slate-800 text-sm leading-tight">${item.name}</h4>
+                                <p class="text-xs text-slate-600 font-semibold mt-1">$${(item.obj?.sellPrice || 0).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    botMatchedItems.innerHTML = `<p class="text-xs text-slate-500 col-span-full">No se encontraron coincidencias claras en el inventario actual.</p>`;
+                }
+                botResult.classList.remove('hidden');
             }
         }
 
-        function openPlantModal() {
-            document.getElementById('plantModalTitle').innerText = 'Nueva Planta';
-            document.getElementById('plantEditId').value = '';
+        // FUNCIONES MODALES PLANTAS / MACETAS / ÍTEMS
+        function openPlantModal(id = null) {
             document.getElementById('plantForm').reset();
+            document.getElementById('plantEditId').value = id || '';
+            document.getElementById('plantModalTitle').textContent = id ? 'Editar Planta' : 'Nueva Planta';
+
+            if (id) {
+                const item = (dbData.plants || []).find(p => p.id === id);
+                if (item) {
+                    document.getElementById('plantName').value = item.name || '';
+                    document.getElementById('plantFamily').value = item.family || '';
+                    document.getElementById('plantLocation').value = item.location || 'Interior';
+                    document.getElementById('plantLight').value = item.light || '';
+                    document.getElementById('plantWater').value = item.water || '';
+                    document.getElementById('plantBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('plantSellPrice').value = item.sellPrice || 0;
+                }
+            }
             document.getElementById('plantModal').classList.remove('hidden');
         }
 
-        function closePlantModal() {
-            document.getElementById('plantModal').classList.add('hidden');
-        }
+        function closePlantModal() { document.getElementById('plantModal').classList.add('hidden'); }
 
         function savePlant(e) {
             e.preventDefault();
-            const id = document.getElementById('plantEditId').value || 'pl_' + Date.now();
-            const name = document.getElementById('plantName').value;
-            const family = document.getElementById('plantFamily').value;
+            const id = document.getElementById('plantEditId').value;
+            const name = document.getElementById('plantName').value.trim();
+            const family = document.getElementById('plantFamily').value.trim();
             const location = document.getElementById('plantLocation').value;
-            const light = document.getElementById('plantLight').value;
-            const water = document.getElementById('plantWater').value;
+            const light = document.getElementById('plantLight').value.trim();
+            const water = document.getElementById('plantWater').value.trim();
             const buyPrice = parseFloat(document.getElementById('plantBuyPrice').value) || 0;
             const sellPrice = parseFloat(document.getElementById('plantSellPrice').value) || 0;
             const fileInput = document.getElementById('plantImageFile');
 
-            const proceedSave = (imgUrl) => {
-                const existingIndex = dbData.plants.findIndex(p => p.id === id);
-                const plantObj = {
-                    id, name, family, location, light, water, buyPrice, sellPrice,
-                    image: imgUrl || (existingIndex >= 0 ? dbData.plants[existingIndex].image : 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=500')
-                };
-                if (existingIndex >= 0) {
-                    dbData.plants[existingIndex] = plantObj;
+            const commit = (imgUrl) => {
+                if (id) {
+                    const idx = dbData.plants.findIndex(p => p.id === id);
+                    if (idx !== -1) {
+                        dbData.plants[idx] = { ...dbData.plants[idx], name, family, location, light, water, buyPrice, sellPrice };
+                        if (imgUrl) dbData.plants[idx].image = imgUrl;
+                    }
                 } else {
-                    dbData.plants.push(plantObj);
+                    dbData.plants.push({
+                        id: 'pl_' + Date.now(),
+                        name, family, location, light, water, buyPrice, sellPrice,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=500'
+                    });
                 }
                 saveDb();
                 closePlantModal();
                 renderPlants();
             };
 
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (ev) => proceedSave(ev.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => commit(e.target.result);
+                r.readAsDataURL(fileInput.files[0]);
             } else {
-                proceedSave(null);
+                commit(null);
             }
         }
 
-        function editPlant(id) {
-            const plant = dbData.plants.find(p => p.id === id);
-            if (!plant) return;
-            document.getElementById('plantModalTitle').innerText = 'Editar Planta';
-            document.getElementById('plantEditId').value = plant.id;
-            document.getElementById('plantName').value = plant.name || '';
-            document.getElementById('plantFamily').value = plant.family || '';
-            document.getElementById('plantLocation').value = plant.location || 'Interior';
-            document.getElementById('plantLight').value = plant.light || '';
-            document.getElementById('plantWater').value = plant.water || '';
-            document.getElementById('plantBuyPrice').value = plant.buyPrice || 0;
-            document.getElementById('plantSellPrice').value = plant.sellPrice || 0;
-            document.getElementById('plantModal').classList.remove('hidden');
-        }
-
+        function editPlant(id) { openPlantModal(id); }
         function deletePlant(id) {
-            if (confirm("¿Deseas eliminar esta planta?")) {
+            if (confirm("¿Borrar esta planta?")) {
                 dbData.plants = dbData.plants.filter(p => p.id !== id);
                 saveDb();
                 renderPlants();
             }
         }
 
-        function openPotModal() {
-            document.getElementById('potModalTitle').innerText = 'Nueva Maceta';
-            document.getElementById('potEditId').value = '';
+        function openPotModal(id = null) {
             document.getElementById('potForm').reset();
+            document.getElementById('potEditId').value = id || '';
+            document.getElementById('potModalTitle').textContent = id ? 'Editar Maceta' : 'Nueva Maceta';
+
+            if (id) {
+                const item = (dbData.pots || []).find(p => p.id === id);
+                if (item) {
+                    document.getElementById('potName').value = item.name || '';
+                    document.getElementById('potMaterial').value = item.material || '';
+                    document.getElementById('potSize').value = item.size || '';
+                    document.getElementById('potColor').value = item.color || '';
+                    document.getElementById('potBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('potSellPrice').value = item.sellPrice || 0;
+                }
+            }
             document.getElementById('potModal').classList.remove('hidden');
         }
 
-        function closePotModal() {
-            document.getElementById('potModal').classList.add('hidden');
-        }
+        function closePotModal() { document.getElementById('potModal').classList.add('hidden'); }
 
         function savePot(e) {
             e.preventDefault();
-            const id = document.getElementById('potEditId').value || 'po_' + Date.now();
-            const name = document.getElementById('potName').value;
-            const material = document.getElementById('potMaterial').value;
-            const size = document.getElementById('potSize').value;
-            const color = document.getElementById('potColor').value;
+            const id = document.getElementById('potEditId').value;
+            const name = document.getElementById('potName').value.trim();
+            const material = document.getElementById('potMaterial').value.trim();
+            const size = document.getElementById('potSize').value.trim();
+            const color = document.getElementById('potColor').value.trim();
             const buyPrice = parseFloat(document.getElementById('potBuyPrice').value) || 0;
             const sellPrice = parseFloat(document.getElementById('potSellPrice').value) || 0;
             const fileInput = document.getElementById('potImageFile');
 
-            const proceedSave = (imgUrl) => {
-                const existingIndex = dbData.pots.findIndex(p => p.id === id);
-                const potObj = {
-                    id, name, material, size, color, buyPrice, sellPrice,
-                    image: imgUrl || (existingIndex >= 0 ? dbData.pots[existingIndex].image : 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500')
-                };
-                if (existingIndex >= 0) {
-                    dbData.pots[existingIndex] = potObj;
+            const commit = (imgUrl) => {
+                if (id) {
+                    const idx = dbData.pots.findIndex(p => p.id === id);
+                    if (idx !== -1) {
+                        dbData.pots[idx] = { ...dbData.pots[idx], name, material, size, color, buyPrice, sellPrice };
+                        if (imgUrl) dbData.pots[idx].image = imgUrl;
+                    }
                 } else {
-                    dbData.pots.push(potObj);
+                    dbData.pots.push({
+                        id: 'po_' + Date.now(),
+                        name, material, size, color, buyPrice, sellPrice,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500'
+                    });
                 }
                 saveDb();
                 closePotModal();
                 renderPots();
             };
 
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (ev) => proceedSave(ev.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => commit(e.target.result);
+                r.readAsDataURL(fileInput.files[0]);
             } else {
-                proceedSave(null);
+                commit(null);
             }
         }
 
-        function editPot(id) {
-            const pot = dbData.pots.find(p => p.id === id);
-            if (!pot) return;
-            document.getElementById('potModalTitle').innerText = 'Editar Maceta';
-            document.getElementById('potEditId').value = pot.id;
-            document.getElementById('potName').value = pot.name || '';
-            document.getElementById('potMaterial').value = pot.material || '';
-            document.getElementById('potSize').value = pot.size || '';
-            document.getElementById('potColor').value = pot.color || '';
-            document.getElementById('potBuyPrice').value = pot.buyPrice || 0;
-            document.getElementById('potSellPrice').value = pot.sellPrice || 0;
-            document.getElementById('potModal').classList.remove('hidden');
-        }
-
+        function editPot(id) { openPotModal(id); }
         function deletePot(id) {
-            if (confirm("¿Deseas eliminar esta maceta?")) {
+            if (confirm("¿Borrar esta maceta?")) {
                 dbData.pots = dbData.pots.filter(p => p.id !== id);
                 saveDb();
                 renderPots();
             }
-        }
-
-        function openItemModal(type, id = '') {
-            document.getElementById('itemType').value = type;
-            document.getElementById('itemEditId').value = id;
-            document.getElementById('itemForm').reset();
-            const titleMap = { tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
-            document.getElementById('itemModalTitle').innerText = id ? `Editar ${titleMap[type] || 'Ítem'}` : `Nuevo ${titleMap[type] || 'Ítem'}`;
-
-            if (id) {
-                const item = (dbData[type] || []).find(i => i.id === id);
-                if (item) {
-                    document.getElementById('itemName').value = item.name || '';
-                    document.getElementById('itemBuyPrice').value = item.buyPrice || 0;
-                    document.getElementById('itemSellPrice').value = item.sellPrice || 0;
-                }
-            }
-            document.getElementById('itemModal').classList.remove('hidden');
-        }
-
-        function closeItemModal() {
-            document.getElementById('itemModal').classList.add('hidden');
-        }
-
-        function saveItem(e) {
-            e.preventDefault();
-            const type = document.getElementById('itemType').value;
-            const id = document.getElementById('itemEditId').value || (type.substring(0, 2) + '_' + Date.now());
-            const name = document.getElementById('itemName').value;
-            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
-            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || 0;
-            const fileInput = document.getElementById('itemImageFile');
-
-            if (!dbData[type]) dbData[type] = [];
-
-            const proceedSave = (imgUrl) => {
-                const existingIndex = dbData[type].findIndex(i => i.id === id);
-                const itemObj = {
-                    id, name, buyPrice, sellPrice,
-                    image: imgUrl || (existingIndex >= 0 ? dbData[type][existingIndex].image : 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=500')
-                };
-                if (existingIndex >= 0) {
-                    dbData[type][existingIndex] = itemObj;
-                } else {
-                    dbData[type].push(itemObj);
-                }
-                saveDb();
-                closeItemModal();
-                renderItems(type);
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (ev) => proceedSave(ev.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                proceedSave(null);
-            }
-        }
-
-        function deleteItem(type, id) {
-            if (confirm("¿Deseas eliminar este ítem?")) {
-                dbData[type] = (dbData[type] || []).filter(i => i.id !== id);
-                saveDb();
-                renderItems(type);
-            }
-        }
-
-        function renderSales() {
-            const tbody = document.getElementById('salesTableBody');
-            if (!tbody) return;
-            const sales = dbData.sales || [];
-            if (sales.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay ventas registradas.</td></tr>`;
-                document.getElementById('totalSalesAmount').innerText = '$0';
-                document.getElementById('totalSalesCount').innerText = '0';
-                return;
-            }
-            let total = 0;
-            tbody.innerHTML = sales.map(s => {
-                total += (s.total || 0);
-                return `
-                    <tr>
-                        <td class="p-4 text-slate-600 text-xs">${s.date || 'N/A'}</td>
-                        <td class="p-4 font-semibold text-slate-800">${s.items || 'Venta'}</td>
-                        <td class="p-4 text-center">${s.qty || 1}</td>
-                        <td class="p-4 font-bold text-emerald-700">$${(s.total || 0).toLocaleString()}</td>
-                        <td class="p-4 text-right"><button class="text-rose-600 hover:text-rose-800 text-xs font-semibold"><i class="fa-solid fa-trash"></i></button></td>
-                    </tr>
-                `;
-            }).join('');
-            document.getElementById('totalSalesAmount').innerText = `$${total.toLocaleString()}`;
-            document.getElementById('totalSalesCount').innerText = sales.length.toString();
-        }
-
-        function setSalesPreset(preset) {
-            console.log('Preset seleccionado:', preset);
-        }
-
-        function openFirebaseModal() {
-            alert("Configuración de Firebase.");
-        }
-
-        function openFirebaseDiagnosticsModal() {
-            alert("Diagnóstico de conexión Firebase.");
         }
     </script>
 </body>
