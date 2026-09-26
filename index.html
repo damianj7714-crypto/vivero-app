@@ -1985,9 +1985,12 @@
         }
 
         function filterCartInventory() {
-            const q = document.getElementById('cartSearchInput').value.toLowerCase().trim();
+            const rawQ = document.getElementById('cartSearchInput').value.toLowerCase().trim();
             const resContainer = document.getElementById('cartSearchResults');
-            if (!q) { resContainer.innerHTML = ''; return; }
+            if (!rawQ) { resContainer.innerHTML = ''; return; }
+
+            // Divide la búsqueda por espacios para permitir buscar varias palabras (ej: "maceta 14")
+            const queryTerms = rawQ.split(/\s+/);
 
             let allProducts = [];
             ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
@@ -1996,27 +1999,15 @@
                 });
             });
 
-            // Búsqueda robusta y completa en todos los inventarios y propiedades
+            // Búsqueda exhaustiva combinando todas las propiedades de todos los inventarios
             const matched = allProducts.filter(p => {
-                const name = (p.name || '').toLowerCase();
-                const family = (p.family || '').toLowerCase();
-                const marca = (p.marca || '').toLowerCase();
-                const tipo = (p.tipo || '').toLowerCase();
-                const material = (p.material || '').toLowerCase();
-                const medida = (p.medida || '').toLowerCase();
-                const uso = (p.uso || '').toLowerCase();
-                const disolucion = (p.disolucion || '').toLowerCase();
-                const pot = (p.pot || '').toLowerCase();
+                const combinedText = [
+                    p.name, p.family, p.marca, p.tipo, 
+                    p.material, p.medida, p.uso, p.disolucion, p.pot
+                ].filter(Boolean).join(' ').toLowerCase();
 
-                return name.includes(q) || 
-                       family.includes(q) || 
-                       marca.includes(q) || 
-                       tipo.includes(q) || 
-                       material.includes(q) || 
-                       medida.includes(q) || 
-                       uso.includes(q) || 
-                       disolucion.includes(q) || 
-                       pot.includes(q);
+                // Verifica que cada palabra escrita esté presente en el producto
+                return queryTerms.every(term => combinedText.includes(term));
             });
 
             if (matched.length === 0) {
@@ -2024,20 +2015,23 @@
                 return;
             }
 
-            resContainer.innerHTML = matched.map(p => `
-                <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 transition">
-                    <div class="flex items-center gap-2.5">
-                        <img src="${p.image || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover">
-                        <div>
-                            <h5 class="font-bold text-slate-800 text-xs">${p.name}</h5>
-                            <span class="text-[10px] text-emerald-600 font-semibold">${formatMoney(p.sellPrice || 0)}</span>
+            resContainer.innerHTML = matched.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return `
+                    <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 transition">
+                        <div class="flex items-center gap-2.5">
+                            <img src="${p.image || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover">
+                            <div>
+                                <h5 class="font-bold text-slate-800 text-xs">${p.name}</h5>
+                                <span class="text-[10px] text-emerald-600 font-semibold">${formatMoney(p.sellPrice || 0)}</span>
+                            </div>
                         </div>
+                        <button type="button" onclick="addToCart('${p.id}', '${safeName}', ${p.sellPrice || 0}, '${p.category}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-lg transition">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
                     </div>
-                    <button type="button" onclick="addToCart('${p.id}', '${p.name}', ${p.sellPrice || 0}, '${p.category}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-lg transition">
-                        <i class="fa-solid fa-plus"></i> Agregar
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function addToCart(id, name, price, category) {
