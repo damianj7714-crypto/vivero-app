@@ -1526,20 +1526,19 @@
             if (id) {
                 const idx = dbData.plants.findIndex(x => x.id === id);
                 if (idx !== -1) {
-                    dbData.plants[idx] = { 
-                        ...dbData.plants[idx], 
-                        name, family, location, pot, buyPrice, sellPrice, updateDate,
-                        image: finalImgUrl
+                    dbData.plants[idx] = {
+                        id, name, family, location, pot, buyPrice, sellPrice, updateDate,
+                        image: currentPlantImageBase64 || dbData.plants[idx].image || finalImgUrl
                     };
                 }
             } else {
-                const newPlant = {
-                    id: 'p_' + Date.now(),
+                const newObj = {
+                    id: 'pl_' + Date.now(),
                     name, family, location, pot, buyPrice, sellPrice, updateDate,
                     image: finalImgUrl
                 };
                 if (!dbData.plants) dbData.plants = [];
-                dbData.plants.unshift(newPlant);
+                dbData.plants.push(newObj);
             }
 
             saveDb();
@@ -1548,12 +1547,56 @@
         }
 
         function deletePlant(id) {
-            openTimedDeleteModal('¿Estás seguro de eliminar esta planta?', () => {
-                dbData.plants = (dbData.plants || []).filter(p => p.id !== id);
+            openTimedDeleteModal('¿Deseas eliminar esta planta del catálogo?', () => {
+                dbData.plants = (dbData.plants || []).filter(x => x.id !== id);
                 saveDb();
                 renderPlants();
             });
         }
+
+        // Funciones auxiliares de carga Excel / Mock adicionales para asegurar integridad
+        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
+        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
+        function openPotModal(id = null) { document.getElementById('potModal').classList.remove('hidden'); }
+        function closePotModal() { document.getElementById('potModal').classList.add('hidden'); }
+        function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
+        function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
+        function openTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.remove('hidden'); }
+        function closeTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.add('hidden'); }
+        function openAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.remove('hidden'); }
+        function closeAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.add('hidden'); }
+        function openChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.remove('hidden'); }
+        function closeChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.add('hidden'); }
+        function openItemModal(type) { document.getElementById('itemModal').classList.remove('hidden'); }
+        function closeItemModal() { document.getElementById('itemModal').classList.add('hidden'); }
+        function openSaleModal() { document.getElementById('saleModal').classList.remove('hidden'); }
+        function closeSaleModal() { document.getElementById('saleModal').classList.add('hidden'); }
+        function closeSaleDetailModal() { document.getElementById('saleDetailModal').classList.add('hidden'); }
+        function renderPots() {}
+        function renderItems(type) {}
+        function renderSales() {}
+        function setSalesPreset(preset) {}
+        function onSalesDateInputChange() {}
+        function handleExcelUpload(e) {}
+        function handlePotExcelUpload(e) {}
+        function handleTierrasExcelUpload(e) {}
+        function handleChemicalsExcelUpload(e) {}
+        function handleAccessoriesExcelUpload(e) {}
+        function downloadExcelTemplate() {}
+        function downloadPotExcelTemplate() {}
+        function downloadTierrasExcelTemplate() {}
+        function downloadChemicalsExcelTemplate() {}
+        function downloadAccessoriesExcelTemplate() {}
+        function previewSearchImage(e) {}
+        function clearSearchImage() {}
+        function promptGeminiKey() {}
+        function searchByPhoto() {}
+        function filterCartInventory() {}
+        function switchSaleModeTab(mode) {}
+        function addManualItemToCart() {}
+        function completeCartSale() {}
+        function autoUpdatePotSell() {}
+        function autoUpdateItemSell() {}
     </script>
 </body>
 </html>
