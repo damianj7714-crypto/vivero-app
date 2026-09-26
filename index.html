@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
     
     <!-- Manifest inline vía Data URI para instalación directa PWA -->
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSGWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzI5JkNpbS01MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSGWaXZlcm9zIicic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlUGciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn0seyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz01MTIiLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2533,11 +2533,11 @@
                     return;
                 }
 
-                const promptText = `Eres un asistente experto en un vivero. Analiza la imagen proporcionada y compárala con todos los productos de nuestro inventario general (que incluye plantas, macetas, tierras, accesorios y químicos). Identifica los productos que mejor coincidan o guarden mayor similitud con la imagen.
+                const promptText = `Eres un asistente experto en un vivero. Analiza la imagen proporcionada y compárala con todos los productos de nuestro inventario general (que incluye plantas, macetas, tierras, accesorios y químicos). Identifica los productos que mejor coincidan o guarden mayor similitud visual o conceptual con la imagen.
 Inventario disponible:
-${JSON.stringify(allItems.map(i => ({ id: i.id, name: i.name, category: i.category, info: i.family || i.tipo || i.marca || i.medida || i.material || '' })))}
+${JSON.stringify(allItems.map(i => ({ id: i.id, name: i.name, category: i.category, info: i.family || i.tipo || i.marca || i.medida || i.material || i.uso || '' })))}
 
-Devuelve ÚNICAMENTE un objeto JSON con el siguiente formato estricto (sin texto adicional ni bloques markdown fuera del JSON):
+Devuelve ÚNICAMENTE un objeto JSON válido con este formato estricto, sin texto adicional ni bloques markdown fuera del JSON:
 {
   "matchedIds": ["id1", "id2"]
 }`;
@@ -2562,22 +2562,28 @@ Devuelve ÚNICAMENTE un objeto JSON con el siguiente formato estricto (sin texto
 
                 const data = await response.json();
                 const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-                const cleanJsonStr = candidateText.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 let parsed = { matchedIds: [] };
                 try {
-                    parsed = JSON.parse(cleanJsonStr);
+                    const jsonMatch = candidateText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        parsed = JSON.parse(jsonMatch[0]);
+                    } else {
+                        parsed = JSON.parse(candidateText);
+                    }
                 } catch(parseErr) {
-                    console.warn("No se pudo parsear el JSON de la IA, mostrando primeros resultados...");
+                    console.warn("No se pudo parsear el JSON de la IA:", parseErr);
                 }
 
                 let matchedList = [];
-                if (parsed.matchedIds && parsed.matchedIds.length > 0) {
+                if (parsed.matchedIds && Array.isArray(parsed.matchedIds) && parsed.matchedIds.length > 0) {
                     matchedList = allItems.filter(item => parsed.matchedIds.includes(item.id));
                 }
 
+                // Respaldo dinámico y variado si no hay coincidencia exacta por ID
                 if (matchedList.length === 0) {
-                    matchedList = allItems.slice(0, 4);
+                    const shuffled = [...allItems].sort(() => 0.5 - Math.random());
+                    matchedList = shuffled.slice(0, Math.min(4, shuffled.length));
                 }
 
                 const matchedDiv = document.getElementById('botMatchedItems');
@@ -2585,7 +2591,7 @@ Devuelve ÚNICAMENTE un objeto JSON con el siguiente formato estricto (sin texto
 
                 matchedDiv.innerHTML = matchedList.map(m => `
                     <div class="bg-white p-3 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between space-y-2">
-                        <img src="${m.image || 'https://placehold.co/300'}" class="w-full h-32 object-cover rounded-xl">
+                        <img src="${m.image || 'https://placehold.co/300'}" class="w-full h-32 object-cover rounded-xl" onerror="this.src='https://placehold.co/300'">
                         <div>
                             <span class="text-[10px] font-bold text-emerald-600 uppercase">${catNames[m.category] || m.category}</span>
                             <h4 class="font-bold text-slate-900 text-xs truncate">${m.name}</h4>
