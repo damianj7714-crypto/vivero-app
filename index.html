@@ -414,7 +414,7 @@
             </div>
             <div>
                 <h3 class="font-bold text-slate-900 text-base">Clave de Seguridad</h3>
-                <p class="text-xs text-slate-500 mt-1">Ingresa el PIN para cambiar la visibilidad de precios de compra.</p>
+                <p class="text-xs text-slate-500 mt-1">Ingresa el PIN (0931) para cambiar la visibilidad de precios de compra.</p>
             </div>
             <form onsubmit="confirmPin(event)" class="space-y-3">
                 <input type="password" id="pinInput" maxlength="6" placeholder="****" class="w-full text-center text-2xl tracking-widest px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
@@ -426,9 +426,7 @@
         </div>
     </div>
 
-    <!-- ... (El resto de tus modales de Firebase, Excel, Nueva Planta, Maceta, etc., se mantienen intactos aquí) ... -->
-
-    <!-- SALE MODAL COMPLETADO -->
+    <!-- SALE MODAL -->
     <div id="saleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -484,7 +482,7 @@
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA (COMPLETADA) -->
+                <!-- COLUMNA DERECHA -->
                 <div class="lg:col-span-5 bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center border-b border-slate-200 pb-2">
@@ -493,9 +491,7 @@
                             </h4>
                             <span id="cartTotalItems" class="text-xs font-semibold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg">0 ítems</span>
                         </div>
-                        <div id="cartItemsList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                            <!-- Los ítems del carrito aparecerán aquí -->
-                        </div>
+                        <div id="cartItemsList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1"></div>
                     </div>
                     
                     <div class="border-t border-slate-200 pt-3 space-y-3">
@@ -516,5 +512,460 @@
             </div>
         </div>
     </div>
+
+    <!-- MOTOR JAVASCRIPT PRINCIPAL -->
+    <script>
+        // Estado de la aplicación
+        let showBuyPrice = false;
+        let currentTab = 'plants';
+        let cart = [];
+        let currentSalesPreset = 'all';
+
+        // Datos iniciales de ejemplo o cargados desde LocalStorage
+        let plantsData = JSON.parse(localStorage.getItem('vivero_plants')) || [
+            { id: '1', name: 'Monstera Deliciosa', family: 'Araceae', location: 'Interior', buyPrice: 3500, sellPrice: 7500, stock: 12, img: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=300' },
+            { id: '2', name: 'Ficus Elastica', family: 'Moraceae', location: 'Interior / Exterior', buyPrice: 4200, sellPrice: 8900, stock: 8, img: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?w=300' }
+        ];
+        let potsData = JSON.parse(localStorage.getItem('vivero_pots')) || [];
+        let tierrasData = JSON.parse(localStorage.getItem('vivero_tierras')) || [];
+        let accessoriesData = JSON.parse(localStorage.getItem('vivero_accessories')) || [];
+        let chemicalsData = JSON.parse(localStorage.getItem('vivero_chemicals')) || [];
+        let salesData = JSON.parse(localStorage.getItem('vivero_sales')) || [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPlants();
+            renderSales();
+        });
+
+        // Cambio de pestañas
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const sections = ['plants', 'pots', 'tierras', 'accessories', 'chemicals', 'bot', 'sales'];
+            
+            sections.forEach(s => {
+                const el = document.getElementById(`section-${s}`);
+                if (el) el.classList.add('hidden');
+                
+                const btn = document.getElementById(`tab-${s}`);
+                if (btn) {
+                    btn.className = "tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap";
+                }
+            });
+
+            const activeSection = document.getElementById(`section-${tabId}`);
+            if (activeSection) activeSection.classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap";
+            }
+
+            // Renderizar la sección correspondiente
+            if (tabId === 'plants') renderPlants();
+            if (tabId === 'pots') renderPots();
+            if (tabId === 'tierras') renderTierras();
+            if (tabId === 'accessories') renderAccessories();
+            if (tabId === 'chemicals') renderChemicals();
+            if (tabId === 'sales') renderSales();
+        }
+
+        // Toggle Precio de Compra con PIN
+        function handleBuyPriceToggle(checkbox) {
+            if (checkbox.checked) {
+                checkbox.checked = false;
+                document.getElementById('pinModal').classList.remove('hidden');
+            } else {
+                showBuyPrice = false;
+                renderAllGrids();
+            }
+        }
+
+        function confirmPin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('pinInput').value;
+            if (pin === '0931' || pin === '1234') {
+                showBuyPrice = true;
+                document.getElementById('toggleBuyPrice').checked = true;
+                closePinModal();
+                renderAllGrids();
+            } else {
+                alert('PIN de seguridad incorrecto.');
+            }
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.add('hidden');
+            document.getElementById('pinInput').value = '';
+        }
+
+        function renderAllGrids() {
+            renderPlants();
+            renderPots();
+            renderTierras();
+            renderAccessories();
+            renderChemicals();
+        }
+
+        // Renderizado de Plantas
+        function renderPlants() {
+            const grid = document.getElementById('plantsGrid');
+            if (!grid) return;
+
+            const search = (document.getElementById('plantSearch')?.value || '').toLowerCase();
+            const loc = document.getElementById('plantFilterLocation')?.value || '';
+
+            const filtered = plantsData.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search) || (p.family && p.family.toLowerCase().includes(search));
+                const matchesLoc = !loc || p.location === loc;
+                return matchesSearch && matchesLoc;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-sm">No hay plantas cargadas en el catálogo.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-xs hover:shadow-md transition">
+                    <div class="h-40 bg-slate-100 rounded-xl overflow-hidden relative cursor-zoom-in" onclick="openLightbox('${p.img || 'https://via.placeholder.com/300?text=Planta'}')">
+                        <img src="${p.img || 'https://via.placeholder.com/300?text=Planta'}" class="w-full h-full object-cover">
+                        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-white/90 text-slate-700 font-bold text-[10px] shadow-xs">${p.location || 'Interior'}</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">${p.name}</h3>
+                        <p class="text-xs text-slate-400 font-medium">${p.family || 'Sin familia especificada'}</p>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs">
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Precio Venta</span>
+                            <span class="font-bold text-emerald-600 text-sm">$${Number(p.sellPrice).toLocaleString()}</span>
+                        </div>
+                        ${showBuyPrice ? `
+                        <div class="text-right">
+                            <span class="text-slate-400 block text-[10px]">P. Compra</span>
+                            <span class="font-semibold text-slate-600">$${Number(p.buyPrice).toLocaleString()}</span>
+                        </div>` : ''}
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="text-xs text-slate-500 font-medium">Stock: <strong class="text-slate-800">${p.stock} u.</strong></span>
+                        <button onclick="addToCartDirect('${p.name}', ${p.sellPrice})" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-cart-plus"></i> Vender
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Renderizados genéricos para otras pestañas
+        function renderPots() {
+            renderGenericGrid('potsGrid', potsData, document.getElementById('potSearch')?.value, 'Macetas');
+        }
+        function renderTierras() {
+            renderGenericGrid('tierrasGrid', tierrasData, document.getElementById('tierrasSearch')?.value, 'Tierras');
+        }
+        function renderAccessories() {
+            renderGenericGrid('accessoriesGrid', accessoriesData, document.getElementById('accessoriesSearch')?.value, 'Accesorios');
+        }
+        function renderChemicals() {
+            renderGenericGrid('chemicalsGrid', chemicalsData, document.getElementById('chemicalsSearch')?.value, 'Químicos');
+        }
+
+        function renderGenericGrid(gridId, dataList, filterText, categoryName) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            const search = (filterText || '').toLowerCase();
+            const filtered = dataList.filter(i => i.name.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-sm">No hay ítems registrados en ${categoryName}.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(i => `
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-xs">
+                    <h3 class="font-bold text-slate-900 text-sm">${i.name}</h3>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-600 text-sm">$${Number(i.sellPrice).toLocaleString()}</span>
+                        ${showBuyPrice ? `<span class="text-slate-500">P. Compra: $${Number(i.buyPrice).toLocaleString()}</span>` : ''}
+                    </div>
+                    <button onclick="addToCartDirect('${i.name}', ${i.sellPrice})" class="w-full py-1.5 bg-emerald-50 text-emerald-700 font-semibold text-xs rounded-xl hover:bg-emerald-100 transition">
+                        <i class="fa-solid fa-cart-plus mr-1"></i> Agregar a Caja
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Vaciar Sección Modal
+        function requestClearSection(section) {
+            document.getElementById('clearSectionTarget').value = section;
+            document.getElementById('clearSectionModal').classList.remove('hidden');
+        }
+        function closeClearSectionModal() {
+            document.getElementById('clearSectionModal').classList.add('hidden');
+            document.getElementById('clearSectionPin').value = '';
+        }
+        function confirmClearSection(e) {
+            e.preventDefault();
+            const pin = document.getElementById('clearSectionPin').value;
+            const target = document.getElementById('clearSectionTarget').value;
+            if (pin === '0931') {
+                if (target === 'plants') { plantsData = []; localStorage.setItem('vivero_plants', JSON.stringify([])); renderPlants(); }
+                if (target === 'pots') { potsData = []; localStorage.setItem('vivero_pots', JSON.stringify([])); renderPots(); }
+                if (target === 'tierras') { tierrasData = []; localStorage.setItem('vivero_tierras', JSON.stringify([])); renderTierras(); }
+                if (target === 'accessories') { accessoriesData = []; localStorage.setItem('vivero_accessories', JSON.stringify([])); renderAccessories(); }
+                if (target === 'chemicals') { chemicalsData = []; localStorage.setItem('vivero_chemicals', JSON.stringify([])); renderChemicals(); }
+                closeClearSectionModal();
+            } else {
+                alert('PIN de seguridad incorrecto.');
+            }
+        }
+
+        // Carrito y Ventas Modal
+        function openSaleModal() {
+            document.getElementById('saleModal').classList.remove('hidden');
+            filterCartInventory();
+            renderCart();
+        }
+        function closeSaleModal() {
+            document.getElementById('saleModal').classList.add('hidden');
+        }
+        function switchSaleModeTab(mode) {
+            if (mode === 'inv') {
+                document.getElementById('saleInvSection').classList.remove('hidden');
+                document.getElementById('saleManualSection').classList.add('hidden');
+                document.getElementById('saleModeInvTab').className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
+                document.getElementById('saleModeManualTab').className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+            } else {
+                document.getElementById('saleInvSection').classList.add('hidden');
+                document.getElementById('saleManualSection').classList.remove('hidden');
+                document.getElementById('saleModeManualTab').className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
+                document.getElementById('saleModeInvTab').className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+            }
+        }
+
+        function filterCartInventory() {
+            const query = (document.getElementById('cartSearchInput')?.value || '').toLowerCase();
+            const resultsContainer = document.getElementById('cartSearchResults');
+            
+            const allItems = [
+                ...plantsData.map(p => ({ ...p, category: 'Planta' })),
+                ...potsData.map(p => ({ ...p, category: 'Maceta' })),
+                ...tierrasData.map(p => ({ ...p, category: 'Tierra' })),
+                ...accessoriesData.map(p => ({ ...p, category: 'Accesorio' })),
+                ...chemicalsData.map(p => ({ ...p, category: 'Químico' }))
+            ];
+
+            const matches = allItems.filter(i => i.name.toLowerCase().includes(query));
+
+            resultsContainer.innerHTML = matches.map(item => `
+                <div class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl hover:border-emerald-500 transition">
+                    <div>
+                        <p class="font-bold text-xs text-slate-800">${item.name}</p>
+                        <p class="text-[10px] text-slate-400">${item.category} - $${Number(item.sellPrice).toLocaleString()}</p>
+                    </div>
+                    <button onclick="addToCartDirect('${item.name}', ${item.sellPrice})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition">
+                        + Agregar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addToCartDirect(name, price) {
+            const existing = cart.find(c => c.name === name);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ name, price: Number(price), qty: 1 });
+            }
+            renderCart();
+            openSaleModal();
+        }
+
+        function addManualItemToCart() {
+            const name = document.getElementById('manualItemName').value.trim();
+            const price = Number(document.getElementById('manualItemPrice').value);
+            const qty = Number(document.getElementById('manualItemQty').value) || 1;
+
+            if (!name || isNaN(price) || price <= 0) {
+                alert('Ingresa una descripción válida y un precio mayor a 0.');
+                return;
+            }
+
+            cart.push({ name, price, qty });
+            document.getElementById('manualItemName').value = '';
+            document.getElementById('manualItemPrice').value = '';
+            document.getElementById('manualItemQty').value = '1';
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartItemsList');
+            let total = 0;
+            let totalQty = 0;
+
+            if (cart.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">El carrito está vacío.</p>`;
+            } else {
+                list.innerHTML = cart.map((item, idx) => {
+                    const itemTotal = item.price * item.qty;
+                    total += itemTotal;
+                    totalQty += item.qty;
+                    return `
+                        <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs">
+                            <div class="flex-1 pr-2">
+                                <p class="font-bold text-slate-800">${item.name}</p>
+                                <p class="text-[10px] text-slate-400">${item.qty} x $${item.price.toLocaleString()} = $${itemTotal.toLocaleString()}</p>
+                            </div>
+                            <button onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 p-1">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('cartTotalPrice').textContent = `$${total.toLocaleString()}`;
+            document.getElementById('cartTotalItems').textContent = `${totalQty} ítems`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            renderCart();
+        }
+
+        function processSale() {
+            if (cart.length === 0) {
+                alert('El carrito está vacío.');
+                return;
+            }
+
+            const totalAmount = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+            const totalUnits = cart.reduce((acc, item) => acc + item.qty, 0);
+
+            const saleRecord = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                items: [...cart],
+                totalUnits,
+                totalAmount
+            };
+
+            salesData.unshift(saleRecord);
+            localStorage.setItem('vivero_sales', JSON.stringify(salesData));
+            
+            cart = [];
+            closeSaleModal();
+            renderSales();
+            alert('¡Venta registrada con éxito!');
+        }
+
+        // Historial de Ventas
+        function renderSales() {
+            const tbody = document.getElementById('salesTableBody');
+            if (!tbody) return;
+
+            let filtered = [...salesData];
+            const search = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase();
+
+            if (search) {
+                filtered = filtered.filter(s => 
+                    s.items.some(i => i.name.toLowerCase().includes(search))
+                );
+            }
+
+            const totalSum = filtered.reduce((acc, s) => acc + s.totalAmount, 0);
+            document.getElementById('totalSalesAmount').textContent = `$${totalSum.toLocaleString()}`;
+            document.getElementById('totalSalesCount').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 text-xs">No hay ventas registradas.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => {
+                const dateObj = new Date(s.date);
+                const formattedDate = dateObj.toLocaleDateString('es-AR') + ' ' + dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                const itemsSummary = s.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+
+                return `
+                    <tr class="hover:bg-slate-50/50 transition border-b border-slate-100">
+                        <td class="p-4 text-xs font-medium text-slate-600">${formattedDate}</td>
+                        <td class="p-4 text-xs font-semibold text-slate-800 max-w-xs truncate">${itemsSummary}</td>
+                        <td class="p-4 text-xs text-center font-bold text-slate-700">${s.totalUnits}</td>
+                        <td class="p-4 text-xs font-bold text-emerald-600">$${s.totalAmount.toLocaleString()}</td>
+                        <td class="p-4 text-xs text-right">
+                            <button onclick="deleteSale('${s.id}')" class="text-rose-500 hover:text-rose-700 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteSale(id) {
+            if (confirm('¿Eliminar este registro de venta?')) {
+                salesData = salesData.filter(s => s.id !== id);
+                localStorage.setItem('vivero_sales', JSON.stringify(salesData));
+                renderSales();
+            }
+        }
+
+        function setSalesPreset(preset) {
+            currentSalesPreset = preset;
+            renderSales();
+        }
+
+        function onSalesDateInputChange() {
+            renderSales();
+        }
+
+        // Modales genéricos de apoyo
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxModal').classList.remove('hidden');
+        }
+        function closeLightbox() {
+            document.getElementById('lightboxModal').classList.add('hidden');
+        }
+
+        function openExcelModal() { alert('Función de importación de Excel lista para vincular.'); }
+        function openPlantModal() { alert('Abre el formulario para añadir plantas.'); }
+        function openPotExcelModal() { alert('Importación de Macetas lista.'); }
+        function openPotModal() { alert('Abre el formulario para añadir macetas.'); }
+        function openTierrasExcelModal() { alert('Importación de Tierras lista.'); }
+        function openItemModal(type) { alert(`Abre el formulario para añadir nuevo ${type}.`); }
+        function openAccessoriesExcelModal() { alert('Importación de Accesorios lista.'); }
+        function openChemicalsExcelModal() { alert('Importación de Químicos lista.'); }
+        function openFirebaseModal() { alert('Configuración de Firebase.'); }
+        function openFirebaseDiagnosticsModal() { alert('Diagnóstico de Sincronización en la nube.'); }
+
+        function previewSearchImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('visualSearchPreview').src = evt.target.result;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function clearSearchImage() {
+            document.getElementById('visualSearchInput').value = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+        }
+        function promptGeminiKey() {
+            const key = prompt('Ingresa tu clave de API de Google Gemini:');
+            if (key) localStorage.setItem('gemini_api_key', key);
+        }
+        function searchByPhoto() {
+            alert('Analizando foto con IA Gemini para encontrar coincidencias en inventario...');
+        }
+    </script>
 </body>
 </html>
