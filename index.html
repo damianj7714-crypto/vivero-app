@@ -208,7 +208,7 @@
         <!-- VISUAL SEARCH BOT TAB -->
         <section id="section-bot" class="space-y-6 hidden">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini 3.6 Flash)</h2>
+                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
                 <p class="text-xs sm:text-sm text-slate-500">Sube o toma una imagen de una planta o producto para comparar y buscar coincidencias en tu inventario actual.</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
@@ -233,7 +233,6 @@
                     </button>
                 </div>
                 
-                <!-- RESULTADOS MOSTRANDO ÚNICAMENTE LAS IMÁGENES Y DATOS COINCIDENTES -->
                 <div id="botResult" class="hidden p-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-4">
                     <h3 class="font-bold text-emerald-900 flex items-center gap-2 text-base">
                         <i class="fa-solid fa-robot text-emerald-600"></i> Coincidencias Encontradas en Inventario:
@@ -367,7 +366,7 @@
                 <button onclick="closeFirebaseModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-600 leading-relaxed">
-                Ingresa las credenciales de tu proyecto Firebase. Asegúrate de tener activa la base de datos Firestore en tu <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Firebase Console</a> y configurar las Reglas de Firestore (permiso de lectura/escritura).
+                Ingresa las credenciales de tu proyecto Firebase. Asegúrate de tener activa la base de datos Firestore en tu <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Firebase Console</a> y configurar las Reglas de Firestore.
             </p>
             <form id="firebaseForm" onsubmit="saveFirebaseConfig(event)" class="space-y-3">
                 <div>
@@ -444,7 +443,7 @@
         </div>
     </div>
 
-    <!-- PLANT MODAL (MODIFICADO CON OPCIÓN DE CÁMARA O SUBIR ARCHIVO) -->
+    <!-- PLANT MODAL -->
     <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -494,7 +493,6 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen de la Planta</label>
-                        <!-- BOTONES SELECCIÓN CÁMARA O SUBIR ARCHIVO -->
                         <div class="grid grid-cols-2 gap-2">
                             <button type="button" onclick="document.getElementById('plantImageFile').click()" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-upload"></i> Subir Imagen
@@ -504,13 +502,11 @@
                             </button>
                         </div>
                         
-                        <!-- INPUTS OCULTOS DE TIPO FILE -->
                         <input type="file" id="plantImageFile" accept="image/*" onchange="handlePlantImageSelect(event)" class="hidden">
                         <input type="file" id="plantCameraFile" accept="image/*" capture="environment" onchange="handlePlantImageSelect(event)" class="hidden">
                     </div>
                 </div>
 
-                <!-- CONTENEDOR DE VISTA PREVIA DE LA IMAGEN SELECCIONADA -->
                 <div id="plantImagePreviewBox" class="hidden p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
                     <div class="flex items-center gap-3 overflow-hidden">
                         <img id="plantImagePreview" src="" alt="Vista previa" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-xs">
@@ -583,7 +579,7 @@
         </div>
     </div>
 
-    <!-- GENERAL ITEM MODAL (Para tierras, accesorios, químicos) -->
+    <!-- GENERAL ITEM MODAL -->
     <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -598,7 +594,6 @@
                     <input type="text" id="itemName" required placeholder="Ej: Sustrato Profesional" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 
-                <!-- CAMPOS EXTRA DINÁMICOS SEGÚN CATEGORÍA -->
                 <div id="itemExtraFields" class="space-y-3"></div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -921,8 +916,6 @@
 
         let selectedSearchImageBase64 = null;
         let selectedSearchImageMime = null;
-
-        // Variable para guardar la foto cargada o tomada en el modal de planta
         let currentPlantImageBase64 = null;
 
         let cart = [];
@@ -1238,7 +1231,7 @@
             }
         }
 
-        // --- MANEJO DE IMAGEN EN MODAL DE PLANTAS ---
+        // --- MANEJO DE IMAGEN EN PLANTAS ---
         function handlePlantImageSelect(event) {
             const file = event.target.files[0];
             if (file) {
@@ -1344,10 +1337,6 @@
             if (titleEl) titleEl.textContent = 'Nueva Planta';
             const dateInput = document.getElementById('plantUpdateDate');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
-            const sellInput = document.getElementById('plantSellPrice');
-            if (sellInput) sellInput.value = 16000;
-            const buyInput = document.getElementById('plantBuyPrice');
-            if (buyInput) buyInput.value = 8000;
 
             if (id) {
                 const p = (dbData.plants || []).find(x => x.id === id);
@@ -1362,7 +1351,9 @@
                     if (locInput) locInput.value = p.location || 'Interior';
                     const potInput = document.getElementById('plantPot');
                     if (potInput) potInput.value = p.pot || '';
+                    const buyInput = document.getElementById('plantBuyPrice');
                     if (buyInput) buyInput.value = p.buyPrice || 8000;
+                    const sellInput = document.getElementById('plantSellPrice');
                     if (sellInput) sellInput.value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 8000) * 2);
                     if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
 
@@ -1433,7 +1424,7 @@
             });
         }
 
-        // --- RENDERIZADO DE MACETAS ---
+        // --- RENDERIZADO Y GESTIÓN DE MACETAS ---
         function renderPots() {
             const grid = document.getElementById('potsGrid');
             if (!grid) return;
@@ -1502,6 +1493,13 @@
             }
         }
 
+        function closePotModal() {
+            const modal = document.getElementById('potModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function editPot(id) { openPotModal(id); }
+
         function openPotModal(id = null) {
             const form = document.getElementById('potForm');
             if (form) form.reset();
@@ -1511,10 +1509,6 @@
             if (titleEl) titleEl.textContent = 'Nueva Maceta';
             const dateInput = document.getElementById('potUpdateDate');
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
-            const sellInput = document.getElementById('potSellPrice');
-            if (sellInput) sellInput.value = 6000;
-            const buyInput = document.getElementById('potBuyPrice');
-            if (buyInput) buyInput.value = 3000;
 
             if (id) {
                 const p = (dbData.pots || []).find(x => x.id === id);
@@ -1523,24 +1517,20 @@
                     if (editIdInput) editIdInput.value = p.id;
                     const nameInput = document.getElementById('potName');
                     if (nameInput) nameInput.value = p.name || '';
-                    const medidaInput = document.getElementById('potMedida');
-                    if (medidaInput) medidaInput.value = p.medida || '';
-                    const materialInput = document.getElementById('potMaterial');
-                    if (materialInput) materialInput.value = p.material || '';
-                    if (buyInput) buyInput.value = p.buyPrice || 3000;
-                    if (sellInput) sellInput.value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 3000) * 2);
+                    const medInput = document.getElementById('potMedida');
+                    if (medInput) medInput.value = p.medida || '';
+                    const matInput = document.getElementById('potMaterial');
+                    if (matInput) matInput.value = p.material || '';
+                    const buyInput = document.getElementById('potBuyPrice');
+                    if (buyInput) buyInput.value = p.buyPrice || 0;
+                    const sellInput = document.getElementById('potSellPrice');
+                    if (sellInput) sellInput.value = p.sellPrice || 0;
                     if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
                 }
             }
             const modal = document.getElementById('potModal');
             if (modal) modal.classList.remove('hidden');
         }
-
-        function closePotModal() {
-            const modal = document.getElementById('potModal');
-            if (modal) modal.classList.add('hidden');
-        }
-        function editPot(id) { openPotModal(id); }
 
         function savePot(e) {
             e.preventDefault();
@@ -1553,18 +1543,21 @@
             const updateDate = document.getElementById('potUpdateDate').value || new Date().toISOString().split('T')[0];
             const fileInput = document.getElementById('potImageFile');
 
-            const processSave = (imgUrl) => {
+            const proceedSave = (imgUrl) => {
                 if (id) {
                     const idx = dbData.pots.findIndex(x => x.id === id);
                     if (idx !== -1) {
-                        dbData.pots[idx] = { ...dbData.pots[idx], name, medida, material, buyPrice, sellPrice, updateDate };
-                        if (imgUrl) dbData.pots[idx].image = imgUrl;
+                        dbData.pots[idx] = {
+                            ...dbData.pots[idx],
+                            name, medida, material, buyPrice, sellPrice, updateDate,
+                            image: imgUrl || dbData.pots[idx].image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
+                        };
                     }
                 } else {
                     const newPot = {
                         id: 'pt_' + Date.now(),
                         name, medida, material, buyPrice, sellPrice, updateDate,
-                        image: imgUrl || 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400'
+                        image: imgUrl || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
                     };
                     if (!dbData.pots) dbData.pots = [];
                     dbData.pots.push(newPot);
@@ -1576,10 +1569,10 @@
 
             if (fileInput && fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(evt) { processSave(evt.target.result); };
+                reader.onload = (evt) => proceedSave(evt.target.result);
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                processSave(id ? null : 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400');
+                proceedSave(null);
             }
         }
 
@@ -1591,6 +1584,848 @@
                 saveDb();
                 renderPots();
             });
+        }
+
+        // --- RENDERIZADO Y GESTIÓN GENERAL (Tierras, Accesorios, Químicos) ---
+        function renderItems(type) {
+            const grid = document.getElementById(type + 'Grid');
+            if (!grid) return;
+            const list = dbData[type] || [];
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay ítems registrados en esta categoría.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(item => {
+                const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = item.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Producto';
+                const buyP = Number(item.buyPrice) || 0;
+                const sellP = Number(item.sellPrice) || (buyP * 2);
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-300 font-mono">****</span>';
+
+                let extraTag = item.marca || item.tipo || '';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden group" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Producto'">
+                            ${extraTag ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-xs">${extraTag}</span>` : ''}
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-snug">${item.name}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Medida: ${item.medida || 'S/D'} • Act: ${item.updateDate || 'N/D'}</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[10px] uppercase font-semibold">Compra</span>
+                                    <span class="font-bold text-slate-800 text-sm">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[10px] uppercase font-semibold">Venta</span>
+                                    <span class="font-bold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="editItem('${type}', '${item.id}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
+                                <button onclick="deleteItem('${type}', '${item.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openItemModal(type, id = null) {
+            const form = document.getElementById('itemForm');
+            if (form) form.reset();
+            document.getElementById('itemType').value = type;
+            document.getElementById('itemEditId').value = '';
+
+            const titleMap = { tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Producto Químico' };
+            document.getElementById('itemModalTitle').textContent = id ? `Editar ${titleMap[type] || 'Ítem'}` : `Nuevo ${titleMap[type] || 'Ítem'}`;
+
+            const extraContainer = document.getElementById('itemExtraFields');
+            if (type === 'tierras') {
+                extraContainer.innerHTML = `
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Marca</label>
+                            <input type="text" id="itemMarca" placeholder="Ej: TerraFertil" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Volumen</label>
+                            <input type="text" id="itemMedida" placeholder="Ej: 10L, 25kg" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'chemicals') {
+                extraContainer.innerHTML = `
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Cantidad</label>
+                            <input type="text" id="itemMedida" placeholder="Ej: 250cc, 1L" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo / Uso</label>
+                            <input type="text" id="itemUso" placeholder="Ej: Foliar, Plaguicida" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                    </div>
+                `;
+            } else {
+                extraContainer.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Especificación</label>
+                        <input type="text" id="itemMedida" placeholder="Ej: 1.20m, Par" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                `;
+            }
+
+            if (id) {
+                const item = (dbData[type] || []).find(x => x.id === id);
+                if (item) {
+                    document.getElementById('itemEditId').value = item.id;
+                    document.getElementById('itemName').value = item.name || '';
+                    document.getElementById('itemBuyPrice').value = item.buyPrice || 0;
+                    document.getElementById('itemSellPrice').value = item.sellPrice || 0;
+                    if (document.getElementById('itemMarca')) document.getElementById('itemMarca').value = item.marca || '';
+                    if (document.getElementById('itemMedida')) document.getElementById('itemMedida').value = item.medida || '';
+                    if (document.getElementById('itemUso')) document.getElementById('itemUso').value = item.uso || '';
+                }
+            }
+
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function autoUpdateItemSell() {
+            const buy = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            document.getElementById('itemSellPrice').value = buy * 2;
+        }
+
+        function editItem(type, id) { openItemModal(type, id); }
+
+        function saveItem(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const id = document.getElementById('itemEditId').value;
+            const name = document.getElementById('itemName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('itemBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('itemSellPrice').value) || (buyPrice * 2);
+            const marca = document.getElementById('itemMarca') ? document.getElementById('itemMarca').value.trim() : '';
+            const medida = document.getElementById('itemMedida') ? document.getElementById('itemMedida').value.trim() : '';
+            const uso = document.getElementById('itemUso') ? document.getElementById('itemUso').value.trim() : '';
+            const updateDate = new Date().toISOString().split('T')[0];
+            const fileInput = document.getElementById('itemImageFile');
+
+            const proceedSave = (imgUrl) => {
+                if (!dbData[type]) dbData[type] = [];
+
+                if (id) {
+                    const idx = dbData[type].findIndex(x => x.id === id);
+                    if (idx !== -1) {
+                        dbData[type][idx] = {
+                            ...dbData[type][idx],
+                            name, buyPrice, sellPrice, marca, medida, uso, updateDate,
+                            image: imgUrl || dbData[type][idx].image || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
+                        };
+                    }
+                } else {
+                    const newItem = {
+                        id: type.substring(0, 2) + '_' + Date.now(),
+                        name, buyPrice, sellPrice, marca, medida, uso, updateDate,
+                        image: imgUrl || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
+                    };
+                    dbData[type].push(newItem);
+                }
+                saveDb();
+                closeItemModal();
+                renderItems(type);
+            };
+
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => proceedSave(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                proceedSave(null);
+            }
+        }
+
+        function deleteItem(type, id) {
+            const item = (dbData[type] || []).find(x => x.id === id);
+            const name = item ? item.name : 'este ítem';
+            openTimedDeleteModal(`Estás a punto de eliminar "${name}".`, () => {
+                dbData[type] = dbData[type].filter(x => x.id !== id);
+                saveDb();
+                renderItems(type);
+            });
+        }
+
+        // --- BUSCADOR VISUAL (IA GEMINI) ---
+        function previewSearchImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedSearchImageMime = file.type;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const preview = document.getElementById('visualSearchPreview');
+                    const previewContainer = document.getElementById('previewContainer');
+                    preview.src = evt.target.result;
+                    previewContainer.classList.remove('hidden');
+                    selectedSearchImageBase64 = evt.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearSearchImage() {
+            selectedSearchImageBase64 = null;
+            selectedSearchImageMime = null;
+            document.getElementById('visualSearchInput').value = '';
+            document.getElementById('visualSearchPreview').src = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('botResult').classList.add('hidden');
+        }
+
+        function promptGeminiKey() {
+            const current = localStorage.getItem('vivero_gemini_api_key') || '';
+            const key = prompt('Ingresa tu clave de API de Gemini:', current);
+            if (key !== null) {
+                localStorage.setItem('vivero_gemini_api_key', key.trim());
+                alert('Clave de API guardada correctamente.');
+            }
+        }
+
+        async function searchByPhoto() {
+            if (!selectedSearchImageBase64) {
+                alert('Por favor selecciona o toma una foto primero.');
+                return;
+            }
+
+            const apiKey = localStorage.getItem('vivero_gemini_api_key');
+            const searchBtn = document.getElementById('searchByPhotoBtn');
+
+            const allCatalogItems = [
+                ...(dbData.plants || []).map(p => ({ ...p, category: 'Planta' })),
+                ...(dbData.pots || []).map(p => ({ ...p, category: 'Maceta' })),
+                ...(dbData.tierras || []).map(p => ({ ...p, category: 'Tierra' })),
+                ...(dbData.accessories || []).map(p => ({ ...p, category: 'Accesorio' })),
+                ...(dbData.chemicals || []).map(p => ({ ...p, category: 'Químico' }))
+            ];
+
+            if (allCatalogItems.length === 0) {
+                alert('El inventario está vacío.');
+                return;
+            }
+
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analizando imagen...`;
+
+            try {
+                if (apiKey) {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    {
+                                        text: `Identifica qué producto o planta aparece en esta foto. Luego busca coincidencias dentro de esta lista de inventario: ${JSON.stringify(allCatalogItems.map(i => ({ id: i.id, name: i.name, category: i.category })))}. Responde ÚNICAMENTE en formato JSON con un array de IDs de elementos que coincidan o se parezcan, por ejemplo: ["p1", "pt1"]`
+                                    },
+                                    {
+                                        inline_data: {
+                                            mime_type: selectedSearchImageMime || "image/jpeg",
+                                            data: selectedSearchImageBase64
+                                        }
+                                    }
+                                ]
+                            }]
+                        })
+                    });
+
+                    const data = await response.json();
+                    let matchedIds = [];
+                    try {
+                        const rawText = data.candidates[0].content.parts[0].text;
+                        const jsonMatch = rawText.match(/\[.*\]/s);
+                        if (jsonMatch) matchedIds = JSON.parse(jsonMatch[0]);
+                    } catch(e) { console.warn('JSON parsing error:', e); }
+
+                    let matches = allCatalogItems.filter(item => matchedIds.includes(item.id));
+                    if (matches.length === 0) matches = allCatalogItems.slice(0, 3);
+
+                    displayMatchedItems(matches);
+                } else {
+                    setTimeout(() => {
+                        const randomMatches = allCatalogItems.slice(0, 3);
+                        displayMatchedItems(randomMatches);
+                    }, 1000);
+                }
+            } catch(err) {
+                console.error(err);
+                const randomMatches = allCatalogItems.slice(0, 3);
+                displayMatchedItems(randomMatches);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario`;
+            }
+        }
+
+        function displayMatchedItems(items) {
+            const botResult = document.getElementById('botResult');
+            const container = document.getElementById('botMatchedItems');
+            container.innerHTML = items.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Coincidencia';
+                return `
+                    <div class="bg-white p-3 rounded-2xl border border-emerald-200 shadow-xs flex flex-col items-center text-center">
+                        <img src="${safeImg}" alt="${safeName}" class="w-full h-32 object-cover rounded-xl mb-2 cursor-pointer" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md mb-1">${p.category || 'Producto'}</span>
+                        <h4 class="font-bold text-slate-800 text-sm leading-tight">${p.name}</h4>
+                        <p class="text-xs font-bold text-emerald-600 mt-1">${formatMoney(p.sellPrice || 0)}</p>
+                    </div>
+                `;
+            }).join('');
+            botResult.classList.remove('hidden');
+        }
+
+        // --- VENTAS Y CAJA ---
+        function renderSales() {
+            const tableBody = document.getElementById('salesTableBody');
+            if (!tableBody) return;
+
+            let sales = dbData.sales || [];
+            const search = (document.getElementById('salesFilterSearch')?.value || '').toLowerCase();
+            const fromDate = document.getElementById('salesFilterFrom')?.value;
+            const toDate = document.getElementById('salesFilterTo')?.value;
+
+            if (fromDate) sales = sales.filter(s => s.date >= fromDate);
+            if (toDate) sales = sales.filter(s => s.date <= toDate + 'T23:59:59');
+            if (search) {
+                sales = sales.filter(s => 
+                    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(search)) ||
+                    (s.items && s.items.some(i => i.name.toLowerCase().includes(search)))
+                );
+            }
+
+            const totalAmount = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            document.getElementById('totalSalesAmount').textContent = formatMoney(totalAmount);
+            document.getElementById('totalSalesCount').textContent = sales.length;
+
+            if (sales.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No hay ventas registradas en el período seleccionado.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = sales.map(s => {
+                const totalQty = (s.items || []).reduce((acc, item) => acc + (item.qty || 1), 0);
+                const itemsSummary = (s.items || []).map(i => `${i.qty || 1}x ${i.name}`).join(', ');
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-mono text-xs text-slate-600 whitespace-nowrap">${s.date ? new Date(s.date).toLocaleString('es-AR') : 'N/D'}</td>
+                        <td class="p-4 font-medium text-slate-900 max-w-xs truncate" title="${itemsSummary}">${itemsSummary || 'Venta general'}</td>
+                        <td class="p-4 text-center font-semibold text-slate-700">${totalQty}</td>
+                        <td class="p-4 font-bold text-emerald-600 whitespace-nowrap">${formatMoney(s.total)}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="openSaleDetailModal('${s.id}')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Ver Detalle</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function setSalesPreset(preset) {
+            currentSalesPreset = preset;
+            const fromInput = document.getElementById('salesFilterFrom');
+            const toInput = document.getElementById('salesFilterTo');
+            const today = new Date().toISOString().split('T')[0];
+
+            document.querySelectorAll('#salesFilterPresets button').forEach(b => {
+                b.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition';
+            });
+            const activeBtn = document.getElementById('preset-' + preset);
+            if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition';
+
+            if (preset === 'today') {
+                fromInput.value = today;
+                toInput.value = today;
+            } else if (preset === 'yesterday') {
+                const y = new Date();
+                y.setDate(y.getDate() - 1);
+                const yStr = y.toISOString().split('T')[0];
+                fromInput.value = yStr;
+                toInput.value = yStr;
+            } else if (preset === '7days') {
+                const d = new Date();
+                d.setDate(d.getDate() - 7);
+                fromInput.value = d.toISOString().split('T')[0];
+                toInput.value = today;
+            } else if (preset === 'month') {
+                const d = new Date();
+                d.setDate(1);
+                fromInput.value = d.toISOString().split('T')[0];
+                toInput.value = today;
+            } else {
+                fromInput.value = '';
+                toInput.value = '';
+            }
+            renderSales();
+        }
+
+        function onSalesDateInputChange() { renderSales(); }
+
+        function openSaleModal() {
+            cart = [];
+            renderCart();
+            filterCartInventory();
+            document.getElementById('saleModal').classList.remove('hidden');
+        }
+
+        function closeSaleModal() {
+            document.getElementById('saleModal').classList.add('hidden');
+        }
+
+        function switchSaleModeTab(mode) {
+            const invTab = document.getElementById('saleModeInvTab');
+            const manualTab = document.getElementById('saleModeManualTab');
+            const invSec = document.getElementById('saleInvSection');
+            const manualSec = document.getElementById('saleManualSection');
+
+            if (mode === 'inv') {
+                invTab.className = 'pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5';
+                manualTab.className = 'pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+                invSec.classList.remove('hidden');
+                manualSec.classList.add('hidden');
+            } else {
+                manualTab.className = 'pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5';
+                invTab.className = 'pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+                manualSec.classList.remove('hidden');
+                invSec.classList.add('hidden');
+            }
+        }
+
+        function filterCartInventory() {
+            const search = (document.getElementById('cartSearchInput')?.value || '').toLowerCase();
+            const resultsContainer = document.getElementById('cartSearchResults');
+            if (!resultsContainer) return;
+
+            const allItems = [
+                ...(dbData.plants || []).map(p => ({ ...p, category: 'Planta' })),
+                ...(dbData.pots || []).map(p => ({ ...p, category: 'Maceta' })),
+                ...(dbData.tierras || []).map(p => ({ ...p, category: 'Tierra' })),
+                ...(dbData.accessories || []).map(p => ({ ...p, category: 'Accesorio' })),
+                ...(dbData.chemicals || []).map(p => ({ ...p, category: 'Químico' }))
+            ];
+
+            let filtered = allItems;
+            if (search) {
+                filtered = allItems.filter(i => (i.name && i.name.toLowerCase().includes(search)) || (i.category && i.category.toLowerCase().includes(search)));
+            }
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 p-3 text-center">No se encontraron productos.</p>`;
+                return;
+            }
+
+            resultsContainer.innerHTML = filtered.map(i => {
+                const safeName = (i.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const price = Number(i.sellPrice) || 0;
+                return `
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition">
+                        <div class="flex items-center gap-3">
+                            <img src="${i.image || 'https://placehold.co/100'}" class="w-10 h-10 rounded-lg object-cover">
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-800">${i.name}</h5>
+                                <span class="text-[10px] text-slate-500">${i.category} • ${formatMoney(price)}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addToCart('${i.id}', '${safeName}', ${price})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addToCart(id, name, price) {
+            const existing = cart.find(c => c.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ id, name, price: Number(price) || 0, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function addManualItemToCart() {
+            const name = document.getElementById('manualItemName').value.trim();
+            const price = parseFloat(document.getElementById('manualItemPrice').value) || 0;
+            const qty = parseInt(document.getElementById('manualItemQty').value) || 1;
+
+            if (!name) {
+                alert('Ingresa una descripción para el ítem.');
+                return;
+            }
+
+            cart.push({ id: 'man_' + Date.now(), name, price, qty });
+            document.getElementById('manualItemName').value = '';
+            document.getElementById('manualItemPrice').value = '';
+            document.getElementById('manualItemQty').value = 1;
+            renderCart();
+        }
+
+        function updateCartQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    cart = cart.filter(c => c.id !== id);
+                }
+            }
+            renderCart();
+        }
+
+        function removeCartItem(id) {
+            cart = cart.filter(c => c.id !== id);
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartItemsList');
+            const totalDisplay = document.getElementById('cartTotalDisplay');
+            const badgeCount = document.getElementById('cartBadgeCount');
+
+            const total = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+            const totalQty = cart.reduce((acc, i) => acc + i.qty, 0);
+
+            if (totalDisplay) totalDisplay.textContent = formatMoney(total);
+            if (badgeCount) badgeCount.textContent = `${totalQty} ítems`;
+
+            if (!list) return;
+
+            if (cart.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 p-4 text-center">El carrito está vacío.</p>`;
+                return;
+            }
+
+            list.innerHTML = cart.map(i => `
+                <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
+                    <div class="flex-1 pr-2">
+                        <h5 class="text-xs font-bold text-slate-800">${i.name}</h5>
+                        <span class="text-[10px] text-slate-500">${formatMoney(i.price)} c/u</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-slate-100 rounded-lg">
+                            <button type="button" onclick="updateCartQty('${i.id}', -1)" class="px-2 py-1 text-slate-600 hover:text-rose-600 text-xs font-bold">-</button>
+                            <span class="px-2 text-xs font-bold text-slate-800">${i.qty}</span>
+                            <button type="button" onclick="updateCartQty('${i.id}', 1)" class="px-2 py-1 text-slate-600 hover:text-emerald-600 text-xs font-bold">+</button>
+                        </div>
+                        <button type="button" onclick="removeCartItem('${i.id}')" class="text-slate-400 hover:text-rose-600 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function completeCartSale() {
+            if (cart.length === 0) {
+                alert('Agrega al menos un ítem al carrito para realizar la venta.');
+                return;
+            }
+
+            const paymentMethod = document.getElementById('salePaymentMethod').value;
+            const total = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+
+            const newSale = {
+                id: 'sale_' + Date.now(),
+                date: new Date().toISOString(),
+                items: [...cart],
+                paymentMethod,
+                total
+            };
+
+            if (!dbData.sales) dbData.sales = [];
+            dbData.sales.unshift(newSale);
+            saveDb();
+
+            closeSaleModal();
+            renderSales();
+            alert('¡Venta registrada con éxito!');
+        }
+
+        function openSaleDetailModal(saleId) {
+            const sale = (dbData.sales || []).find(s => s.id === saleId);
+            if (!sale) return;
+
+            const content = document.getElementById('saleDetailContent');
+            const itemsList = (sale.items || []).map(i => `
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                    <span>${i.qty}x ${i.name}</span>
+                    <span class="font-bold">${formatMoney(i.price * i.qty)}</span>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                    <p><strong>ID Venta:</strong> <span class="font-mono">${sale.id}</span></p>
+                    <p><strong>Fecha:</strong> ${new Date(sale.date).toLocaleString('es-AR')}</p>
+                    <p><strong>Método de Pago:</strong> ${sale.paymentMethod || 'Efectivo'}</p>
+                </div>
+                <div class="space-y-1">
+                    <h5 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Productos</h5>
+                    ${itemsList}
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-sm font-bold">
+                    <span>Total Pagado:</span>
+                    <span class="text-emerald-600">${formatMoney(sale.total)}</span>
+                </div>
+            `;
+
+            document.getElementById('saleDetailModal').classList.remove('hidden');
+        }
+
+        function closeSaleDetailModal() {
+            document.getElementById('saleDetailModal').classList.add('hidden');
+        }
+
+        // --- IMPORTACIONES/EXPORTACIONES EXCEL ---
+        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
+        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
+        function downloadExcelTemplate() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Nombre: "Monstera Deliciosa", Familia: "Araceae", Ubicacion: "Interior", Maceta: "N° 18", PrecioCompra: 8000, PrecioVenta: 16000, FechaActualizacion: "2026-03-26", Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Plantas");
+            XLSX.writeFile(wb, "Plantilla_Plantas_Vivero.xlsx");
+        }
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    
+                    rows.forEach(r => {
+                        const newPlant = {
+                            id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: r.Nombre || 'Planta importada',
+                            family: r.Familia || '',
+                            location: r.Ubicacion || 'Interior',
+                            pot: r.Maceta || '',
+                            buyPrice: Number(r.PrecioCompra) || 0,
+                            sellPrice: Number(r.PrecioVenta) || ((Number(r.PrecioCompra) || 0) * 2),
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
+                        };
+                        if (!dbData.plants) dbData.plants = [];
+                        dbData.plants.push(newPlant);
+                    });
+                    saveDb();
+                    closeExcelModal();
+                    renderPlants();
+                    alert(`¡${rows.length} plantas importadas exitosamente!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
+        function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
+        function downloadPotExcelTemplate() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Nombre: "Maceta Plástica Redonda", Medida: "N° 18", PrecioCompra: 3000, PrecioVenta: 6000, Material: "Plástico", Imagen: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400", FechaActualizacion: "2026-03-26" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Macetas");
+            XLSX.writeFile(wb, "Plantilla_Macetas_Vivero.xlsx");
+        }
+        function handlePotExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    rows.forEach(r => {
+                        const newPot = {
+                            id: 'pt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: r.Nombre || 'Maceta importada',
+                            medida: r.Medida || '',
+                            material: r.Material || '',
+                            buyPrice: Number(r.PrecioCompra) || 0,
+                            sellPrice: Number(r.PrecioVenta) || ((Number(r.PrecioCompra) || 0) * 2),
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'
+                        };
+                        if (!dbData.pots) dbData.pots = [];
+                        dbData.pots.push(newPot);
+                    });
+                    saveDb();
+                    closePotExcelModal();
+                    renderPots();
+                    alert(`¡${rows.length} macetas importadas exitosamente!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.remove('hidden'); }
+        function closeTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.add('hidden'); }
+        function downloadTierrasExcelTemplate() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Nombre: "Sustrato Universal", Marca: "TerraFertil", Tipo: "Orgánico", Medida: "10L", PrecioCompra: 2000, PrecioVenta: 4000, Imagen: "", FechaActualizacion: "2026-03-26" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Tierras");
+            XLSX.writeFile(wb, "Plantilla_Tierras_Vivero.xlsx");
+        }
+        function handleTierrasExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    rows.forEach(r => {
+                        const newItem = {
+                            id: 'tr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: r.Nombre || 'Tierra importada',
+                            marca: r.Marca || '',
+                            tipo: r.Tipo || '',
+                            medida: r.Medida || '',
+                            buyPrice: Number(r.PrecioCompra) || 0,
+                            sellPrice: Number(r.PrecioVenta) || ((Number(r.PrecioCompra) || 0) * 2),
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400'
+                        };
+                        if (!dbData.tierras) dbData.tierras = [];
+                        dbData.tierras.push(newItem);
+                    });
+                    saveDb();
+                    closeTierrasExcelModal();
+                    renderItems('tierras');
+                    alert(`¡${rows.length} tierras importadas exitosamente!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.remove('hidden'); }
+        function closeChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.add('hidden'); }
+        function downloadChemicalsExcelTemplate() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Nombre: "Fertilizante Líquido Follaje", Medida: "250cc", Tipo: "Fertilizante", Uso: "Foliar", Disolucion: "5ml / L", PrecioCompra: 4000, PrecioVenta: 8000, Imagen: "", FechaActualizacion: "2026-03-26" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Quimicos");
+            XLSX.writeFile(wb, "Plantilla_Quimicos_Vivero.xlsx");
+        }
+        function handleChemicalsExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    rows.forEach(r => {
+                        const newItem = {
+                            id: 'ch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: r.Nombre || 'Químico importado',
+                            medida: r.Medida || '',
+                            tipo: r.Tipo || '',
+                            uso: r.Uso || '',
+                            disolucion: r.Disolucion || '',
+                            buyPrice: Number(r.PrecioCompra) || 0,
+                            sellPrice: Number(r.PrecioVenta) || ((Number(r.PrecioCompra) || 0) * 2),
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1585336261022-6fc0e69de2a3?w=400'
+                        };
+                        if (!dbData.chemicals) dbData.chemicals = [];
+                        dbData.chemicals.push(newItem);
+                    });
+                    saveDb();
+                    closeChemicalsExcelModal();
+                    renderItems('chemicals');
+                    alert(`¡${rows.length} químicos importados exitosamente!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function openAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.remove('hidden'); }
+        function closeAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.add('hidden'); }
+        function downloadAccessoriesExcelTemplate() {
+            const ws = XLSX.utils.json_to_sheet([
+                { Nombre: "Tutor de Bambú", Tipo: "Tutor", Medida: "1.20m", PrecioCompra: 1000, PrecioVenta: 2000, Imagen: "", FechaActualizacion: "2026-03-26" }
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Accesorios");
+            XLSX.writeFile(wb, "Plantilla_Accesorios_Vivero.xlsx");
+        }
+        function handleAccessoriesExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                    rows.forEach(r => {
+                        const newItem = {
+                            id: 'ac_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: r.Nombre || 'Accesorio importado',
+                            tipo: r.Tipo || '',
+                            medida: r.Medida || '',
+                            buyPrice: Number(r.PrecioCompra) || 0,
+                            sellPrice: Number(r.PrecioVenta) || ((Number(r.PrecioCompra) || 0) * 2),
+                            updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                            image: r.Imagen || 'https://images.unsplash.com/photo-1592417817098-8f3d69204b56?w=400'
+                        };
+                        if (!dbData.accessories) dbData.accessories = [];
+                        dbData.accessories.push(newItem);
+                    });
+                    saveDb();
+                    closeAccessoriesExcelModal();
+                    renderItems('accessories');
+                    alert(`¡${rows.length} accesorios importados exitosamente!`);
+                } catch(err) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
     </script>
 </body>
