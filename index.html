@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
     
     <!-- Manifest inline vía Data URI para instalación directa PWA -->
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSBWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzI5JkNpbS01MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSGWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzI5JkNpbS01MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1996,10 +1996,31 @@
                 });
             });
 
-            const matched = allProducts.filter(p => (p.name && p.name.toLowerCase().includes(q)) || (p.family && p.family.toLowerCase().includes(q)) || (p.medida && p.medida.toLowerCase().includes(q)));
+            // Búsqueda robusta y completa en todos los inventarios y propiedades
+            const matched = allProducts.filter(p => {
+                const name = (p.name || '').toLowerCase();
+                const family = (p.family || '').toLowerCase();
+                const marca = (p.marca || '').toLowerCase();
+                const tipo = (p.tipo || '').toLowerCase();
+                const material = (p.material || '').toLowerCase();
+                const medida = (p.medida || '').toLowerCase();
+                const uso = (p.uso || '').toLowerCase();
+                const disolucion = (p.disolucion || '').toLowerCase();
+                const pot = (p.pot || '').toLowerCase();
+
+                return name.includes(q) || 
+                       family.includes(q) || 
+                       marca.includes(q) || 
+                       tipo.includes(q) || 
+                       material.includes(q) || 
+                       medida.includes(q) || 
+                       uso.includes(q) || 
+                       disolucion.includes(q) || 
+                       pot.includes(q);
+            });
 
             if (matched.length === 0) {
-                resContainer.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">No se encontraron productos coincidentes.</p>`;
+                resContainer.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">No se encontraron productos coincidentes en los inventarios.</p>`;
                 return;
             }
 
