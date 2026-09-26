@@ -1,5 +1,1079 @@
--600 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-trash text-[10px]"></i>
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViveroApp - Gestión Profesional de Viveros</title>
+    
+    <!-- PWA / Mobile Install Meta Tags -->
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ViveroApp">
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjMDU5NjY5IiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRk324ZDQxMT93PTE5MiIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9qcGVnIn1dfQ==">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel handling -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; } 
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg shadow-md shadow-emerald-200">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
+                    <p class="text-xs text-emerald-600 font-medium">Gestión Profesional (Precios en pesos $)</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- SWITCH PRECIO COMPRA -->
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200" title="Mostrar/Ocultar Precio de Compra">
+                    <span class="text-xs font-semibold text-slate-600 hidden sm:inline"><i class="fa-solid fa-eye text-slate-500 mr-1"></i>P. Compra:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleBuyPrice" onchange="handleBuyPriceToggle(this)" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
+                <!-- BOTÓN DE INSTALACIÓN PWA (MÓVILES) -->
+                <button id="installAppBtn" onclick="installPWA()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">Instalar App</span>
+                </button>
+
+                <button onclick="openFirebaseModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span class="hidden sm:inline">Configurar Firebase</span>
+                </button>
+                <div onclick="openFirebaseDiagnosticsModal()" class="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 cursor-pointer transition" title="Ver Estado de Sincronización">
+                    <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                    <span id="connectionStatus" class="text-xs font-semibold text-slate-600">Local (Sin Firebase)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="bg-white border-b border-slate-200 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2">
+            <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-leaf"></i> Plantas
+            </button>
+            <button onclick="switchTab('pots')" id="tab-pots" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-circle"></i> Macetas
+            </button>
+            <button onclick="switchTab('tierras')" id="tab-tierras" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-layer-group"></i> Tierras
+            </button>
+            <button onclick="switchTab('accessories')" id="tab-accessories" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-tools"></i> Accesorios
+            </button>
+            <button onclick="switchTab('chemicals')" id="tab-chemicals" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-flask"></i> Químicos
+            </button>
+            <button onclick="switchTab('bot')" id="tab-bot" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-camera"></i> Buscar por Foto
+            </button>
+            <button onclick="switchTab('sales')" id="tab-sales" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-cash-register"></i> Ventas & Caja
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- PLANTS TAB -->
+        <section id="section-plants" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Catálogo de Plantas</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Gestiona tus plantas y precios (expresados en pesos $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openPlantModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Planta
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="plantSearch" oninput="renderPlants()" placeholder="Buscar por nombre o familia..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <select id="plantFilterLocation" onchange="renderPlants()" class="w-full py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="">Todas las ubicaciones</option>
+                    <option value="Interior">Interior</option>
+                    <option value="Exterior">Exterior</option>
+                    <option value="Interior / Exterior">Interior / Exterior</option>
+                </select>
+            </div>
+
+            <div id="plantsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- POTS TAB -->
+        <section id="section-pots" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Macetas y Contenedores</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de macetas (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openPotExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openPotModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Maceta
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="potSearch" oninput="renderPots()" placeholder="Buscar macetas por nombre, medida o material..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div id="potsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- TIERRAS TAB -->
+        <section id="section-tierras" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Tierras y Sustratos</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de tierras (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openTierrasExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('tierras')" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Tierra
+                    </button>
+                </div>
+            </div>
+            <div id="tierrasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- ACCESSORIES TAB -->
+        <section id="section-accessories" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Accesorios y Herramientas</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Palas, guantes, tutores (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openAccessoriesExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('accessories')" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nuevo Accesorio
+                    </button>
+                </div>
+            </div>
+            <div id="accessoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- CHEMICALS TAB -->
+        <section id="section-chemicals" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Fertilizantes y Químicos</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Abonos y plaguicidas (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openChemicalsExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openItemModal('chemicals')" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nuevo Químico
+                    </button>
+                </div>
+            </div>
+            <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- VISUAL SEARCH BOT TAB -->
+        <section id="section-bot" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Sube o toma una imagen de una planta o producto para comparar y buscar coincidencias en tu inventario actual.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50 flex flex-col items-center justify-center min-h-[180px]">
+                        <i class="fa-solid fa-camera text-3xl text-emerald-600 mb-2"></i>
+                        <p class="font-semibold text-slate-800 text-sm mb-3">Toma una foto con tu cámara o sube un archivo</p>
+                        
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            <button type="button" onclick="document.getElementById('visualSearchInput').click()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-upload"></i> Subir Imagen
+                            </button>
+                            <button type="button" onclick="document.getElementById('visualSearchCameraInput').click()" class="px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl border border-sky-200 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-camera"></i> Sacar Foto
+                            </button>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 mt-2">Formatos soportados: JPG, PNG, WEBP</p>
+                        <input type="file" id="visualSearchInput" accept="image/*" onchange="previewSearchImage(event)" class="hidden">
+                        <input type="file" id="visualSearchCameraInput" accept="image/*" capture="environment" onchange="previewSearchImage(event)" class="hidden">
+                    </div>
+                    <div id="previewContainer" class="hidden flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200 relative">
+                        <img id="visualSearchPreview" src="" alt="Vista previa" class="max-h-48 rounded-xl object-contain shadow-xs">
+                        <button onclick="clearSearchImage()" class="mt-2 text-xs text-rose-600 hover:underline font-semibold"><i class="fa-solid fa-trash mr-1"></i> Quitar foto</button>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="promptGeminiKey()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-key"></i> Clave API Gemini
+                    </button>
+                    <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar Similitudes en Inventario
+                    </button>
+                </div>
+                
+                <div id="botResult" class="hidden p-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-4">
+                    <h3 class="font-bold text-emerald-900 flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-robot text-emerald-600"></i> Coincidencias Encontradas en Inventario:
+                    </h3>
+                    <div id="botMatchedItems" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SALES TAB -->
+        <section id="section-sales" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Control de Ventas & Carrito de Caja</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Registra ventas con carrito de compras y realiza el control por rangos de fechas (en $).</p>
+                </div>
+                <button onclick="openSaleModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cart-plus"></i> Nueva Venta / Carrito
+                </button>
+            </div>
+
+            <!-- METRIC CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ventas Totales (Filtradas)</p>
+                        <h3 id="totalSalesAmount" class="text-2xl font-bold text-slate-900 mt-1">$0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transacciones Realizadas</p>
+                        <h3 id="totalSalesCount" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTROS POR DÍAS Y BÚSQUEDA -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-emerald-600"></i>
+                        <span class="font-bold text-slate-800 text-sm">Filtros de Control de Ventas:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5" id="salesFilterPresets">
+                        <button onclick="setSalesPreset('all')" id="preset-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition">Todos</button>
+                        <button onclick="setSalesPreset('today')" id="preset-today" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Hoy</button>
+                        <button onclick="setSalesPreset('yesterday')" id="preset-yesterday" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Ayer</button>
+                        <button onclick="setSalesPreset('7days')" id="preset-7days" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Últimos 7 días</button>
+                        <button onclick="setSalesPreset('month')" id="preset-month" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Este Mes</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Desde Fecha</label>
+                        <input type="date" id="salesFilterFrom" onchange="onSalesDateInputChange()" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Hasta Fecha</label>
+                        <input type="date" id="salesFilterTo" onchange="onSalesDateInputChange()" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Buscar por Producto / Cliente</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="salesFilterSearch" oninput="renderSales()" placeholder="Buscar por concepto o método..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE HISTORIAL DE VENTAS -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 font-bold text-slate-900 text-sm flex justify-between items-center">
+                    <span>Historial de Ventas</span>
+                    <span class="text-xs font-normal text-slate-500">Transacciones ordenadas por fecha reciente</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4">Fecha & Hora</th>
+                                <th class="p-4">Ítems / Detalle de Venta</th>
+                                <th class="p-4 text-center">Unidades</th>
+                                <th class="p-4">Total</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PIN CONFIRMATION MODAL -->
+    <div id="pinModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-900 text-base">Clave de Seguridad</h3>
+                <p class="text-xs text-slate-500 mt-1">Ingresa el PIN para cambiar la visibilidad de precios de compra.</p>
+            </div>
+            <form onsubmit="confirmPin(event)" class="space-y-3">
+                <input type="password" id="pinInput" maxlength="6" placeholder="****" class="w-full text-center text-2xl tracking-widest px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button type="button" onclick="closePinModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE CONFIG MODAL -->
+    <div id="firebaseModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-emerald-600"></i> Conectar con Firebase Cloud
+                </h3>
+                <button onclick="closeFirebaseModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Ingresa las credenciales de tu proyecto Firebase. Asegúrate de tener activa la base de datos Firestore en tu <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Firebase Console</a> y configurar las Reglas de Firestore.
+            </p>
+            <form id="firebaseForm" onsubmit="saveFirebaseConfig(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">apiKey</label>
+                    <input type="text" id="fbApiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">authDomain</label>
+                        <input type="text" id="fbAuthDomain" placeholder="proyecto.firebaseapp.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">projectId</label>
+                        <input type="text" id="fbProjectId" placeholder="mi-vivero-app" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">storageBucket</label>
+                        <input type="text" id="fbStorageBucket" placeholder="proyecto.appspot.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">messagingSenderId</label>
+                        <input type="text" id="fbMessagingSenderId" placeholder="123456789" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">appId</label>
+                    <input type="text" id="fbAppId" placeholder="1:123:web:abc" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono">
+                </div>
+                <div class="pt-2 flex justify-between items-center">
+                    <button type="button" onclick="disconnectFirebase()" class="text-rose-600 hover:underline text-xs font-semibold">Desconectar / Volver a Local</button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeFirebaseModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
+                        <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm">Guardar y Conectar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE DIAGNOSTICS MODAL -->
+    <div id="firebaseDiagnosticsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-sky-600"></i> Estado de Sincronización
+                </h3>
+                <button onclick="closeFirebaseDiagnosticsModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Estado actual:</span>
+                        <span id="diagStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Modo Local</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Proyecto ID:</span>
+                        <span id="diagProjectId" class="text-xs font-mono font-semibold text-slate-800">Ninguno</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-medium">Última sincronización:</span>
+                        <span id="diagLastSync" class="text-xs font-medium text-slate-700">Nunca</span>
+                    </div>
+                </div>
+                <p id="diagDetails" class="text-xs text-slate-600 leading-relaxed">
+                    Operando en el almacenamiento local de tu navegador. Si configuras Firebase, tus datos se replicarán automáticamente en la nube.
+                </p>
+            </div>
+            <div class="pt-2 flex justify-end gap-2">
+                <button onclick="testFirebaseConnectionNow()" class="px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-xl transition">Probar Conexión</button>
+                <button onclick="closeFirebaseDiagnosticsModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLANT MODAL -->
+    <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="plantModalTitle" class="font-bold text-slate-900 text-lg">Nueva Planta</h3>
+                <button onclick="closePlantModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="plantForm" onsubmit="savePlant(event)" class="space-y-4">
+                <input type="hidden" id="plantEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Común *</label>
+                        <input type="text" id="plantName" required placeholder="Ej: Monstera Deliciosa" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Familia / Especie</label>
+                        <input type="text" id="plantFamily" placeholder="Ej: Araceae" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ubicación</label>
+                        <select id="plantLocation" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Interior">Interior</option>
+                            <option value="Exterior">Exterior</option>
+                            <option value="Interior / Exterior">Interior / Exterior</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Maceta</label>
+                        <input type="text" id="plantPot" placeholder="Ej: Maceta N° 14" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="plantBuyPrice" min="0" step="100" value="8000" required oninput="autoUpdatePlantSell()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="plantSellPrice" min="0" step="100" value="16000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Actualización</label>
+                        <input type="date" id="plantUpdateDate" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen de la Planta</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="document.getElementById('plantImageFile').click()" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-upload"></i> Subir Imagen
+                            </button>
+                            <button type="button" onclick="document.getElementById('plantCameraFile').click()" class="py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl border border-sky-200 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-camera"></i> Sacar Foto
+                            </button>
+                        </div>
+                        
+                        <input type="file" id="plantImageFile" accept="image/*" onchange="handlePlantImageSelect(event)" class="hidden">
+                        <input type="file" id="plantCameraFile" accept="image/*" capture="environment" onchange="handlePlantImageSelect(event)" class="hidden">
+                    </div>
+                </div>
+
+                <div id="plantImagePreviewBox" class="hidden p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img id="plantImagePreview" src="" alt="Vista previa" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-xs">
+                        <div>
+                            <span id="plantImageFileName" class="block text-xs font-semibold text-slate-800 truncate max-w-[180px]">Foto cargada</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">✓ Imagen lista para guardar</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="clearPlantImageSelection()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Quitar
+                    </button>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Guardar Planta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POT MODAL -->
+    <div id="potModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="potModalTitle" class="font-bold text-slate-900 text-lg">Nueva Maceta</h3>
+                <button onclick="closePotModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="potForm" onsubmit="savePot(event)" class="space-y-4">
+                <input type="hidden" id="potEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
+                        <input type="text" id="potName" required placeholder="Ej: Maceta Premium Redonda" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Tamaño</label>
+                        <input type="text" id="potMedida" placeholder="Ej: N° 18 (18 cm)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Material</label>
+                        <input type="text" id="potMaterial" placeholder="Ej: Plástico Reforzado, Barro, Cerámica" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Actualización</label>
+                        <input type="date" id="potUpdateDate" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="potBuyPrice" min="0" step="100" value="3000" required oninput="autoUpdatePotSell()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="potSellPrice" min="0" step="100" value="6000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen de la Maceta</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('potImageFile').click()" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-upload"></i> Subir Imagen
+                        </button>
+                        <button type="button" onclick="document.getElementById('potCameraFile').click()" class="py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl border border-sky-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> Sacar Foto
+                        </button>
+                    </div>
+                    <input type="file" id="potImageFile" accept="image/*" onchange="handlePotImageSelect(event)" class="hidden">
+                    <input type="file" id="potCameraFile" accept="image/*" capture="environment" onchange="handlePotImageSelect(event)" class="hidden">
+                </div>
+
+                <div id="potImagePreviewBox" class="hidden p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img id="potImagePreview" src="" alt="Vista previa" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-xs">
+                        <div>
+                            <span id="potImageFileName" class="block text-xs font-semibold text-slate-800 truncate max-w-[180px]">Foto cargada</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">✓ Imagen lista para guardar</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="clearPotImageSelection()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Quitar
+                    </button>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closePotModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Guardar Maceta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA PLANTAS -->
+    <div id="excelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Plantas desde Excel / CSV
+                </h3>
+                <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) con el siguiente formato de columnas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Familia, Ubicacion, Maceta, PrecioCompra, PrecioVenta, FechaActualizacion, Imagen</code></p>
+                </div>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('excelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo</p>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGE ZOOM LIGHTBOX MODAL -->
+    <div id="imageModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white hover:text-emerald-400 text-2xl p-2"><i class="fa-solid fa-xmark"></i></button>
+            <img id="zoomedImage" src="" alt="Ampliada" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain bg-slate-900 border border-slate-800">
+            <p id="zoomedCaption" class="text-white text-sm font-medium mt-3 text-center"></p>
+        </div>
+    </div>
+
+    <!-- CUSTOM TIMED DELETE CONFIRMATION MODAL -->
+    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-900 text-lg">¿Confirmar Eliminación?</h3>
+                <p id="deleteModalText" class="text-xs text-slate-500 mt-1">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="bg-slate-50 py-3 px-4 rounded-2xl border border-slate-100 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-clock text-rose-500 animate-pulse"></i>
+                <span class="text-xs font-semibold text-slate-600">Espera <span id="deleteTimerCount" class="text-rose-600 font-bold text-sm">3</span>s para confirmar</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button type="button" onclick="closeDeleteModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                <button type="button" id="confirmDeleteBtn" disabled class="py-2.5 bg-slate-200 text-slate-400 text-xs font-semibold rounded-xl transition cursor-not-allowed">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = null;
+        let useFirebase = false;
+        let lastSyncTime = 'Nunca';
+        let deleteTimerInterval = null;
+        let unsubscribeSnapshot = null;
+        
+        let showBuyPrice = false;
+        let pendingToggleState = false;
+
+        let currentPlantImageBase64 = null;
+        let currentPotImageBase64 = null;
+
+        let FIXED_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBn86ARo8leHh73bHJOLCmeGAmvsDp764Q",
+            authDomain: "viveromorlina.firebaseapp.com",
+            databaseURL: "https://viveromorlina-default-rtdb.firebaseio.com",
+            projectId: "viveromorlina",
+            storageBucket: "viveromorlina.firebasestorage.app",
+            messagingSenderId: "901168564249",
+            appId: "1:901168564249:web:7fb9be4a65190de3df8288",
+            measurementId: "G-NG3B3Q9T1L"
+        };
+
+        function formatMoney(val) {
+            const num = Number(val) || 0;
+            return '$ ' + num.toLocaleString('es-AR');
+        }
+
+        let dbData = {
+            plants: [],
+            pots: [
+                { id: 'pt1', name: 'Maceta Plástica Redonda', medida: 'N° 14 (14 cm)', material: 'Plástico', buyPrice: 1500, sellPrice: 3000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400' },
+                { id: 'pt2', name: 'Maceta Barro Clásica', medida: 'N° 18 (18 cm)', material: 'Barro', buyPrice: 3000, sellPrice: 6000, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400' }
+            ],
+            tierras: [],
+            accessories: [],
+            chemicals: [],
+            sales: []
+        };
+
+        // Captura e integración de Instalación PWA Móvil
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('installAppBtn');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    const installBtn = document.getElementById('installAppBtn');
+                    if (installBtn) installBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalStorage();
+            const savedFb = localStorage.getItem('vivero_fb_config');
+            if (savedFb) {
+                try { FIXED_FIREBASE_CONFIG = JSON.parse(savedFb); } catch(e) {}
+            }
+            initFirebase(FIXED_FIREBASE_CONFIG, false);
+            document.getElementById('toggleBuyPrice').checked = showBuyPrice;
+            renderPlants();
+
+            // Registro de Service Worker optimizado para PWA
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    self.addEventListener('install', (e) => { self.skipWaiting(); });
+                    self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('Service Worker listo para PWA'))
+                    .catch(err => console.log('SW registration failed:', err));
+            }
+        });
+
+        function handleBuyPriceToggle(checkbox) {
+            pendingToggleState = checkbox.checked;
+            checkbox.checked = showBuyPrice;
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('pinInput').focus(), 100);
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.add('hidden');
+        }
+
+        function confirmPin(e) {
+            if (e) e.preventDefault();
+            const enteredPin = document.getElementById('pinInput').value.trim();
+            if (enteredPin === "7714") {
+                showBuyPrice = pendingToggleState;
+                document.getElementById('toggleBuyPrice').checked = showBuyPrice;
+                closePinModal();
+                renderCurrentTab();
+            } else {
+                alert("Clave incorrecta.");
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        function loadLocalStorage() {
+            try {
+                const saved = localStorage.getItem('viveroApp_db_v3');
+                if (saved) dbData = JSON.parse(saved);
+            } catch(e) { console.error(e); }
+            updateStatusUI(false);
+        }
+
+        function updateStatusUI(isCloud, name = '') {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('connectionStatus');
+            if (isCloud) {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+                statusText.innerHTML = `<i class="fa-solid fa-check text-emerald-600 font-bold mr-1"></i> Conectado a Firebase (${name || 'viveromorlina'})`;
+                lastSyncTime = new Date().toLocaleTimeString();
+            } else {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+                statusText.textContent = 'Modo Local (Navegador)';
+            }
+        }
+
+        function openFirebaseModal() {
+            document.getElementById('fbApiKey').value = FIXED_FIREBASE_CONFIG.apiKey || '';
+            document.getElementById('fbAuthDomain').value = FIXED_FIREBASE_CONFIG.authDomain || '';
+            document.getElementById('fbProjectId').value = FIXED_FIREBASE_CONFIG.projectId || '';
+            document.getElementById('fbStorageBucket').value = FIXED_FIREBASE_CONFIG.storageBucket || '';
+            document.getElementById('fbMessagingSenderId').value = FIXED_FIREBASE_CONFIG.messagingSenderId || '';
+            document.getElementById('fbAppId').value = FIXED_FIREBASE_CONFIG.appId || '';
+            document.getElementById('firebaseModal').classList.remove('hidden');
+        }
+        function closeFirebaseModal() { document.getElementById('firebaseModal').classList.add('hidden'); }
+
+        function openFirebaseDiagnosticsModal() {
+            const badge = document.getElementById('diagStatusBadge');
+            const pId = document.getElementById('diagProjectId');
+            const lSync = document.getElementById('diagLastSync');
+            const details = document.getElementById('diagDetails');
+
+            if (useFirebase) {
+                if (badge) { badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800'; badge.textContent = '✓ Conectado a Cloud (Firebase)'; }
+                if (details) details.textContent = 'La base de datos Firestore está conectada y sincronizando en tiempo real.';
+            } else {
+                if (badge) { badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800'; badge.textContent = 'Modo Local'; }
+                if (details) details.textContent = 'Operando en almacenamiento local.';
+            }
+            if (pId) pId.textContent = FIXED_FIREBASE_CONFIG.projectId || 'Ninguno';
+            if (lSync) lSync.textContent = lastSyncTime;
+
+            document.getElementById('firebaseDiagnosticsModal').classList.remove('hidden');
+        }
+        function closeFirebaseDiagnosticsModal() { document.getElementById('firebaseDiagnosticsModal').classList.add('hidden'); }
+
+        function testFirebaseConnectionNow() {
+            initFirebase(FIXED_FIREBASE_CONFIG, true);
+            closeFirebaseDiagnosticsModal();
+        }
+
+        function saveFirebaseConfig(e) {
+            e.preventDefault();
+            const customConfig = {
+                apiKey: document.getElementById('fbApiKey').value.trim(),
+                authDomain: document.getElementById('fbAuthDomain').value.trim(),
+                projectId: document.getElementById('fbProjectId').value.trim(),
+                storageBucket: document.getElementById('fbStorageBucket').value.trim(),
+                messagingSenderId: document.getElementById('fbMessagingSenderId').value.trim(),
+                appId: document.getElementById('fbAppId').value.trim()
+            };
+            FIXED_FIREBASE_CONFIG = customConfig;
+            localStorage.setItem('vivero_fb_config', JSON.stringify(customConfig));
+            initFirebase(customConfig, true);
+            closeFirebaseModal();
+        }
+
+        function initFirebase(config, showAlert = true) {
+            try {
+                if (!config || !config.apiKey || !config.projectId) {
+                    useFirebase = false;
+                    updateStatusUI(false);
+                    return;
+                }
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(config);
+                }
+                db = firebase.firestore();
+
+                if (typeof unsubscribeSnapshot === 'function') {
+                    unsubscribeSnapshot();
+                }
+
+                unsubscribeSnapshot = db.collection('vivero').doc('main_data').onSnapshot((docRef) => {
+                    useFirebase = true;
+                    updateStatusUI(true, config.projectId);
+                    if (docRef.exists) {
+                        const cloudData = docRef.data();
+                        if (cloudData) {
+                            dbData = cloudData;
+                            if (!dbData.plants) dbData.plants = [];
+                            if (!dbData.pots) dbData.pots = [];
+                            if (!dbData.tierras) dbData.tierras = [];
+                            if (!dbData.accessories) dbData.accessories = [];
+                            if (!dbData.chemicals) dbData.chemicals = [];
+                            renderCurrentTab();
+                            lastSyncTime = new Date().toLocaleTimeString();
+                        }
+                    } else {
+                        db.collection('vivero').doc('main_data').set(dbData).catch(() => {});
+                    }
+                }, (err) => {
+                    console.warn('Firestore snapshot error:', err.message);
+                    useFirebase = false;
+                    updateStatusUI(false);
+                });
+
+                if (showAlert) alert('¡Intentando conectar con Firebase!');
+            } catch(err) {
+                console.warn('Firebase initialization warning:', err);
+                useFirebase = false;
+                updateStatusUI(false);
+            }
+        }
+
+        function disconnectFirebase() {
+            useFirebase = false;
+            if (typeof unsubscribeSnapshot === 'function') unsubscribeSnapshot();
+            updateStatusUI(false);
+            alert('Desconectado de Firebase. Ahora estás operando en Modo Local.');
+        }
+
+        async function saveDb() {
+            if (useFirebase && db) {
+                try {
+                    await db.collection('vivero').doc('main_data').set(dbData);
+                    lastSyncTime = new Date().toLocaleTimeString();
+                } catch(err) {
+                    console.warn('Firestore write failed:', err);
+                    useFirebase = false;
+                    updateStatusUI(false);
+                }
+            }
+            try {
+                localStorage.setItem('viveroApp_db_v3', JSON.stringify(dbData));
+            } catch(e) { console.error(e); }
+        }
+
+        function renderCurrentTab() {
+            const activeTabBtn = document.querySelector('nav button.bg-emerald-600');
+            if (!activeTabBtn) return;
+            const activeTab = activeTabBtn.id.replace('tab-', '');
+            if (activeTab === 'plants') renderPlants();
+            else if (activeTab === 'pots') renderPots();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+            const sec = document.getElementById('section-' + tabId);
+            if (sec) sec.classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm', 'shadow-emerald-200');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm', 'shadow-emerald-200');
+            }
+
+            renderCurrentTab();
+        }
+
+        function openZoomImage(url, caption) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('zoomedImage');
+            const cap = document.getElementById('zoomedCaption');
+            if (img) img.src = url;
+            if (cap) cap.textContent = caption;
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handlePlantImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentPlantImageBase64 = evt.target.result;
+                    const previewImg = document.getElementById('plantImagePreview');
+                    const previewBox = document.getElementById('plantImagePreviewBox');
+                    const fileNameSpan = document.getElementById('plantImageFileName');
+                    if (previewImg) previewImg.src = currentPlantImageBase64;
+                    if (fileNameSpan) fileNameSpan.textContent = file.name || 'Foto tomada';
+                    if (previewBox) previewBox.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearPlantImageSelection() {
+            currentPlantImageBase64 = null;
+            document.getElementById('plantImageFile').value = '';
+            document.getElementById('plantCameraFile').value = '';
+            const previewBox = document.getElementById('plantImagePreviewBox');
+            if (previewBox) previewBox.classList.add('hidden');
+        }
+
+        function renderPlants() {
+            const grid = document.getElementById('plantsGrid');
+            if (!grid) return;
+            const searchInput = document.getElementById('plantSearch');
+            const locFilterInput = document.getElementById('plantFilterLocation');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            const locFilter = locFilterInput ? locFilterInput.value : '';
+
+            let list = [...(dbData.plants || [])];
+            if (search) list = list.filter(p => (p.name && p.name.toLowerCase().includes(search)) || (p.family && p.family.toLowerCase().includes(search)));
+            if (locFilter) list = list.filter(p => p.location === locFilter);
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay plantas cargadas en el sistema.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = p.image || 'https://placehold.co/400x300/e2e8f0/64748b?text=Planta';
+                const buyP = Number(p.buyPrice) || 0;
+                const sellP = Number(p.sellPrice) || (buyP * 2);
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
+                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+                                <span class="bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-location-dot text-emerald-600 text-[10px]"></i> ${p.location || 'Interior'}
+                                </span>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-xs text-white px-2 py-0.5 rounded text-[10px] font-medium">
+                                <i class="fa-regular fa-clock mr-1"></i>${p.updateDate || 'N/D'}
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div class="space-y-1">
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.family || 'Familia no especificada'}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                                <div class="pt-1.5 flex flex-wrap gap-1">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">
+                                        <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i> ${p.pot || 'Maceta estándar'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="editPlant('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                                </button>
+                                <button onclick="deletePlant('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -8,75 +1082,112 @@
             }).join('');
         }
 
-        // ==========================================
-        // FUNCIONES PLACEHOLDER (Requeridas para evitar errores)
-        // ==========================================
-        
-        function editPlant(id) {
-            console.log('Editar planta ID:', id);
-            alert('Función de edición pendiente de implementación');
-        }
-
-        function deletePlant(id) {
-            openTimedDeleteModal('¿Eliminar esta planta del catálogo?', () => {
-                dbData.plants = dbData.plants.filter(p => p.id !== id);
-                saveDb();
-                renderPlants();
-            });
-        }
-
-        function renderPots() {
-            const grid = document.getElementById('potsGrid');
-            if (grid) grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">Catálogo de macetas renderizado.</div>`;
-        }
-
-        function renderItems(type) {
-            const grid = document.getElementById(type + 'Grid');
-            if (grid) grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">Catálogo de ${type} renderizado.</div>`;
-        }
-
-        function renderSales() {
-            const tbody = document.getElementById('salesTableBody');
-            if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Historial de ventas cargado.</td></tr>`;
-        }
-
-        // Manejo básico de Modales para evitar errores en la interfaz
-        function openPlantModal() { document.getElementById('plantModal').classList.remove('hidden'); }
-        function closePlantModal() { document.getElementById('plantModal').classList.add('hidden'); }
-        function openPotModal() { document.getElementById('potModal').classList.remove('hidden'); }
-        function closePotModal() { document.getElementById('potModal').classList.add('hidden'); }
-        function openItemModal(type) { document.getElementById('itemModal').classList.remove('hidden'); }
-        function closeItemModal() { document.getElementById('itemModal').classList.add('hidden'); }
-        function openSaleModal() { document.getElementById('saleModal').classList.remove('hidden'); }
-        function closeSaleModal() { document.getElementById('saleModal').classList.add('hidden'); }
-        
-        // Modal Uploaders
-        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
-        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
-        function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
-        function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
-        function openTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.remove('hidden'); }
-        function closeTierrasExcelModal() { document.getElementById('tierrasExcelModal').classList.add('hidden'); }
-        function openAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.remove('hidden'); }
-        function closeAccessoriesExcelModal() { document.getElementById('accessoriesExcelModal').classList.add('hidden'); }
-        function openChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.remove('hidden'); }
-        function closeChemicalsExcelModal() { document.getElementById('chemicalsExcelModal').classList.add('hidden'); }
-
-        // Tabs Venta
-        function switchSaleModeTab(mode) {
-            document.getElementById('saleInvSection').classList.toggle('hidden', mode !== 'inv');
-            document.getElementById('saleManualSection').classList.toggle('hidden', mode !== 'manual');
-            
-            const invTab = document.getElementById('saleModeInvTab');
-            const manualTab = document.getElementById('saleModeManualTab');
-            
-            if (mode === 'inv') {
-                invTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
-                manualTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
-            } else {
-                manualTab.className = "pb-2 px-3 border-b-2 border-emerald-600 text-emerald-600 font-bold transition flex items-center gap-1.5";
-                invTab.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5";
+        function autoUpdatePlantSell() {
+            const buyInput = document.getElementById('plantBuyPrice');
+            const sellInput = document.getElementById('plantSellPrice');
+            if (buyInput && sellInput) {
+                const buyVal = parseFloat(buyInput.value) || 0;
+                sellInput.value = buyVal * 2;
             }
+        }
+
+        function openPlantModal(id = null) {
+            const form = document.getElementById('plantForm');
+            if (form) form.reset();
+            clearPlantImageSelection();
+
+            const editIdInput = document.getElementById('plantEditId');
+            if (editIdInput) editIdInput.value = '';
+            const titleEl = document.getElementById('plantModalTitle');
+            if (titleEl) titleEl.textContent = 'Nueva Planta';
+            const dateInput = document.getElementById('plantUpdateDate');
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+            if (id) {
+                const p = (dbData.plants || []).find(x => x.id === id);
+                if (p) {
+                    if (titleEl) titleEl.textContent = 'Editar Planta';
+                    if (editIdInput) editIdInput.value = p.id;
+                    document.getElementById('plantName').value = p.name || '';
+                    document.getElementById('plantFamily').value = p.family || '';
+                    document.getElementById('plantLocation').value = p.location || 'Interior';
+                    document.getElementById('plantPot').value = p.pot || '';
+                    document.getElementById('plantBuyPrice').value = p.buyPrice || 8000;
+                    document.getElementById('plantSellPrice').value = p.sellPrice !== undefined ? p.sellPrice : ((p.buyPrice || 8000) * 2);
+                    if (dateInput) dateInput.value = p.updateDate || new Date().toISOString().split('T')[0];
+
+                    if (p.image) {
+                        currentPlantImageBase64 = p.image;
+                        const previewImg = document.getElementById('plantImagePreview');
+                        const previewBox = document.getElementById('plantImagePreviewBox');
+                        const fileNameSpan = document.getElementById('plantImageFileName');
+                        if (previewImg) previewImg.src = p.image;
+                        if (fileNameSpan) fileNameSpan.textContent = 'Imagen actual';
+                        if (previewBox) previewBox.classList.remove('hidden');
+                    }
+                }
+            }
+            document.getElementById('plantModal').classList.remove('hidden');
+        }
+
+        function closePlantModal() {
+            document.getElementById('plantModal').classList.add('hidden');
+        }
+        function editPlant(id) { openPlantModal(id); }
+
+        async function savePlant(e) {
+            e.preventDefault();
+            const id = document.getElementById('plantEditId').value;
+            const name = document.getElementById('plantName').value.trim();
+            const family = document.getElementById('plantFamily').value.trim();
+            const location = document.getElementById('plantLocation').value;
+            const pot = document.getElementById('plantPot').value.trim();
+            const buyPrice = parseFloat(document.getElementById('plantBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('plantSellPrice').value) || (buyPrice * 2);
+            const updateDate = document.getElementById('plantUpdateDate').value || new Date().toISOString().split('T')[0];
+
+            let finalImgUrl = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
+            if (currentPlantImageBase64) {
+                finalImgUrl = currentPlantImageBase64;
+            } else if (id) {
+                const existing = (dbData.plants || []).find(x => x.id === id);
+                if (existing && existing.image) finalImgUrl = existing.image;
+            }
+
+            if (!dbData.plants) dbData.plants = [];
+
+            if (id) {
+                const idx = dbData.plants.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    dbData.plants[idx] = { 
+                        ...dbData.plants[idx], 
+                        name,
+                        family,
+                        location,
+                        pot,
+                        buyPrice,
+                        sellPrice,
+                        updateDate,
+                        image: finalImgUrl
+                    };
+                }
+            } else {
+                const newPlant = {
+                    id: 'pl_' + Date.now(),
+                    name,
+                    family,
+                    location,
+                    pot,
+                    buyPrice,
+                    sellPrice,
+                    updateDate,
+                    image: finalImgUrl
+                };
+                dbData.plants.push(newPlant);
+            }
+            await saveDb();
+            closePlantModal();
+            renderPlants();
         }
     </script>
 </body>
