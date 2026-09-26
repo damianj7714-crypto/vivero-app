@@ -1,341 +1,1031 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViveroApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ViveroApp v9.8 - Gestión Profesional de Viveros</title>
+    
+    <!-- PWA & Mobile Settings -->
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ViveroApp v9.8">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628324.png">
+    
+    <!-- Web App Manifest para instalación en celulares (Versión 9.8) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"ViveroApp v9.8 - Gestión de Viveros","short_name":"ViveroApp v9.8","description":"Sistema Profesional de Gestión de Viveros v9.8","start_url":".","display":"standalone","orientation":"portrait","background_color":"#f8fafc","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/628/628324.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (Excel Parser) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; } 
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
 
-    <!-- HEADER / NAVEGACIÓN -->
-    <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-leaf text-2xl text-emerald-300"></i>
-                <h1 class="text-xl font-bold tracking-wide">ViveroApp</h1>
+    <!-- HEADER CON NUMERO DE VERSIÓN 9.8 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg shadow-md shadow-emerald-200">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-bold text-slate-900 text-lg leading-tight">ViveroApp</h1>
+                        <!-- ETIQUETA VISIBLE DE VERSIÓN 9.8 -->
+                        <span class="bg-emerald-100 text-emerald-800 text-[12px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-xs">v9.8</span>
+                    </div>
+                    <p class="text-xs text-emerald-600 font-medium">Gestión Profesional (Precios en pesos $)</p>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="toggleCosts()" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-xs rounded-xl flex items-center gap-1.5 border border-emerald-600 transition">
-                    <i id="iconPin" class="fa-solid fa-lock"></i> <span id="labelPin">Ver Costos</span>
+            
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- BOTÓN INSTALAR APP PWA -->
+                <button id="installAppBtn" onclick="installPWA()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm active:scale-95">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Instalar App</span>
                 </button>
-                <button onclick="openExcelModal()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-xs rounded-xl font-semibold flex items-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-file-excel"></i> Excel
+
+                <!-- SWITCH PRECIO COMPRA -->
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200" title="Mostrar/Ocultar Precio de Compra">
+                    <span class="text-xs font-semibold text-slate-600 hidden sm:inline"><i class="fa-solid fa-eye text-slate-500 mr-1"></i>P. Compra:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleBuyPrice" onchange="handleBuyPriceToggle(this)" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
+                <button onclick="openFirebaseModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg transition">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span class="hidden sm:inline">Configurar Firebase</span>
                 </button>
+                <div onclick="openFirebaseDiagnosticsModal()" class="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 cursor-pointer transition" title="Ver Estado de Sincronización">
+                    <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                    <span id="connectionStatus" class="text-xs font-semibold text-slate-600">Local (Sin Firebase)</span>
+                </div>
             </div>
         </div>
-
-        <nav class="bg-emerald-800 border-t border-emerald-600/50 overflow-x-auto">
-            <div class="max-w-7xl mx-auto px-4 flex gap-1 text-xs font-semibold">
-                <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2.5 border-b-2 border-amber-400 text-amber-300">🌱 Plantas</button>
-                <button onclick="switchTab('pots')" id="tab-pots" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">🪴 Macetas</button>
-                <button onclick="switchTab('tierras')" id="tab-tierras" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">🪵 Tierras</button>
-                <button onclick="switchTab('accessories')" id="tab-accessories" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">🛠️ Accesorios</button>
-                <button onclick="switchTab('chemicals')" id="tab-chemicals" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">🧪 Químicos</button>
-                <button onclick="switchTab('bot')" id="tab-bot" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">🤖 Bot Experto</button>
-                <button onclick="switchTab('sales')" id="tab-sales" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-emerald-100">💰 Ventas & Caja</button>
-            </div>
-        </nav>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-1">
-        <div id="searchContainer" class="mb-6">
-            <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="Buscar ítem por nombre..." class="w-full pl-4 pr-4 py-2.5 bg-white rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+    <!-- NAVIGATION TABS -->
+    <nav class="bg-white border-b border-slate-200 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2">
+            <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-leaf"></i> Plantas
+            </button>
+            <button onclick="switchTab('pots')" id="tab-pots" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-circle"></i> Macetas
+            </button>
+            <button onclick="switchTab('tierras')" id="tab-tierras" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-layer-group"></i> Tierras
+            </button>
+            <button onclick="switchTab('accessories')" id="tab-accessories" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-tools"></i> Accesorios
+            </button>
+            <button onclick="switchTab('chemicals')" id="tab-chemicals" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-flask"></i> Químicos
+            </button>
+            <button onclick="switchTab('bot')" id="tab-bot" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-camera"></i> Buscar por Foto
+            </button>
+            <button onclick="switchTab('sales')" id="tab-sales" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-cash-register"></i> Ventas & Caja
+            </button>
         </div>
+    </nav>
 
-        <!-- GRILLA DE PRODUCTOS -->
-        <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
-        <!-- SECCIÓN BOT EXPERTO -->
-        <div id="botSection" class="hidden max-w-2xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-            <h2 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-robot text-emerald-600"></i> Consulta Botánica</h2>
-            <textarea id="botPrompt" rows="3" placeholder="Haz tu consulta sobre cuidados o plagas..." class="w-full p-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
-            <button onclick="askBot()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition">Consultar Bot</button>
-            <div id="botResponse" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm text-slate-700 hidden"></div>
-        </div>
-
-        <!-- SECCIÓN VENTAS & CAJA -->
-        <div id="salesSection" class="hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
-            <h2 class="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt text-emerald-600"></i> Registro de Ventas</h2>
-            <p class="text-sm text-slate-500">Módulo de registro diario activo.</p>
-        </div>
-    </main>
-
-    <!-- LIGHTBOX VISOR DE IMÁGENES -->
-    <div id="lightboxModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
-        <img id="lightboxImg" src="" class="max-h-[85vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl">
-    </div>
-
-    <!-- ELIMINACIÓN CON TEMPORIZADOR DE SEGURIDAD (3 SEGUNDOS) -->
-    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500 text-4xl"></i>
-            <h3 class="font-bold text-slate-800 text-base">¿Eliminar registro?</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">Esta acción borrará el ítem de la base de datos local y de Firestore.</p>
-            <div class="flex justify-center gap-3 pt-2">
-                <button onclick="cancelDelete()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
-                <button id="confirmDeleteBtn" disabled onclick="executeDelete()" class="px-4 py-2 bg-rose-500 text-white text-xs font-semibold rounded-xl transition opacity-50 cursor-not-allowed">
-                    Confirmar (<span id="deleteTimer">3</span>s)
-                </button>
+        <!-- PLANTS TAB -->
+        <section id="section-plants" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Catálogo de Plantas</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Gestiona tus plantas y precios (expresados en pesos $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('plants')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Sección
+                    </button>
+                    <button onclick="openPlantModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Planta
+                    </button>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- EXCEL MODAL SIMPLE -->
-    <div id="excelModal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-file-excel text-sky-600"></i> Importar Excel</h3>
-                <button onclick="closeExcelModal()" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Categoría:</label>
-                <select id="excelCategorySelect" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800">
-                    <option value="plants">🌱 Plantas</option>
-                    <option value="pots">🪴 Macetas</option>
-                    <option value="tierras">🪵 Tierras</option>
-                    <option value="accessories">🛠️ Accesorios</option>
-                    <option value="chemicals">🧪 Químicos</option>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="plantSearch" oninput="renderPlants()" placeholder="Buscar por nombre o familia..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <select id="plantFilterLocation" onchange="renderPlants()" class="w-full py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="">Todas las ubicaciones</option>
+                    <option value="Interior">Interior</option>
+                    <option value="Exterior">Exterior</option>
+                    <option value="Interior / Exterior">Interior / Exterior</option>
                 </select>
             </div>
-            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)" class="text-xs text-slate-600 w-full">
-            <div class="flex justify-end pt-2">
-                <button onclick="closeExcelModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+
+            <div id="plantsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- POTS TAB -->
+        <section id="section-pots" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Macetas y Contenedores</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de macetas (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('pots')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Sección
+                    </button>
+                    <button onclick="openPotModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Maceta
+                    </button>
+                </div>
             </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="potSearch" oninput="renderPots()" placeholder="Buscar macetas por nombre, medida o material..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div id="potsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- TIERRAS TAB -->
+        <section id="section-tierras" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Tierras y Sustratos</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de tierras (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('tierras')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Sección
+                    </button>
+                    <button onclick="openItemModal('tierras')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Tierra
+                    </button>
+                </div>
+            </div>
+            <div id="tierrasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- ACCESSORIES TAB -->
+        <section id="section-accessories" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Accesorios y Herramientas</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Palas, guantes, tutores (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('accessories')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Sección
+                    </button>
+                    <button onclick="openItemModal('accessories')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nuevo Accesorio
+                    </button>
+                </div>
+            </div>
+            <div id="accessoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- CHEMICALS TAB -->
+        <section id="section-chemicals" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Fertilizantes y Químicos</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Abonos y plaguicidas (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('chemicals')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Sección
+                    </button>
+                    <button onclick="openItemModal('chemicals')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nuevo Químico
+                    </button>
+                </div>
+            </div>
+            <div id="chemicalsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- VISUAL SEARCH BOT TAB -->
+        <section id="section-bot" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Toma una foto directamente desde la cámara de tu celular o selecciona una imagen de tu galería para identificar el producto en tu inventario.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    
+                    <!-- BOTONES DUALES: CÁMARA DIRECTA Y GALERÍA -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="border-2 border-dashed border-emerald-400 bg-emerald-50/70 hover:bg-emerald-100 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px] active:scale-95" onclick="document.getElementById('visualSearchCameraInput').click()">
+                            <i class="fa-solid fa-camera text-4xl text-emerald-600 mb-2"></i>
+                            <p class="font-bold text-slate-800 text-sm">Tomar Foto con Cámara</p>
+                            <p class="text-xs text-emerald-700 mt-1">Abre la cámara del celular en vivo</p>
+                            <input type="file" id="visualSearchCameraInput" accept="image/*" capture="environment" onchange="previewSearchImage(event)" class="hidden">
+                        </div>
+                        <div class="border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100 rounded-2xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center min-h-[150px] active:scale-95" onclick="document.getElementById('visualSearchInput').click()">
+                            <i class="fa-solid fa-images text-3xl text-slate-500 mb-2"></i>
+                            <p class="font-semibold text-slate-800 text-sm">Elegir de Galería</p>
+                            <p class="text-xs text-slate-400 mt-1">Seleccionar foto guardada</p>
+                            <input type="file" id="visualSearchInput" accept="image/*" onchange="previewSearchImage(event)" class="hidden">
+                        </div>
+                    </div>
+
+                    <div id="previewContainer" class="hidden flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200 relative">
+                        <img id="visualSearchPreview" src="" alt="Vista previa" class="max-h-48 rounded-xl object-contain shadow-xs">
+                        <button onclick="clearSearchImage()" class="mt-2 text-xs text-rose-600 hover:underline font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-trash"></i> Quitar foto
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button onclick="searchByPhoto()" id="searchByPhotoBtn" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Similitudes en Inventario
+                    </button>
+                </div>
+                
+                <div id="botResult" class="hidden p-5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-4">
+                    <h3 class="font-bold text-emerald-900 flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-robot text-emerald-600"></i> Coincidencias Encontradas en Inventario:
+                    </h3>
+                    <div id="botMatchedItems" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SALES TAB -->
+        <section id="section-sales" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Control de Ventas & Carrito de Caja</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Registra ventas con carrito de compras y realiza el control por rangos de fechas (en $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearSection('sales')" class="flex-1 sm:flex-none px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Vaciar Ventas
+                    </button>
+                    <button onclick="openSaleModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cart-plus"></i> Nueva Venta / Carrito
+                    </button>
+                </div>
+            </div>
+
+            <!-- METRIC CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ventas Totales (Filtradas)</p>
+                        <h3 id="totalSalesAmount" class="text-2xl font-bold text-slate-900 mt-1">$0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transacciones Realizadas</p>
+                        <h3 id="totalSalesCount" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTROS POR DÍAS Y BÚSQUEDA -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-emerald-600"></i>
+                        <span class="font-bold text-slate-800 text-sm">Filtros de Control de Ventas:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5" id="salesFilterPresets">
+                        <button onclick="setSalesPreset('all')" id="preset-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition">Todos</button>
+                        <button onclick="setSalesPreset('today')" id="preset-today" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Hoy</button>
+                        <button onclick="setSalesPreset('yesterday')" id="preset-yesterday" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Ayer</button>
+                        <button onclick="setSalesPreset('7days')" id="preset-7days" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Últimos 7 días</button>
+                        <button onclick="setSalesPreset('month')" id="preset-month" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Este Mes</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Desde Fecha</label>
+                        <input type="date" id="salesFilterFrom" onchange="renderSales()" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Hasta Fecha</label>
+                        <input type="date" id="salesFilterTo" onchange="renderSales()" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-1">Buscar por Producto / Cliente</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="salesFilterSearch" oninput="renderSales()" placeholder="Buscar por concepto o método..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE HISTORIAL DE VENTAS -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 font-bold text-slate-900 text-sm flex justify-between items-center">
+                    <span>Historial de Ventas</span>
+                    <span class="text-xs font-normal text-slate-500">Transacciones ordenadas por fecha reciente</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4">Fecha & Hora</th>
+                                <th class="p-4">Ítems / Detalle de Venta</th>
+                                <th class="p-4 text-center">Unidades</th>
+                                <th class="p-4">Total</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN -->
+    <div id="iosInstallModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-lg">Instalar ViveroApp v9.8</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Para instalar esta app en tu pantalla de inicio:
+            </p>
+            <div class="text-left bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                <p class="flex items-center gap-2 text-slate-700">
+                    <span class="font-bold bg-emerald-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">1</span>
+                    Toca el botón <strong>Compartir</strong> <i class="fa-solid fa-share-nodes text-emerald-600"></i> en la barra de tu navegador.
+                </p>
+                <p class="flex items-center gap-2 text-slate-700">
+                    <span class="font-bold bg-emerald-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span>
+                    Selecciona <strong>"Agregar a inicio"</strong> o <strong>"Instalar aplicación"</strong>.
+                </p>
+            </div>
+            <button onclick="closeIosInstallModal()" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-sm">
+                Entendido
+            </button>
         </div>
     </div>
 
-    <!-- JAVASCRIPT PRINCIPAL -->
+    <!-- GENERAL ITEM MODAL (Para tierras, accesorios, químicos) -->
+    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="itemModalTitle" class="font-bold text-slate-900 text-lg">Nuevo Ítem</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)" class="space-y-4">
+                <input type="hidden" id="itemType">
+                <input type="hidden" id="itemEditId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
+                    <input type="text" id="itemName" required placeholder="Ej: Sustrato Profesional 10L" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="itemBuyPrice" min="0" step="100" value="2000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="itemSellPrice" min="0" step="100" value="4000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen / Foto</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('itemCameraInput').click()" class="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-camera text-sm"></i> Tomar Foto
+                        </button>
+                        <button type="button" onclick="document.getElementById('itemGalleryInput').click()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-images text-sm"></i> Galería
+                        </button>
+                    </div>
+                    <input type="file" id="itemCameraInput" accept="image/*" capture="environment" onchange="handleModalImageSelect(event, 'item')" class="hidden">
+                    <input type="file" id="itemGalleryInput" accept="image/*" onchange="handleModalImageSelect(event, 'item')" class="hidden">
+
+                    <div id="itemImagePreviewContainer" class="hidden mt-3 relative w-full h-32 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center">
+                        <img id="itemImagePreview" src="" class="w-full h-full object-cover">
+                        <button type="button" onclick="clearModalImagePreview('item')" class="absolute top-2 right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-md">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PLANT MODAL (NUEVA PLANTA CON CÁMARA DIRECTA O GALERÍA) -->
+    <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="plantModalTitle" class="font-bold text-slate-900 text-lg">Nueva Planta</h3>
+                <button onclick="closePlantModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="plantForm" onsubmit="savePlant(event)" class="space-y-4">
+                <input type="hidden" id="plantEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Común *</label>
+                        <input type="text" id="plantName" required placeholder="Ej: Ficus Benjamina" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Familia / Nombre Científico</label>
+                        <input type="text" id="plantFamily" placeholder="Ej: Moraceae" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ubicación</label>
+                        <select id="plantLocation" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                            <option value="Interior">Interior</option>
+                            <option value="Exterior">Exterior</option>
+                            <option value="Interior / Exterior">Interior / Exterior</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Exposición a Luz</label>
+                        <input type="text" id="plantLight" placeholder="Ej: Sol directo / Sombra" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Frecuencia Riego</label>
+                        <input type="text" id="plantWater" placeholder="Ej: 2 veces x semana" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="plantBuyPrice" min="0" step="100" value="1500" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="plantSellPrice" min="0" step="100" value="3000" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN CÁMARA DIRECTA O GALERÍA EN CARGAR PLANTA -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-2">Imagen / Foto de la Planta</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('plantCameraInput').click()" class="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-camera text-base"></i> Tomar Foto
+                        </button>
+                        <button type="button" onclick="document.getElementById('plantGalleryInput').click()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-images text-base"></i> Abrir Galería
+                        </button>
+                    </div>
+
+                    <!-- Input para Cámara Celular -->
+                    <input type="file" id="plantCameraInput" accept="image/*" capture="environment" onchange="handleModalImageSelect(event, 'plant')" class="hidden">
+                    <!-- Input para Galería de Fotos -->
+                    <input type="file" id="plantGalleryInput" accept="image/*" onchange="handleModalImageSelect(event, 'plant')" class="hidden">
+
+                    <!-- Vista previa de la foto tomada o cargada -->
+                    <div id="plantImagePreviewContainer" class="hidden mt-3 relative w-full h-36 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center">
+                        <img id="plantImagePreview" src="" class="w-full h-full object-cover">
+                        <button type="button" onclick="clearModalImagePreview('plant')" class="absolute top-2 right-2 bg-rose-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-md hover:bg-rose-700">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl">Guardar Planta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POT MODAL (NUEVA MACETA) -->
+    <div id="potModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="potModalTitle" class="font-bold text-slate-900 text-lg">Nueva Maceta</h3>
+                <button onclick="closePotModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="potForm" onsubmit="savePot(event)" class="space-y-4">
+                <input type="hidden" id="potEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre / Modelo *</label>
+                        <input type="text" id="potName" required placeholder="Ej: Maceta Plástica N° 18" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Material</label>
+                        <input type="text" id="potMaterial" placeholder="Ej: Plástico, Barro, Ceramica" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Medida / Capacidad</label>
+                        <input type="text" id="potSize" placeholder="Ej: 18 cm de diámetro" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Color</label>
+                        <input type="text" id="potColor" placeholder="Ej: Terracota / Blanco" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($)</label>
+                        <input type="number" id="potBuyPrice" min="0" step="100" value="800" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($)</label>
+                        <input type="number" id="potSellPrice" min="0" step="100" value="1600" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen / Foto</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('potCameraInput').click()" class="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-camera text-sm"></i> Tomar Foto
+                        </button>
+                        <button type="button" onclick="document.getElementById('potGalleryInput').click()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i class="fa-solid fa-images text-sm"></i> Galería
+                        </button>
+                    </div>
+                    <input type="file" id="potCameraInput" accept="image/*" capture="environment" onchange="handleModalImageSelect(event, 'pot')" class="hidden">
+                    <input type="file" id="potGalleryInput" accept="image/*" onchange="handleModalImageSelect(event, 'pot')" class="hidden">
+
+                    <div id="potImagePreviewContainer" class="hidden mt-3 relative w-full h-36 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center">
+                        <img id="potImagePreview" src="" class="w-full h-full object-cover">
+                        <button type="button" onclick="clearModalImagePreview('pot')" class="absolute top-2 right-2 bg-rose-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-md">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closePotModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-xl">Guardar Maceta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT & LOGIC VERSIÓN 9.8 -->
     <script>
-        // FIREBASE FIRESTORE (Credenciales: viveromorlina)
-        const firebaseConfig = {
-            apiKey: "AIzaSy...", 
-            authDomain: "viveromorlina.firebaseapp.com",
-            projectId: "viveromorlina",
-            storageBucket: "viveromorlina.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:123456"
+        // REGISTRO DE SERVICE WORKER COMPATIBLE CON PWA INSTALABLE EN CELULARES
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'viveroapp-v9.8';
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        e.waitUntil(clients.claim());
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(
+                            fetch(e.request).catch(() => caches.match(e.request))
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob)).catch((err) => {
+                    console.log('Error al registrar Service Worker:', err);
+                });
+            });
+        }
+
+        // CONTROLADOR DE INSTALACIÓN PWA
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('installAppBtn');
+            if (btn) {
+                btn.classList.remove('hidden');
+            }
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((res) => {
+                    if (res.outcome === 'accepted') {
+                        console.log('El usuario aceptó la instalación.');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                if (isIos || !window.matchMedia('(display-mode: standalone)').matches) {
+                    const modal = document.getElementById('iosInstallModal');
+                    if (modal) modal.classList.remove('hidden');
+                } else {
+                    alert("La aplicación ya está instalada en tu dispositivo.");
+                }
+            }
+        }
+
+        function closeIosInstallModal() {
+            const modal = document.getElementById('iosInstallModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // BASE DE DATOS LOCAL
+        let dbData = {
+            plants: [
+                { id: 'pl_1', name: 'Monstera Deliciosa', family: 'Araceae', location: 'Interior', light: 'Luz indirecta brillante', water: 'Cada 7 días', buyPrice: 3500, sellPrice: 7000, image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=500' },
+                { id: 'pl_2', name: 'Ficus Lyrata', family: 'Moraceae', location: 'Interior', light: 'Mucha luz', water: '1 vez x semana', buyPrice: 5000, sellPrice: 9800, image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500' }
+            ],
+            pots: [
+                { id: 'po_1', name: 'Maceta Cerámica Nórdica', material: 'Cerámica', size: '20 cm', color: 'Blanco Mate', buyPrice: 2200, sellPrice: 4500, image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500' }
+            ],
+            tierras: [
+                { id: 'ti_1', name: 'Sustrato Universal Premium 10L', buyPrice: 1200, sellPrice: 2400, image: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=500' }
+            ],
+            accessories: [
+                { id: 'ac_1', name: 'Pala de Jardín Inoxidable', buyPrice: 1500, sellPrice: 3000, image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500' }
+            ],
+            chemicals: [
+                { id: 'ch_1', name: 'Fertilizante Crecimiento Follaje 500ml', buyPrice: 1800, sellPrice: 3600, image: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=500' }
+            ],
+            sales: []
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        let currentTab = 'plants';
-        let showCosts = false;
-        const PIN_COSTS = '7714';
-        let pendingDeleteId = null;
-        let deleteInterval = null;
+        // Variables de Estado
+        const geminiApiKey = 'AQ.Ab8RN6KFjZrTvmj4hJpRlkRLYA25I1ltRXb7auD05qXpHO4Iuw';
+        let showBuyPrice = false;
+        let activeTab = 'plants';
+        let currentUploadedImageBase64 = '';
+        let modalImageBase64Map = { plant: '', pot: '', item: '' };
 
-        let dbData = { plants: [], pots: [], tierras: [], accessories: [], chemicals: [] };
-
+        // INICIALIZACIÓN
         window.addEventListener('DOMContentLoaded', () => {
-            loadLocalDb();
-            syncWithFirestore();
+            const saved = localStorage.getItem('vivero_db');
+            if (saved) {
+                try { dbData = JSON.parse(saved); } catch(e){}
+            }
             renderCurrentTab();
         });
 
         function saveDb() {
-            localStorage.setItem('vivero_db_data', JSON.stringify(dbData));
+            localStorage.setItem('vivero_db', JSON.stringify(dbData));
+        }
+
+        function handleBuyPriceToggle(checkbox) {
+            showBuyPrice = checkbox.checked;
             renderCurrentTab();
-            db.collection('catalogo').doc('viveromorlina_data').set(dbData).catch(e => console.log('Sync Error:', e));
-        }
-
-        function loadLocalDb() {
-            const saved = localStorage.getItem('vivero_db_data');
-            if (saved) { try { dbData = JSON.parse(saved); } catch(e){} }
-        }
-
-        function syncWithFirestore() {
-            db.collection('catalogo').doc('viveromorlina_data').onSnapshot(doc => {
-                if (doc.exists) {
-                    dbData = doc.data();
-                    localStorage.setItem('vivero_db_data', JSON.stringify(dbData));
-                    renderCurrentTab();
-                }
-            });
         }
 
         function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-amber-400', 'text-amber-300');
-                btn.classList.add('border-transparent', 'text-emerald-100');
+            activeTab = tab;
+            document.querySelectorAll('section[id^="section-"]').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.className = "tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap";
             });
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('border-transparent', 'text-emerald-100');
-                activeBtn.classList.add('border-amber-400', 'text-amber-300');
-            }
 
-            document.getElementById('catalogGrid').classList.toggle('hidden', tab === 'bot' || tab === 'sales');
-            document.getElementById('searchContainer').classList.toggle('hidden', tab === 'bot' || tab === 'sales');
-            document.getElementById('botSection').classList.toggle('hidden', tab !== 'bot');
-            document.getElementById('salesSection').classList.toggle('hidden', tab !== 'sales');
+            const sec = document.getElementById(`section-${tab}`);
+            if (sec) sec.classList.remove('hidden');
 
-            if (tab !== 'bot' && tab !== 'sales') renderCurrentTab();
-        }
+            const btn = document.getElementById(`tab-${tab}`);
+            if (btn) btn.className = "tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap";
 
-        function toggleCosts() {
-            if (!showCosts) {
-                const pin = prompt('Ingrese PIN (7714):');
-                if (pin === PIN_COSTS) {
-                    showCosts = true;
-                    document.getElementById('iconPin').className = 'fa-solid fa-lock-open';
-                    document.getElementById('labelPin').innerText = 'Ocultar Costos';
-                    renderCurrentTab();
-                } else if (pin !== null) alert('PIN incorrecto');
-            } else {
-                showCosts = false;
-                document.getElementById('iconPin').className = 'fa-solid fa-lock';
-                document.getElementById('labelPin').innerText = 'Ver Costos';
-                renderCurrentTab();
-            }
+            renderCurrentTab();
         }
 
         function renderCurrentTab() {
-            const grid = document.getElementById('catalogGrid');
-            if (!grid || currentTab === 'bot' || currentTab === 'sales') return;
+            if (activeTab === 'plants') renderPlants();
+            else if (activeTab === 'pots') renderPots();
+            else if (activeTab === 'tierras' || activeTab === 'accessories' || activeTab === 'chemicals') renderItems(activeTab);
+            else if (activeTab === 'sales') renderSales();
+        }
 
-            const items = dbData[currentTab] || [];
-            if (items.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-sm">No hay productos en esta sección.</div>`;
+        function renderPlants() {
+            const grid = document.getElementById('plantsGrid');
+            if (!grid) return;
+            const q = (document.getElementById('plantSearch')?.value || '').toLowerCase();
+            const loc = document.getElementById('plantFilterLocation')?.value || '';
+
+            const list = (dbData.plants || []).filter(p => {
+                const matchQ = (p.name || '').toLowerCase().includes(q) || (p.family || '').toLowerCase().includes(q);
+                const matchL = !loc || p.location === loc;
+                return matchQ && matchL;
+            });
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay plantas registradas o coincidentes.</div>`;
                 return;
             }
 
-            grid.innerHTML = items.map(item => `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition">
-                    <img src="${item.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400'}" 
-                         onclick="openLightbox('${item.image}')" class="h-40 w-full object-cover cursor-pointer">
-                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
-                            ${item.family ? `<p class="text-xs text-emerald-600 font-medium">${item.family}</p>` : ''}
+            grid.innerHTML = list.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-slate-100 overflow-hidden">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
+                                $${(p.sellPrice || 0).toLocaleString()}
+                            </span>
                         </div>
-                        <div class="border-t border-slate-100 pt-2 flex justify-between items-center">
+                        <div class="p-4 space-y-3">
                             <div>
-                                ${showCosts ? `<p class="text-[10px] text-slate-400">Costo: $${item.buyPrice}</p>` : ''}
-                                <p class="text-sm font-extrabold text-slate-800">$${item.sellPrice}</p>
+                                <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
+                                <p class="text-xs text-slate-500 italic">${p.family || 'Sin familia especificada'}</p>
                             </div>
-                            <button onclick="startDelete('${item.id}')" class="text-slate-300 hover:text-rose-500 text-xs transition">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-location-dot text-rose-500 w-4"></i> Ubicación:</span>
+                                    <span class="font-semibold text-slate-800">${p.location || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-sun text-amber-500 w-4"></i> Luz:</span>
+                                    <span class="font-semibold text-slate-800">${p.light || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-droplet text-sky-500 w-4"></i> Riego:</span>
+                                    <span class="font-semibold text-slate-800">${p.water || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700">$${(p.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ${showBuyPrice ? `
+                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
+                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
+                                    <span class="font-bold text-amber-900">$${(p.buyPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
+                            </div>
                         </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        <button onclick="editPlant('${p.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="deletePlant('${p.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // LIGHTBOX
-        function openLightbox(src) {
-            if (!src) return;
-            document.getElementById('lightboxImg').src = src;
-            document.getElementById('lightboxModal').classList.remove('hidden');
-        }
-        function closeLightbox() {
-            document.getElementById('lightboxModal').classList.add('hidden');
-        }
+        function renderPots() {
+            const grid = document.getElementById('potsGrid');
+            if (!grid) return;
+            const q = (document.getElementById('potSearch')?.value || '').toLowerCase();
 
-        // ELIMINACIÓN CON CONTADOR 3 SEGUNDOS
-        function startDelete(id) {
-            pendingDeleteId = id;
-            let count = 3;
-            const timerSpan = document.getElementById('deleteTimer');
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            timerSpan.innerText = count;
-            confirmBtn.disabled = true;
-            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            document.getElementById('deleteModal').classList.remove('hidden');
-
-            clearInterval(deleteInterval);
-            deleteInterval = setInterval(() => {
-                count--;
-                timerSpan.innerText = count;
-                if (count <= 0) {
-                    clearInterval(deleteInterval);
-                    confirmBtn.disabled = false;
-                    confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-            }, 1000);
-        }
-
-        function cancelDelete() {
-            clearInterval(deleteInterval);
-            pendingDeleteId = null;
-            document.getElementById('deleteModal').classList.add('hidden');
-        }
-
-        function executeDelete() {
-            if (!pendingDeleteId) return;
-            dbData[currentTab] = dbData[currentTab].filter(i => i.id !== pendingDeleteId);
-            saveDb();
-            cancelDelete();
-        }
-
-        // IMPORTAR DESDE EXCEL
-        function openExcelModal() { document.getElementById('excelModal').classList.remove('hidden'); }
-        function closeExcelModal() { document.getElementById('excelModal').classList.add('hidden'); }
-
-        function handleExcelUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            const targetCat = document.getElementById('excelCategorySelect').value;
-
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const wb = XLSX.read(data, { type: 'array' });
-                    const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                    
-                    json.forEach(row => {
-                        const name = row.Nombre || row.nombre || row.NAME;
-                        if (!name) return;
-                        const buy = parseFloat(row.PrecioCompra || row.precio || 0);
-                        const sell = parseFloat(row.PrecioVenta || 0) || (buy * 2);
-
-                        if (!dbData[targetCat]) dbData[targetCat] = [];
-                        dbData[targetCat].push({
-                            id: 'ex_' + Date.now() + Math.random().toString(36).substr(2, 4),
-                            name: String(name),
-                            buyPrice: buy,
-                            sellPrice: sell,
-                            image: row.Imagen || ''
-                        });
-                    });
-                    saveDb();
-                    closeExcelModal();
-                    switchTab(targetCat);
-                    alert('¡Carga completada!');
-                } catch(err) {
-                    alert('Error al leer el archivo Excel.');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function filterItems() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('#catalogGrid > div').forEach(card => {
-                card.style.display = card.innerText.toLowerCase().includes(term) ? '' : 'none';
+            const list = (dbData.pots || []).filter(p => {
+                return (p.name || '').toLowerCase().includes(q) || (p.material || '').toLowerCase().includes(q) || (p.size || '').toLowerCase().includes(q);
             });
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay macetas registradas.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-slate-100 overflow-hidden">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
+                                $${(p.sellPrice || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-slate-900 text-base leading-snug">${p.name}</h3>
+                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-cube text-slate-400 w-4"></i> Material:</span>
+                                    <span class="font-semibold text-slate-800">${p.material || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-indigo-500 w-4"></i> Medida:</span>
+                                    <span class="font-semibold text-slate-800">${p.size || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-palette text-pink-500 w-4"></i> Color:</span>
+                                    <span class="font-semibold text-slate-800">${p.color || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700">$${(p.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ${showBuyPrice ? `
+                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
+                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
+                                    <span class="font-bold text-amber-900">$${(p.buyPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        <button onclick="editPot('${p.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="deletePot('${p.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function askBot() {
-            const prompt = document.getElementById('botPrompt').value;
-            const resContainer = document.getElementById('botResponse');
-            if (!prompt.trim()) return;
-            resContainer.classList.remove('hidden');
-            resContainer.innerText = 'Consultando...';
+        function renderItems(type) {
+            const grid = document.getElementById(`${type}Grid`);
+            if (!grid) return;
+            const list = dbData[type] || [];
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No hay ítems guardados en esta categoría.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(item => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-slate-100 overflow-hidden">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">
+                                $${(item.sellPrice || 0).toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-slate-900 text-base leading-snug">${item.name}</h3>
+                            <div class="space-y-2 text-xs divide-y divide-slate-100 pt-1">
+                                <div class="flex items-center justify-between pt-1.5">
+                                    <span class="text-slate-500 flex items-center gap-2"><i class="fa-solid fa-tag text-emerald-600 w-4"></i> Precio Venta:</span>
+                                    <span class="font-bold text-emerald-700 text-sm">$${(item.sellPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ${showBuyPrice ? `
+                                <div class="flex items-center justify-between pt-1.5 bg-amber-50 p-2 rounded-xl border border-amber-200 mt-1">
+                                    <span class="text-amber-800 font-semibold flex items-center gap-2"><i class="fa-solid fa-coins text-amber-600 w-4"></i> Precio Compra:</span>
+                                    <span class="font-bold text-amber-900">$${(item.buyPrice || 0).toLocaleString()}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                        <button onclick="openItemModal('${type}', '${item.id}')" class="flex-1 py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="deleteItem('${type}', '${item.id}')" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
-    </script>
-</body>
-</html>
+
+        // MANEJO DE IMÁGENES EN MODALES (PLANTA, MACETA, ÍTEMS)
+        function handleModalImageSelect(event, modalType) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                modalImageBase64Map[modalType] = e.target.result;
+                const img = document.getElementById(`${modalType}ImagePreview`);
+                const container = document.getElementById(`${modalType}ImagePreviewContainer`);
+                if (img) img.src = modalImageBase64Map[modalType];
+                if (container) container.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearModalImagePreview(modalType) {
+            modalImageBase64Map[modalType] = '';
+            const cam = document.getElementById(`${modalType}CameraInput`);
+            const gal = document.getElementById(`${modalType}GalleryInput`);
+            if (cam) cam.value = '';
+            if (gal) gal.value = '';
+            const container = document.getElementById(`${modalType}ImagePreviewContainer`);
+            if (container) container.classList.add('hidden');
+        }
+
+        // GESTIÓN DE CÁMARA NATIVA Y BÚSQUEDA IA
+        function previewSearchImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentUploadedImageBase64 = e.target.result;
+                const img = document.getElementById('visualSearchPreview');
+                if (img) img.src = currentUploadedImageBase64;
+                const container = document.getElementById('previewContainer');
+                if (container) container.classList.remove('hidden');
+
+                searchByPhoto();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSearchImage() {
+            currentUploadedImageBase64 = '';
+            const fileInput = document.getElementById('visualSearchInput');
+            if (fileInput) fileInput.value = '';
+            const cameraInput = document.getElementById('visualSearchCameraInput');
+            if (cameraInput) cameraInput.value = '';
+            const container = document.getElementById('previewContainer');
+            if (container) container.classList.add('hidden');
+            const resultBox = document.getElementById('botResult');
+            if (resultBox) resultBox.classList.add('hidden');
+        }
+
+        function getRawBase64(str) {
+            if (!str) return '';
+            return str.includes(',') ? str.split(',')[1].trim() : str.trim();
+        }
+
+        async function searchByPhoto() {
+            if (!currentUploadedImageBase64) {
+                alert("⚠️ Por favor toma o selecciona una foto primero.");
+                return;
+            }
+
+            const btn = document.getElementById('searchByPhotoBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analizando con IA...`;
+            btn.disabled = true;
+
+            const allCatalog = [
+                ...(dbData.plants || []).map(p => ({ id: p.id, type: 'Planta', name: p.name, detail: `Planta: ${p.name}, Familia: ${p.family || 'N/A'}, Ubicación: ${p.location || 'N/A'}, Luz: ${p.light || 'N/A'}`, image: p.image, obj: p })),
+                ...(dbData.pots || []).map(p => ({ id: p.id, type: 'Maceta', name: p.name, detail: `Maceta: ${p.name}, Material: ${p.material || 'N/A'}, Medida: ${p.size || 'N/A'}, Color: ${p.color || 'N/A'}`, image: p.image, obj: p })),
+                ...(dbData.tierras || []).map(t => ({ id: t.id, type: 'Tierra', name: t.name, detail: `Sustrato/Tierra: ${t.name}`, image: t.image, obj: t })),
+                ...(dbData.accessories || []).map(a => ({ id: a.id, type: 'Accesorio', name: a.name, detail: `Herramienta: ${a.name}`, image: a.image, obj: a })),
+                ...(dbData.chemicals || []).map(c => ({ id: c.id, type: 'Químico', name: c.name, detail: `Fertilizante/Químico: ${c.name}`, image: c.image, obj: c }))
+            ];
+
+            let matchedItems = [];
+            const uploadedRawBase64 = getRawBase64(currentUploadedImageBase64);
+
+            const exactMatches = allCatalog.filter(item => {
+                if (!item.image) return false;
+                if (item.image === currentUploadedImageBase64) return true;
+                const itemRawBase64 = getRawBase64(item.image);
+                return (itemRawBase64 && uploadedRawBase64 && itemRawBase64 === uploadedRawBase64);
+            });
+
+            if (exactMatches.length > 0) {
+                matchedItems = exactMatches;
+            } else {
+                try {
+                    const mimeType = currentUploadedImageBase64.substring(
+                        currentUploadedImageBase64.indexOf(":") + 1,
+                        currentUploadedImageBase64.indexOf(";")
+                    ) || "image/jpeg";
+
+                    const summaryCatalog = allCatalog.map(i => ({ id: i.id, nombre: i.name, tipo: i.type, detalles: i.detail }));
+                    const promptText = `Analiza la foto e identifica qué planta, maceta o producto del vivero se muestra.
+Compara con el catálogo actual: ${JSON.stringify(summaryCatalog, null, 2)}
+Responde ÚNICAMENTE un JSON: {"matchedIds": ["id1", "id2"]}`;
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { inlineData: { mimeType: mimeType, data: uploadedRawBase64 } },
+                                    { text: promptText }
+                                ]
+                            }]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const textResp = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        const cleanJson = textResp.replace(/```json/g, '').replace(/
