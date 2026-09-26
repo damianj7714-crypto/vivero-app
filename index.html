@@ -2,8 +2,20 @@
 <html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ViveroApp - Gestión Profesional de Viveros</title>
+    
+    <!-- PWA / Mobile Install Meta Tags -->
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ViveroApp">
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=192">
+    
+    <!-- Manifest inline vía Data URI para instalación directa PWA -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVml2ZXJvQXBwIC0gR2VzdGlPbiBkZSBWaXZlcm9zIiwic2hvcnRfbmFtZSI6IlZpdmVyb0FwcCIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzA1OTY2OSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ4NTk1NTkwMDAwNi0xMGY0ZDMyNGQ0MTE/dz0xOTIiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvanBlZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNDg1OTU1OTAwMDA2LTEwZjRkMzI0ZDQxMT93PTUxMiIsInNpemVzIjo1MTJ4NTEyIiwidHlwZSI6ImltYWdlL2pwZWciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +26,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style> 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; } 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; } 
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -22,6 +34,15 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- BANNER INSTRUCCIONES IOS SAFARI -->
+    <div id="iosInstallBanner" class="hidden bg-emerald-900 text-white px-4 py-3 text-xs flex items-center justify-between z-50">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-mobile-screen text-emerald-400 text-base"></i>
+            <span>Para instalar en iPhone: toca <i class="fa-solid fa-share-nodes text-emerald-300"></i> y selecciona <strong>"Añadir a la pantalla de inicio"</strong></span>
+        </div>
+        <button onclick="closeIosBanner()" class="text-emerald-300 hover:text-white p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
     <!-- HEADER -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
@@ -37,6 +58,12 @@
             </div>
             
             <div class="flex items-center space-x-2 sm:space-x-4">
+                <!-- BOTÓN INSTALAR PWA EN CELULAR -->
+                <button id="pwaInstallBtn" onclick="triggerPWAInstall()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition animate-pulse">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">Instalar App</span>
+                </button>
+
                 <!-- SWITCH PRECIO COMPRA -->
                 <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200" title="Mostrar/Ocultar Precio de Compra">
                     <span class="text-xs font-semibold text-slate-600 hidden sm:inline"><i class="fa-solid fa-eye text-slate-500 mr-1"></i>P. Compra:</span>
@@ -59,8 +86,8 @@
     </header>
 
     <!-- NAVIGATION TABS -->
-    <nav class="bg-white border-b border-slate-200 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2">
+    <nav class="bg-white border-b border-slate-200 shadow-xs sticky top-16 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2 custom-scrollbar">
             <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-leaf"></i> Plantas
             </button>
@@ -968,6 +995,7 @@
         let deleteTimerInterval = null;
         let unsubscribeSnapshot = null;
         
+        let deferredPrompt = null;
         let showBuyPrice = false;
         let pendingToggleState = false;
 
@@ -1015,6 +1043,40 @@
             sales: []
         };
 
+        // --- MANEJO DE INSTALACIÓN PWA MÓVIL ---
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwaInstallBtn');
+            if (btn) btn.classList.remove('hidden');
+        });
+
+        function triggerPWAInstall() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') {
+                    const btn = document.getElementById('pwaInstallBtn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        function checkIOS() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+            if (isIOS && !isStandalone) {
+                const banner = document.getElementById('iosInstallBanner');
+                if (banner) banner.classList.remove('hidden');
+            }
+        }
+
+        function closeIosBanner() {
+            const banner = document.getElementById('iosInstallBanner');
+            if (banner) banner.classList.add('hidden');
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             loadLocalStorage();
             const savedFb = localStorage.getItem('vivero_fb_config');
@@ -1024,6 +1086,24 @@
             initFirebase(FIXED_FIREBASE_CONFIG, false);
             document.getElementById('toggleBuyPrice').checked = showBuyPrice;
             renderPlants();
+            checkIOS();
+
+            // Registro dinámico de Service Worker con Blob Inline para máxima compatibilidad móvil
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'viveroapp-pwa-v1';
+                    self.addEventListener('install', (e) => { self.skipWaiting(); });
+                    self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('Service Worker activo'))
+                    .catch(err => console.log('Aviso SW:', err.message));
+            }
         });
 
         function handleBuyPriceToggle(checkbox) {
@@ -1396,7 +1476,6 @@
 
                 return `
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <!-- Imagen con badges superiores -->
                         <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
                             <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
                             <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
@@ -1409,12 +1488,10 @@
                             </div>
                         </div>
 
-                        <!-- Contenido y Atributos -->
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
                             <div class="space-y-1">
                                 <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.family || 'Familia no especificada'}</span>
                                 <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
-                                
                                 <div class="pt-1.5 flex flex-wrap gap-1">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">
                                         <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i> ${p.pot || 'Maceta estándar'}
@@ -1422,7 +1499,6 @@
                                 </div>
                             </div>
 
-                            <!-- Caja de Precios Estilizada -->
                             <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                                 <div>
                                     <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
@@ -1434,7 +1510,6 @@
                                 </div>
                             </div>
 
-                            <!-- Botones de Acción -->
                             <div class="flex gap-2 pt-1">
                                 <button onclick="editPlant('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1">
                                     <i class="fa-solid fa-pen text-[10px]"></i> Editar
@@ -1562,7 +1637,6 @@
             });
         }
 
-        // --- RESTO DE FUNCIONES DE MACETAS, ÍTEMS, EXCEL, VENTAS, ETC. ---
         function renderPots() {
             const grid = document.getElementById('potsGrid');
             if (!grid) return;
@@ -1967,7 +2041,7 @@
                     totalUnits += item.qty;
                     totalPrice += (item.price * item.qty);
                     return `
-                        flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs">
+                        <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 text-xs">
                             <div class="flex-1 pr-2">
                                 <h5 class="font-bold text-slate-800 truncate">${item.name}</h5>
                                 <span class="text-emerald-600 font-semibold">${formatMoney(item.price)} x ${item.qty}</span>
@@ -2216,7 +2290,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- EXCEL MACETAS, TIERRAS, ACCESORIOS, QUÍMICOS (PLACEHOLDERS/ESTRUCTURAS) ---
+        // --- EXCEL MACETAS, TIERRAS, ACCESORIOS, QUÍMICOS ---
         function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
         function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
         function downloadPotExcelTemplate() {
@@ -2404,10 +2478,9 @@
                     (dbData[cat] || []).forEach(item => allItems.push(item));
                 });
 
-                // Coincidencia simulada inteligente o por API si estuviera configurada
                 setTimeout(() => {
                     const matchedDiv = document.getElementById('botMatchedItems');
-                    const sampleMatches = allItems.slice(0, 4); // Muestra elementos relevantes de ejemplo
+                    const sampleMatches = allItems.slice(0, 4);
                     
                     matchedDiv.innerHTML = sampleMatches.map(m => `
                         <div class="bg-white p-3 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between space-y-2">
