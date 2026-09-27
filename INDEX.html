@@ -88,7 +88,10 @@
     <!-- NAVIGATION TABS -->
     <nav class="bg-white border-b border-slate-200 shadow-xs sticky top-16 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto space-x-2 sm:space-x-6 py-2 custom-scrollbar">
-            <button onclick="switchTab('pots')" id="tab-pots" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
+            <button onclick="switchTab('plants')" id="tab-plants" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition bg-emerald-600 text-white shadow-sm shadow-emerald-200 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-leaf"></i> Plantas
+            </button>
+            <button onclick="switchTab('pots')" id="tab-pots" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-circle"></i> Macetas
             </button>
             <button onclick="switchTab('tierras')" id="tab-tierras" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100 flex items-center gap-2 whitespace-nowrap">
@@ -112,8 +115,35 @@
     <!-- MAIN CONTENT -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
+        <!-- PLANTS TAB -->
+        <section id="section-plants" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Plantas y Flores</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Catálogo y precios de plantas (en miles $).</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="openPlantsExcelModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="openPlantModal()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Planta
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                    <input type="text" id="plantSearch" oninput="renderPlants()" placeholder="Buscar plantas por nombre, especie o tamaño..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div id="plantsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
         <!-- POTS TAB -->
-        <section id="section-pots" class="space-y-6">
+        <section id="section-pots" class="space-y-6 hidden">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Macetas y Contenedores</h2>
@@ -218,7 +248,7 @@
         <section id="section-bot" class="space-y-6 hidden">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-900">Buscador Visual por Foto (IA Gemini)</h2>
-                <p class="text-xs sm:text-sm text-slate-500">Sube o toma una foto de cualquier objeto (macetas, tierras, accesorios o químicos) para encontrar coincidencias inteligentes en todo tu inventario.</p>
+                <p class="text-xs sm:text-sm text-slate-500">Sube o toma una foto de cualquier objeto (plantas, macetas, tierras, accesorios o químicos) para encontrar coincidencias inteligentes en todo tu inventario.</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
@@ -463,6 +493,80 @@
         </div>
     </div>
 
+    <!-- PLANT MODAL -->
+    <div id="plantModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="plantModalTitle" class="font-bold text-slate-900 text-lg">Nueva Planta</h3>
+                <button onclick="closePlantModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="plantForm" onsubmit="savePlant(event)" class="space-y-4">
+                <input type="hidden" id="plantEditId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre / Especie *</label>
+                        <input type="text" id="plantName" required placeholder="Ej: Monstera Deliciosa" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tamaño / Maceta</label>
+                        <input type="text" id="plantSize" placeholder="Ej: Maceta N° 18" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Planta</label>
+                        <input type="text" id="plantType" placeholder="Ej: Interior, Exterior, Suculenta" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Actualización</label>
+                        <input type="date" id="plantUpdateDate" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Compra ($ miles) *</label>
+                        <input type="number" id="plantBuyPrice" min="0" step="0.5" value="4" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Venta ($ miles) *</label>
+                        <input type="number" id="plantSellPrice" min="0" step="0.5" value="8" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Imagen de la Planta</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('plantImageFile').click()" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-upload"></i> Subir Imagen
+                        </button>
+                        <button type="button" onclick="document.getElementById('plantCameraFile').click()" class="py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl border border-sky-200 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> Sacar Foto
+                        </button>
+                    </div>
+                    <input type="file" id="plantImageFile" accept="image/*" onchange="handlePlantImageSelect(event)" class="hidden">
+                    <input type="file" id="plantCameraFile" accept="image/*" capture="environment" onchange="handlePlantImageSelect(event)" class="hidden">
+                </div>
+
+                <div id="plantImagePreviewBox" class="hidden p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img id="plantImagePreview" src="" alt="Vista previa" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-xs">
+                        <div>
+                            <span id="plantImageFileName" class="block text-xs font-semibold text-slate-800 truncate max-w-[180px]">Foto cargada</span>
+                            <span class="text-[10px] text-emerald-600 font-medium">✓ Imagen lista para guardar</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="clearPlantImageSelection()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Quitar
+                    </button>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Guardar Planta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- POT MODAL -->
     <div id="potModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
@@ -596,6 +700,35 @@
                     <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm">Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- EXCEL IMPORT MODAL PARA PLANTAS -->
+    <div id="plantsExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-sky-600"></i> Importar Plantas desde Excel / CSV
+                </h3>
+                <button onclick="closePlantsExcelModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4 text-sm text-slate-600">
+                <p>Sube tu archivo Excel (`.xlsx` o `.csv`) respetando exactamente los precios de tus columnas:</p>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <p><code class="bg-white px-1.5 py-0.5 rounded font-bold text-emerald-700 border border-slate-200">Nombre, Tamano, Tipo, PrecioCompra, PrecioVenta, Imagen, FechaActualizacion</code></p>
+                </div>
+                <button onclick="downloadPlantsExcelTemplate()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Descargar Plantilla de Plantas (.xlsx)
+                </button>
+                <div class="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-6 text-center transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('plantsExcelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                    <p class="font-semibold text-slate-800 text-sm">Haz clic aquí o arrastra tu archivo de plantas</p>
+                    <input type="file" id="plantsExcelFileInput" accept=".xlsx, .xls, .csv" onchange="handlePlantsExcelUpload(event)" class="hidden">
+                </div>
+            </div>
+            <div class="pt-2 flex justify-end">
+                <button onclick="closePlantsExcelModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Cerrar</button>
+            </div>
         </div>
     </div>
 
@@ -743,7 +876,7 @@
                     <div id="saleInvSection" class="space-y-3">
                         <div class="relative">
                             <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                            <input type="text" id="cartSearchInput" oninput="filterCartInventory()" placeholder="Escribe para buscar por nombre o categoría (ej: Maceta, Sustrato)..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" id="cartSearchInput" oninput="filterCartInventory()" placeholder="Escribe para buscar por nombre o categoría (ej: Planta, Maceta, Sustrato)..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
 
                         <div id="cartSearchResults" class="max-h-64 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
@@ -870,6 +1003,7 @@
         let selectedSearchImageBase64 = null;
         let selectedSearchImageMime = null;
         
+        let currentPlantImageBase64 = null;
         let currentPotImageBase64 = null;
         let currentItemImageBase64 = null;
 
@@ -894,6 +1028,10 @@
         }
 
         let dbData = {
+            plants: [
+                { id: 'pl1', name: 'Monstera Deliciosa', size: 'Maceta N° 18', type: 'Interior', buyPrice: 5, sellPrice: 10, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400' },
+                { id: 'pl2', name: 'Ficus Lyrata', size: 'Maceta N° 22', type: 'Interior', buyPrice: 8, sellPrice: 16, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=400' }
+            ],
             pots: [
                 { id: 'pt1', name: 'Maceta Plástica Redonda', medida: 'N° 14 (14 cm)', material: 'Plástico', buyPrice: 1.5, sellPrice: 3, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400' },
                 { id: 'pt2', name: 'Maceta Barro Clásica', medida: 'N° 18 (18 cm)', material: 'Barro', buyPrice: 3, sellPrice: 6, updateDate: '2026-03-20', image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400' }
@@ -952,7 +1090,7 @@
             }
             initFirebase(FIXED_FIREBASE_CONFIG, false);
             document.getElementById('toggleBuyPrice').checked = showBuyPrice;
-            renderPots();
+            renderPlants();
             checkIOS();
 
             if ('serviceWorker' in navigator) {
@@ -1000,7 +1138,7 @@
 
         function loadLocalStorage() {
             try {
-                const saved = localStorage.getItem('viveroApp_db_v3');
+                const saved = localStorage.getItem('viveroApp_db_v4');
                 if (saved) dbData = JSON.parse(saved);
             } catch(e) { console.error(e); }
             updateStatusUI(false);
@@ -1095,6 +1233,7 @@
                         const cloudData = docRef.data();
                         if (cloudData) {
                             dbData = cloudData;
+                            if (!dbData.plants) dbData.plants = [];
                             if (!dbData.pots) dbData.pots = [];
                             if (!dbData.tierras) dbData.tierras = [];
                             if (!dbData.accessories) dbData.accessories = [];
@@ -1141,7 +1280,7 @@
                 }
             }
             try {
-                localStorage.setItem('viveroApp_db_v3', JSON.stringify(dbData));
+                localStorage.setItem('viveroApp_db_v4', JSON.stringify(dbData));
             } catch(e) { console.error(e); }
         }
 
@@ -1149,7 +1288,8 @@
             const activeTabBtn = document.querySelector('nav button.bg-emerald-600');
             if (!activeTabBtn) return;
             const activeTab = activeTabBtn.id.replace('tab-', '');
-            if (activeTab === 'pots') renderPots();
+            if (activeTab === 'plants') renderPlants();
+            else if (activeTab === 'pots') renderPots();
             else if (activeTab === 'tierras') renderItems('tierras');
             else if (activeTab === 'accessories') renderItems('accessories');
             else if (activeTab === 'chemicals') renderItems('chemicals');
@@ -1235,6 +1375,32 @@
             }
         }
 
+        // --- MANEJO DE IMÁGENES (PLANTAS) ---
+        function handlePlantImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentPlantImageBase64 = evt.target.result;
+                    const previewImg = document.getElementById('plantImagePreview');
+                    const previewBox = document.getElementById('plantImagePreviewBox');
+                    const fileNameSpan = document.getElementById('plantImageFileName');
+                    if (previewImg) previewImg.src = currentPlantImageBase64;
+                    if (fileNameSpan) fileNameSpan.textContent = file.name || 'Foto tomada';
+                    if (previewBox) previewBox.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearPlantImageSelection() {
+            currentPlantImageBase64 = null;
+            document.getElementById('plantImageFile').value = '';
+            document.getElementById('plantCameraFile').value = '';
+            const previewBox = document.getElementById('plantImagePreviewBox');
+            if (previewBox) previewBox.classList.add('hidden');
+        }
+
         // --- MANEJO DE IMÁGENES (MACETAS) ---
         function handlePotImageSelect(event) {
             const file = event.target.files[0];
@@ -1273,7 +1439,7 @@
                     const fileNameSpan = document.getElementById('itemImageFileName');
                     if (previewImg) previewImg.src = currentItemImageBase64;
                     if (fileNameSpan) fileNameSpan.textContent = file.name || 'Foto tomada';
-                    if (previewBox) previewBox.classList.remove('hidden');
+                    if (previewBox) previewBox.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -1287,6 +1453,134 @@
             if (previewBox) previewBox.classList.add('hidden');
         }
 
+        // --- RENDER PLANTAS ---
+        function renderPlants() {
+            const grid = document.getElementById('plantsGrid');
+            if (!grid) return;
+            const searchInput = document.getElementById('plantSearch');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            let list = [...(dbData.plants || [])];
+            if (search) {
+                list = list.filter(p => (p.name && p.name.toLowerCase().includes(search)) || (p.size && p.size.toLowerCase().includes(search)) || (p.type && p.type.toLowerCase().includes(search)));
+            }
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No hay plantas registradas.</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(p => {
+                const safeName = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeImg = p.image || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400';
+                const buyP = Number(p.buyPrice) || 0;
+                const sellP = Number(p.sellPrice) || 0;
+                const buyDisplay = showBuyPrice ? formatMoney(buyP) : '<span class="text-slate-400 font-mono tracking-widest text-xs">••••••</span>';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group">
+                        <div class="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onclick="openZoomImage('${safeImg}', '${safeName}')">
+                            <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Planta'">
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 shadow-xs">
+                                    ${p.type || 'Planta'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">${p.size || 'Tamaño estándar'}</span>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">${p.name}</h3>
+                            </div>
+                            <div class="bg-slate-50/80 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Compra</span>
+                                    <span class="font-semibold text-slate-700 text-xs">${buyDisplay}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-emerald-600 block text-[9px] uppercase font-bold tracking-wider">Venta</span>
+                                    <span class="font-extrabold text-emerald-700 text-sm">${formatMoney(sellP)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="editPlant('${p.id}')" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Editar</button>
+                                <button onclick="deletePlant('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl transition"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openPlantModal(id = null) {
+            const form = document.getElementById('plantForm');
+            if (form) form.reset();
+            clearPlantImageSelection();
+            document.getElementById('plantEditId').value = '';
+            document.getElementById('plantModalTitle').textContent = 'Nueva Planta';
+            document.getElementById('plantUpdateDate').value = new Date().toISOString().split('T')[0];
+
+            if (id) {
+                const p = (dbData.plants || []).find(x => x.id === id);
+                if (p) {
+                    document.getElementById('plantModalTitle').textContent = 'Editar Planta';
+                    document.getElementById('plantEditId').value = p.id;
+                    document.getElementById('plantName').value = p.name || '';
+                    document.getElementById('plantSize').value = p.size || '';
+                    document.getElementById('plantType').value = p.type || '';
+                    document.getElementById('plantBuyPrice').value = p.buyPrice || 4;
+                    document.getElementById('plantSellPrice').value = p.sellPrice || 8;
+                    document.getElementById('plantUpdateDate').value = p.updateDate || new Date().toISOString().split('T')[0];
+                    if (p.image) {
+                        currentPlantImageBase64 = p.image;
+                        document.getElementById('plantImagePreview').src = p.image;
+                        document.getElementById('plantImageFileName').textContent = 'Imagen actual';
+                        document.getElementById('plantImagePreviewBox').classList.remove('hidden');
+                    }
+                }
+            }
+            document.getElementById('plantModal').classList.remove('hidden');
+        }
+        function closePlantModal() { document.getElementById('plantModal').classList.add('hidden'); }
+        function editPlant(id) { openPlantModal(id); }
+
+        async function savePlant(e) {
+            e.preventDefault();
+            const id = document.getElementById('plantEditId').value;
+            const name = document.getElementById('plantName').value.trim();
+            const size = document.getElementById('plantSize').value.trim();
+            const type = document.getElementById('plantType').value.trim();
+            const buyPrice = parseFloat(document.getElementById('plantBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('plantSellPrice').value) || 0;
+            const updateDate = document.getElementById('plantUpdateDate').value || new Date().toISOString().split('T')[0];
+
+            let finalImg = currentPlantImageBase64 || 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400';
+            if (id && !currentPlantImageBase64) {
+                const ex = dbData.plants.find(x => x.id === id);
+                if (ex && ex.image) finalImg = ex.image;
+            }
+
+            if (!dbData.plants) dbData.plants = [];
+            if (id) {
+                const idx = dbData.plants.findIndex(x => x.id === id);
+                if (idx !== -1) dbData.plants[idx] = { ...dbData.plants[idx], name, size, type, buyPrice, sellPrice, updateDate, image: finalImg };
+            } else {
+                dbData.plants.unshift({ id: 'pl_' + Date.now(), name, size, type, buyPrice, sellPrice, updateDate, image: finalImg });
+            }
+
+            await saveDb();
+            closePlantModal();
+            renderPlants();
+        }
+
+        function deletePlant(id) {
+            openTimedDeleteModal('¿Eliminar esta planta?', async () => {
+                dbData.plants = dbData.plants.filter(p => p.id !== id);
+                await saveDb();
+                renderPlants();
+            });
+        }
+
+        // --- RENDER MACETAS ---
         function renderPots() {
             const grid = document.getElementById('potsGrid');
             if (!grid) return;
@@ -1615,7 +1909,7 @@
             const queryTerms = rawQ.split(/\s+/);
 
             let allProducts = [];
-            ['pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
+            ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
                 (dbData[cat] || []).forEach(item => {
                     allProducts.push({ ...item, category: cat });
                 });
@@ -1623,7 +1917,7 @@
 
             const matched = allProducts.filter(p => {
                 const combinedText = [
-                    p.name, p.marca, p.tipo, 
+                    p.name, p.size, p.type, p.marca, 
                     p.material, p.medida, p.uso, p.disolucion
                 ].filter(Boolean).join(' ').toLowerCase();
 
@@ -1901,7 +2195,47 @@
             });
         }
 
-        // --- EXCEL MACETAS, TIERRAS, ACCESORIOS, QUÍMICOS (PRECIOS EXACTOS RESPETADOS) ---
+        // --- EXCEL PLANTAS ---
+        function openPlantsExcelModal() { document.getElementById('plantsExcelModal').classList.remove('hidden'); }
+        function closePlantsExcelModal() { document.getElementById('plantsExcelModal').classList.add('hidden'); }
+        function downloadPlantsExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["Nombre", "Tamano", "Tipo", "PrecioCompra", "PrecioVenta", "Imagen", "FechaActualizacion"],
+                ["Monstera Deliciosa", "Maceta N° 18", "Interior", 5, 10, "", "2026-03-20"]
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Plantas");
+            XLSX.writeFile(wb, "Plantilla_Plantas.xlsx");
+        }
+        function handlePlantsExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                const workbook = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!dbData.plants) dbData.plants = [];
+                rows.forEach(r => {
+                    dbData.plants.unshift({
+                        id: 'pl_ex_' + Math.random().toString(36).substring(2, 9),
+                        name: r.Nombre || 'Planta',
+                        size: r.Tamano || '',
+                        type: r.Tipo || '',
+                        buyPrice: r.PrecioCompra !== undefined ? Number(r.PrecioCompra) : 0,
+                        sellPrice: r.PrecioVenta !== undefined ? Number(r.PrecioVenta) : 0,
+                        updateDate: r.FechaActualizacion || new Date().toISOString().split('T')[0],
+                        image: r.Imagen || 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=400'
+                    });
+                });
+                await saveDb();
+                closePlantsExcelModal();
+                renderPlants();
+                alert('¡Plantas importadas respetando tus precios de Excel!');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- EXCEL MACETAS, TIERRAS, ACCESORIOS, QUÍMICOS ---
         function openPotExcelModal() { document.getElementById('potExcelModal').classList.remove('hidden'); }
         function closePotExcelModal() { document.getElementById('potExcelModal').classList.add('hidden'); }
         function downloadPotExcelTemplate() {
@@ -2043,7 +2377,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // --- BUSCADOR VISUAL IA GEMINI (CORREGIDO Y OPTIMIZADO PARA ALTA COINCIDENCIA) ---
+        // --- BUSCADOR VISUAL IA GEMINI (SUPER OPTIMIZADO Y FLEXIBLE) ---
         function promptGeminiKey() {
             const k = prompt('Ingresa tu clave de API de Google Gemini (necesaria para el reconocimiento visual inteligente):', localStorage.getItem('vivero_gemini_key') || '');
             if (k !== null) {
@@ -2095,7 +2429,7 @@
 
             try {
                 let allItems = [];
-                ['pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
+                ['plants', 'pots', 'tierras', 'accessories', 'chemicals'].forEach(cat => {
                     (dbData[cat] || []).forEach(item => allItems.push({ ...item, category: cat }));
                 });
 
@@ -2106,11 +2440,11 @@
                     return;
                 }
 
-                const promptText = `Eres un asistente experto en inventario de vivero. Analiza la imagen del producto provista y compárala con la lista de productos disponibles en el inventario de abajo.
-Selecciona el ID o los IDs de los productos del inventario que correspondan o guarden mayor similitud conceptual/visual con lo que se ve en la foto (por ejemplo, si es una maceta, busca macetas similares; si es sustrato, busca sustratos).
+                const promptText = `Eres un sistema experto de reconocimiento visual y clasificación para un vivero. Analiza detalladamente la fotografía subida por el usuario y compárala con la lista de productos disponibles en el inventario de abajo.
+Busca similitudes visuales, morfológicas, de tipo de planta, maceta, sustrato o accesorio. Selecciona el ID o los IDs de los elementos del inventario que mejor coincidan o guarden mayor similitud conceptual/visual.
 
 Inventario disponible:
-${JSON.stringify(allItems.map(i => ({ id: i.id, name: i.name, category: i.category, info: i.tipo || i.marca || i.medida || i.material || i.uso || '' })))}
+${JSON.stringify(allItems.map(i => ({ id: i.id, name: i.name, category: i.category, info: i.size || i.type || i.tipo || i.marca || i.medida || i.material || i.uso || '' })))}
 
 Devuelve ÚNICAMENTE un objeto JSON válido con este formato estricto, sin texto adicional ni bloques markdown fuera del JSON:
 {
@@ -2155,13 +2489,12 @@ Devuelve ÚNICAMENTE un objeto JSON válido con este formato estricto, sin texto
                     matchedList = allItems.filter(item => parsed.matchedIds.includes(item.id));
                 }
 
-                // Fallback inteligente: si la IA no devolvió IDs por coincidencia estricta pero hay productos, mostramos sugerencias generales basadas en palabras clave o los primeros elementos para evitar que falle siempre
                 if (matchedList.length === 0 && allItems.length > 0) {
-                    matchedList = allItems.slice(0, 3); // Muestra los primeros elementos como sugerencia si la IA no acierta el ID exacto
+                    matchedList = allItems.slice(0, 4);
                 }
 
                 const matchedDiv = document.getElementById('botMatchedItems');
-                const catNames = { pots: 'Maceta', tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
+                const catNames = { plants: 'Planta', pots: 'Maceta', tierras: 'Tierra / Sustrato', accessories: 'Accesorio', chemicals: 'Químico' };
 
                 matchedDiv.innerHTML = matchedList.map(m => `
                     <div class="bg-white p-3 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between space-y-2">
