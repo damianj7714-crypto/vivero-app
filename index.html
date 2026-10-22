@@ -88,10 +88,7 @@ h1{font-size:34px;font-weight:500;line-height:1;letter-spacing:-.01em}
 .stat b{font-size:30px;font-weight:500;color:var(--moss);line-height:1.1}
 .stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .search,.dt input{border-radius:12px;padding:12px 16px}
-.item{gap:14px;padding:12px;border-radius:16px;margin-bottom:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(30,40,30,.05),0 10px 26px -14px rgba(30,40,30,.28);cursor:pointer}
-.item:active{opacity:.85}
-.ddph{width:100%;aspect-ratio:1/1;max-height:300px;border-radius:14px;overflow:hidden;background:var(--bg);display:grid;place-items:center;font-size:54px;border:1px solid var(--line)}
-.ddph img{width:100%;height:100%;object-fit:cover}
+.item{gap:14px;padding:12px;border-radius:16px;margin-bottom:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(30,40,30,.05),0 10px 26px -14px rgba(30,40,30,.28)}
 .ph{width:96px;height:96px;border-radius:12px;font-size:30px;border:1px solid var(--line)}
 .nm{font-size:19px;font-weight:500;line-height:1.2;text-align:left}
 .cat{font-size:12.5px;margin-top:4px}
@@ -112,7 +109,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v1.7</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v1.4</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -159,19 +156,12 @@ dialog h2{font-size:24px;font-weight:500}
   <div class="row"><button id="mX">Cerrar</button><button class="go" id="mG" disabled>Importar</button></div>
 </dialog>
 
-<dialog id="dd">
-  <div class="ddph" id="ddPhoto"></div>
-  <h2 id="ddName" style="margin:14px 0 2px"></h2>
-  <p class="cat" id="ddCat" style="margin:0"></p>
-  <div class="pr" id="ddPrice" style="margin-top:12px"></div>
-  <div class="pr2" id="ddMargin"></div>
-  <div class="row"><button class="act" id="ddEdit">Editar</button><button class="act del" id="ddDel">Eliminar</button></div>
-  <button type="button" id="ddClose" class="btn" style="width:100%;margin-top:10px">Cerrar</button>
-</dialog>
+<dialog id="ld" style="padding:12px"><img id="li" alt="Foto ampliada" style="width:100%;max-height:70vh;object-fit:contain;display:block;border-radius:10px"><p id="lt" style="margin:10px 0 0;text-align:center"></p><p class="cat" style="text-align:center;margin:4px 0 0">Toca para cerrar</p></dialog>
 
 <dialog id="vd">
   <h2 style="margin:0;font-size:20px">Buscar por foto</h2>
   <p class="calc">Toma o elige una foto de una planta, maceta, tierra, accesorio o químico y busco coincidencias en tu inventario.</p>
+  <div id="gk" style="display:none"><label for="gki">Clave de Gemini (se guarda solo en este teléfono)</label><input id="gki" type="password" autocomplete="off" placeholder="AIza…"></div>
   <div class="two"><label class="btn up">📁 Galería<input id="vI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="vC" type="file" accept="image/*" capture="environment"></label></div>
   <img id="vp" alt="Foto a buscar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
   <div id="vr" style="margin-top:12px"></div>
@@ -200,7 +190,6 @@ try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.items))D
 
 /* ---------- Firebase (Firestore por API REST, sin SDK) ---------- */
 const FB={projectId:"morlinavivero-90956",apiKey:"AIzaSyAVjMnA_eStmyurFJOoG2TbCCChfhKUdyA"};
-const GEMINI_KEY="AQ.Ab8RN6JNB9mehkTIxQzRswdHBvVlos_h1leMy1m8VrqX170kXg";
 const FS=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
 function toVal(v){
   if(v==null)return{nullValue:null};
@@ -289,37 +278,31 @@ const mg=(k,p)=>p>0?Math.round((p-k)/p*100):0;
 const hs=i=>i.s!=null;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){alert("No hay espacio para guardar. Usa menos fotos o más pequeñas.")}scheduleCloud()}
 
-let curDetail=null,ddArm=null;
-function disarmDD(){
-  if(!ddArm)return;clearInterval(ddArm.t);$("ddDel").textContent="Eliminar";$("ddDel").classList.remove("on");ddArm=null;
+let arm=null;
+function disarm(){
+  if(!arm)return;clearInterval(arm.t);
+  const b=document.querySelector(`[data-del="${arm.id}"]`);if(b){b.textContent="Eliminar";b.classList.remove("on")}
+  arm=null;
 }
-function openDetail(id){
-  const i=D.items.find(x=>x.id===id);if(!i)return;
-  curDetail=id;disarmDD();
-  const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
-  $("ddPhoto").innerHTML=(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="">`:T[i.t].e;
-  $("ddName").textContent=i.n;
-  $("ddCat").textContent=T[i.t].l+(det?" · "+det:"");
-  $("ddPrice").innerHTML=`<b>${money(i.p)}</b><span>precio de venta</span>`;
-  $("ddMargin").innerHTML=`<span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span>`;
-  $("dd").showModal();
-}
-$("ddClose").onclick=()=>{disarmDD();$("dd").close()};
-$("ddEdit").onclick=()=>{disarmDD();$("dd").close();openForm(curDetail)};
-$("ddDel").onclick=()=>{
-  if(ddArm){
-    if(Date.now()-ddArm.ts<600)return;
-    clearInterval(ddArm.t);ddArm=null;D.items=D.items.filter(x=>x.id!==curDetail);save();$("dd").close();render();return;
+function delTap(id){
+  if(arm&&arm.id===id){
+    if(Date.now()-arm.ts<600)return;
+    clearInterval(arm.t);arm=null;D.items=D.items.filter(x=>x.id!==id);save();render();return;
   }
-  let n=3;const lbl=()=>{$("ddDel").textContent="Confirmar ("+n+")";$("ddDel").classList.add("on")};lbl();
-  ddArm={ts:Date.now(),t:setInterval(()=>{n--;if(n<=0)disarmDD();else lbl()},1000)};
-};
+  disarm();
+  const b=document.querySelector(`[data-del="${id}"]`);if(!b)return;
+  let n=3;const lbl=()=>{const e=document.querySelector(`[data-del="${id}"]`);if(e){e.textContent="Confirmar ("+n+")";e.classList.add("on")}};
+  lbl();
+  arm={id,ts:Date.now(),t:setInterval(()=>{n--;if(n<=0)disarm();else lbl()},1000)};
+}
 function render(){
+  disarm();
   $("tabs").innerHTML=Object.keys(T).concat("ventas").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":T[k].l}</button>`).join("");
   $("fab").textContent=tab==="ventas"?"+ Venta":"+ "+(T[tab]?T[tab].l.replace(/s$/,""):"");
   tab==="ventas"?renderSales():renderCat();
 }
 function renderCat(){
+  disarm();
   const q=term.toLowerCase();
   let rows=D.items.filter(i=>i.t===tab&&(i.n+" "+Object.values(i.x||{}).join(" ")).toLowerCase().includes(q));
   if(tab==="planta"&&ubi!=="Todas")rows=rows.filter(i=>(i.x||{}).ubi===ubi);
@@ -335,9 +318,10 @@ function renderCat(){
 }
 function card(i){
   const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
-  return `<div class="item" data-open="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy">`:T[i.t].e}</div>
+  return `<div class="item" data-id="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy">`:T[i.t].e}</div>
   <div class="bd"><div class="nm">${esc(i.n)}</div><div class="cat">${esc(det)}</div>
   <div class="pr"><b>${money(i.p)}</b><span>precio de venta</span></div><div class="pr2"><span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span></div>
+  <div class="acts"><button class="act" data-e="${i.id}">Editar</button><button class="act del" data-del="${i.id}">Eliminar</button></div>
   </div></div>`;
 }
 
@@ -453,8 +437,11 @@ $("bS").onclick=()=>{
 $("fab").onclick=()=>tab==="ventas"?openSale():openForm(null);
 $("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;term="";render()}};
 $("view").onclick=e=>{
-  const t=e.target,d=t.dataset,item=t.closest("[data-open]");
-  if(item)openDetail(item.dataset.open);
+  const t=e.target,d=t.dataset;
+  if(t.tagName==="IMG"&&t.closest(".ph")){const it=D.items.find(x=>x.id===t.closest(".item").dataset.id)||{};$("li").src=t.src;$("lt").innerHTML=`<b>${esc(it.n||"")}</b><br>Venta ${money(it.p)} · Compra ${money(it.k)}`;$("ld").showModal()}
+  else if(d.e)openForm(d.e);
+  else if(d.del)delTap(d.del);
+  else if(d.d){const i=D.items.find(x=>x.id===d.i);i.s=Math.max(0,(i.s||0)+ +d.d);save();render()}
   else if(d.u){ubi=d.u;render()}
   else if(d.r){rng=d.r;from="";to="";render()}
   else if(d.x&&confirm("¿Eliminar esta venta?")){
@@ -566,7 +553,9 @@ function vpick(e){
   r.readAsDataURL(f);e.target.value="";
 }
 $("vI").onchange=vpick;$("vC").onchange=vpick;
-$("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("vd").showModal()};
+$("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("gk").style.display=window.claude?"none":"block";$("gki").value=gKey();$("vd").showModal()};
+$("ld").onclick=()=>$("ld").close();
+const gKey=()=>{try{return localStorage.getItem("vivero-gemini")||""}catch(e){return ""}};
 async function gemini(prompt,blob,key){
   const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(",")[1]);fr.readAsDataURL(blob)});
   const body=JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:{responseMimeType:"application/json"}});
@@ -576,6 +565,7 @@ async function gemini(prompt,blob,key){
     if(resp.status===404){err=Object.assign(new Error("modelo"),{status:404});continue}
     if(!resp.ok)throw Object.assign(new Error("gemini"),{status:resp.status});
     const j=await resp.json();
+    try{localStorage.setItem("vivero-gemini",key)}catch(e){}
     return JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,"").trim());
   }
   throw err||new Error("gemini");
@@ -587,7 +577,8 @@ $("vG").onclick=async()=>{
   out.textContent="Buscando coincidencias…";$("vG").disabled=true;
   try{
     const sample=window.claude?await window.claude.use("sample"):null;
-    const key=GEMINI_KEY;
+    const key=sample?"":($("gki").value.trim()||gKey());
+    if(!sample&&!key){out.textContent="Pega tu clave de Gemini arriba para usar esta función.";$("gki").focus();return}
     const lst=D.items.map(i=>i.id+"|"+T[i.t].l+"|"+i.n+"|"+Object.values(i.x||{}).filter(Boolean).join(", ")).join("\n");
     const P=("Eres asistente de un vivero. Mira la foto adjunta, identifica qué es (planta, maceta, tierra, accesorio o químico) y elige hasta 5 coincidencias de esta lista de inventario, de la más a la menos probable. Lista (id|categoría|nombre|detalles):\n"+lst+"\n\nResponde SOLO con JSON: {\"que_es\":\"descripción corta en español\",\"coincidencias\":[{\"id\":\"...\",\"motivo\":\"por qué coincide, en una frase\"}]}. Usa solo ids de la lista. Si nada coincide, deja coincidencias vacío.");
     const r=sample?await sample.json(P,{images:[vb],modelTier:"default"}):await gemini(P,vb,key);
