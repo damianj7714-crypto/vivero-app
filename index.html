@@ -109,7 +109,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v1.3</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v1.4</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -119,7 +119,6 @@ dialog h2{font-size:24px;font-weight:500}
   <h2 id="dT" style="margin:0;font-size:20px"></h2>
   <label for="fN">Nombre</label><input id="fN">
   <button type="button" class="btn" id="bWeb" style="width:100%;margin:8px 0 0">🔍 Buscar información e imágenes</button>
-  <div id="webRes"></div>
   <div id="ff"></div>
   <div class="two">
     <div><label for="fK">Precio de compra</label><input id="fK" type="number" inputmode="decimal" min="0" step="any"></div>
@@ -167,6 +166,14 @@ dialog h2{font-size:24px;font-weight:500}
   <img id="vp" alt="Foto a buscar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
   <div id="vr" style="margin-top:12px"></div>
   <div class="row"><button id="vX">Cerrar</button><button class="go" id="vG" disabled>Buscar coincidencias</button></div>
+</dialog>
+
+<dialog id="wd">
+  <h2 style="margin:0;font-size:20px">Buscar información</h2>
+  <p class="calc">Escribe el nombre de una planta, maceta, tierra, accesorio o químico y busco información e imágenes en Wikipedia.</p>
+  <label for="wq">Nombre a buscar</label><input id="wq" type="text" placeholder="Ej: Ficus">
+  <div id="wr" style="margin-top:12px"></div>
+  <div class="row"><button id="wX">Cerrar</button><button class="go" id="wG">Buscar información</button></div>
 </dialog>
 
 <script>
@@ -364,7 +371,7 @@ function openForm(id){
   $("dT").textContent=id?"Editar "+T[i.t].l.toLowerCase().replace(/s$/,""):"Nueva "+T[tab].l.toLowerCase().replace(/s$/,"");
   $("fN").value=i.n;$("fK").value=i.k;$("fP").value=i.p;img=i.img||"";
   $("ff").innerHTML=T[i.t].f.map(f=>`<label for="x_${f[0]}">${f[1]}</label>`+(f[2]?`<select id="x_${f[0]}">${f[2].split(",").map(o=>`<option${(i.x||{})[f[0]]===o?" selected":""}>${o}</option>`).join("")}</select>`:`<input id="x_${f[0]}" value="${esc((i.x||{})[f[0]]||"")}">`)).join("");
-  $("bD").style.display=id?"":"none";prev();calc();$("dlg").dataset.t=i.t;$("webRes").innerHTML="";$("webRes").dataset.results="";$("dlg").showModal();
+  $("bD").style.display=id?"":"none";prev();calc();$("dlg").dataset.t=i.t;$("dlg").showModal();
 }
 /* ---------- Buscar información e imágenes en internet (Wikipedia) ---------- */
 async function wikiSearch(q){
@@ -382,10 +389,14 @@ async function wikiSearch(q){
   }));
   return sums.filter(Boolean);
 }
-$("bWeb").onclick=async()=>{
-  const q=$("fN").value.trim();if(!q){$("fN").focus();return}
-  const box=$("webRes"),t=$("dlg").dataset.t;
-  box.innerHTML='<p class="cat">Buscando…</p>';$("bWeb").disabled=true;
+$("bWeb").onclick=()=>{
+  $("wq").value=$("fN").value.trim();$("wr").innerHTML="";$("wr").dataset.results="";$("wd").showModal();$("wq").focus();
+};
+$("wX").onclick=()=>$("wd").close();
+async function runWikiSearch(){
+  const q=$("wq").value.trim();if(!q){$("wq").focus();return}
+  const box=$("wr"),t=$("dlg").dataset.t;
+  box.innerHTML='<p class="cat">Buscando…</p>';$("wG").disabled=true;
   try{
     const res=await wikiSearch(t==="planta"?q+" planta":q);
     if(!res.length){box.innerHTML=`<p class="cat">No encontré información para "${esc(q)}". Probá con el nombre científico o más general.</p>`;box.dataset.results="";return}
@@ -393,12 +404,14 @@ $("bWeb").onclick=async()=>{
     box.innerHTML=res.map((r,i)=>`<div class="wres"><span class="pick-ph">${r.thumb?`<img src="${esc(r.thumb)}" alt="" loading="lazy">`:"🌐"}</span><span class="pick-bd"><b>${esc(r.title)}</b><small>${esc((r.extract||"").slice(0,170))}${(r.extract||"").length>170?"…":""}</small></span><span class="wact">${r.thumb?`<button type="button" class="mini2" data-useimg="${i}">Usar foto</button>`:""}<a class="mini2" href="${esc(r.url)}" target="_blank" rel="noopener">Ver más</a></span></div>`).join("");
   }catch(e){
     box.innerHTML='<p class="cat">No se pudo buscar ahora. Revisá tu conexión e intentá de nuevo.</p>';
-  }finally{$("bWeb").disabled=false}
-};
-$("webRes").onclick=e=>{
+  }finally{$("wG").disabled=false}
+}
+$("wG").onclick=runWikiSearch;
+$("wq").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();runWikiSearch()}};
+$("wr").onclick=e=>{
   const b=e.target.closest("[data-useimg]");if(!b)return;
-  const res=JSON.parse($("webRes").dataset.results||"[]"),r=res[+b.dataset.useimg];if(!r)return;
-  img=r.thumb;prev();
+  const res=JSON.parse($("wr").dataset.results||"[]"),r=res[+b.dataset.useimg];if(!r)return;
+  img=r.thumb;prev();$("wd").close();
 };
 function prev(){$("pv").style.display=img?"block":"none";$("pv").src=img||"";$("bR").style.display=img?"":"none"}
 function calc(){const k=+$("fK").value,p=+$("fP").value;$("calc").textContent=p>0?`Ganancia por unidad: ${money(p-k)} (margen ${mg(k,p)}%)`:""}
