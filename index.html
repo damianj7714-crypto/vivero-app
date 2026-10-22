@@ -26,7 +26,7 @@ input,select,button{font:inherit;color:inherit}
 .item{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
 .item.low{border-left:5px solid var(--warn)}.item.zero{border-left:5px solid var(--bad)}
 .ph{flex:none;width:88px;height:88px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-size:28px;overflow:hidden}
-.ph img{width:100%;height:100%;object-fit:cover}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
 .bd{flex:1;min-width:0}
 .nm{font-weight:600;font-size:16px;text-align:left;background:none;border:0;padding:0;cursor:pointer}
 .cat{font-size:12px;color:var(--mute);margin-top:1px}
@@ -110,9 +110,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   <div class="row"><button id="mX">Cerrar</button><button class="go" id="mG" disabled>Importar</button></div>
 </dialog>
 
+<dialog id="ld" style="padding:12px"><img id="li" alt="Foto ampliada" style="width:100%;max-height:70vh;object-fit:contain;display:block;border-radius:10px"><p id="lt" style="margin:10px 0 0;text-align:center"></p><p class="cat" style="text-align:center;margin:4px 0 0">Toca para cerrar</p></dialog>
+
 <dialog id="vd">
   <h2 style="margin:0;font-size:20px">Buscar por foto</h2>
   <p class="calc">Toma o elige una foto de una planta, maceta, tierra, accesorio o químico y busco coincidencias en tu inventario.</p>
+  <div id="gk" style="display:none"><label for="gki">Clave de Gemini (se guarda solo en este teléfono)</label><input id="gki" type="password" autocomplete="off" placeholder="AIza…"></div>
   <div class="two"><label class="btn up">📁 Galería<input id="vI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="vC" type="file" accept="image/*" capture="environment"></label></div>
   <img id="vp" alt="Foto a buscar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
   <div id="vr" style="margin-top:12px"></div>
@@ -238,7 +241,8 @@ $("fab").onclick=()=>tab==="ventas"?openSale():openForm(null);
 $("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;term="";render()}};
 $("view").onclick=e=>{
   const t=e.target,d=t.dataset;
-  if(d.e)openForm(d.e);
+  if(t.tagName==="IMG"&&t.closest(".ph")){const it=D.items.find(x=>x.id===t.closest(".item").querySelector(".nm").dataset.e)||{};$("li").src=t.src;$("lt").innerHTML=`<b>${esc(it.n||"")}</b><br>Venta ${money(it.p)} · Compra ${money(it.k)}`;$("ld").showModal()}
+  else if(d.e)openForm(d.e);
   else if(d.d){const i=D.items.find(x=>x.id===d.i);i.s=Math.max(0,(i.s||0)+ +d.d);save();render()}
   else if(d.u){ubi=d.u;render()}
   else if(d.r){rng=d.r;from="";to="";render()}
@@ -351,7 +355,23 @@ function vpick(e){
   r.readAsDataURL(f);e.target.value="";
 }
 $("vI").onchange=vpick;$("vC").onchange=vpick;
-$("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("vd").showModal()};
+$("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("gk").style.display=window.claude?"none":"block";$("gki").value=gKey();$("vd").showModal()};
+$("ld").onclick=()=>$("ld").close();
+const gKey=()=>{try{return localStorage.getItem("vivero-gemini")||""}catch(e){return ""}};
+async function gemini(prompt,blob,key){
+  const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(",")[1]);fr.readAsDataURL(blob)});
+  const body=JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:{responseMimeType:"application/json"}});
+  let err=null;
+  for(const m of ["gemini-3.1-flash-lite","gemini-3.5-flash","gemini-3-flash-preview"]){
+    const resp=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body});
+    if(resp.status===404){err=Object.assign(new Error("modelo"),{status:404});continue}
+    if(!resp.ok)throw Object.assign(new Error("gemini"),{status:resp.status});
+    const j=await resp.json();
+    try{localStorage.setItem("vivero-gemini",key)}catch(e){}
+    return JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,"").trim());
+  }
+  throw err||new Error("gemini");
+}
 $("vX").onclick=()=>$("vd").close();
 $("vG").onclick=async()=>{
   if(!vb)return;const out=$("vr");
@@ -359,13 +379,15 @@ $("vG").onclick=async()=>{
   out.textContent="Buscando coincidencias…";$("vG").disabled=true;
   try{
     const sample=window.claude?await window.claude.use("sample"):null;
-    if(!sample){out.textContent="La búsqueda por foto no está disponible en esta vista.";return}
+    const key=sample?"":($("gki").value.trim()||gKey());
+    if(!sample&&!key){out.textContent="Pega tu clave de Gemini arriba para usar esta función.";$("gki").focus();return}
     const lst=D.items.map(i=>i.id+"|"+T[i.t].l+"|"+i.n+"|"+Object.values(i.x||{}).filter(Boolean).join(", ")).join("\n");
-    const r=await sample.json("Eres asistente de un vivero. Mira la foto adjunta, identifica qué es (planta, maceta, tierra, accesorio o químico) y elige hasta 5 coincidencias de esta lista de inventario, de la más a la menos probable. Lista (id|categoría|nombre|detalles):\n"+lst+"\n\nResponde SOLO con JSON: {\"que_es\":\"descripción corta en español\",\"coincidencias\":[{\"id\":\"...\",\"motivo\":\"por qué coincide, en una frase\"}]}. Usa solo ids de la lista. Si nada coincide, deja coincidencias vacío.",{images:[vb],modelTier:"default"});
+    const P=("Eres asistente de un vivero. Mira la foto adjunta, identifica qué es (planta, maceta, tierra, accesorio o químico) y elige hasta 5 coincidencias de esta lista de inventario, de la más a la menos probable. Lista (id|categoría|nombre|detalles):\n"+lst+"\n\nResponde SOLO con JSON: {\"que_es\":\"descripción corta en español\",\"coincidencias\":[{\"id\":\"...\",\"motivo\":\"por qué coincide, en una frase\"}]}. Usa solo ids de la lista. Si nada coincide, deja coincidencias vacío.");
+    const r=sample?await sample.json(P,{images:[vb],modelTier:"default"}):await gemini(P,vb,key);
     const ms=(r.coincidencias||[]).map(m=>({m,i:D.items.find(x=>x.id===m.id)})).filter(o=>o.i);
     out.innerHTML=`<p style="margin:0 0 6px"><b>Parece:</b> ${esc(r.que_es||"")}</p>`+(ms.length?ms.map(o=>`<button class="pick" data-o="${o.i.id}" style="flex-direction:column"><b>${esc(o.i.n)}</b><span>${esc(T[o.i.t].l)} · ${money(o.i.p)}</span><span style="color:var(--mute)">${esc(o.m.motivo||"")}</span></button>`).join(""):'<div class="cat">No encontré coincidencias en tu inventario. Puede que aún no esté cargado.</div>');
   }catch(e){
-    out.textContent=e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para buscar por foto.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar la búsqueda. Intenta con otra foto.";
+    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"La clave de Gemini no es válida o no tiene permiso. Revísala.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para buscar por foto.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar la búsqueda. Intenta con otra foto.";
   }finally{$("vG").disabled=false}
 };
 $("vr").onclick=e=>{const b=e.target.closest("[data-o]");if(b){$("vd").close();openForm(b.dataset.o)}};
