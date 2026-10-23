@@ -123,7 +123,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v2.6</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v2.7</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -204,6 +204,17 @@ dialog h2{font-size:24px;font-weight:500}
   <img id="vp" alt="Foto a buscar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
   <div id="vr" style="margin-top:12px"></div>
   <div class="row"><button id="vX">Cerrar</button><button class="go" id="vG" disabled>Buscar coincidencias</button></div>
+</dialog>
+
+<dialog id="ad">
+  <h2 style="margin:0;font-size:20px">Agregar con IA</h2>
+  <p class="calc">Sacá o elegí una foto del lugar (una estantería, una mesa, un sector del vivero) y escribí qué plantas, macetas u otros productos ves ahí. La IA te va a sugerir productos nuevos para agregar a tu inventario.</p>
+  <div class="two"><label class="btn up">📁 Galería<input id="aI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="aC" type="file" accept="image/*" capture="environment"></label></div>
+  <img id="ap" alt="Foto del lugar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
+  <label for="aq">Describí lo que ves</label>
+  <textarea id="aq" rows="3" placeholder="Ej: una suculenta echeveria chica, un ficus lyrata grande en maceta negra, tres macetas de barro de 15cm…" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
+  <div id="ar" style="margin-top:12px"></div>
+  <div class="row"><button id="aX">Cerrar</button><button class="go" id="aG" disabled>Sugerir productos</button></div>
 </dialog>
 
 <dialog id="wd">
@@ -412,8 +423,8 @@ $("sG").onclick=()=>{
 };
 
 /* ---------- Formulario de producto ---------- */
-function openForm(id){
-  editing=id;const i=D.items.find(x=>x.id===id)||{t:tab,n:"",x:{},k:"",p:"",s:"",m:"",img:""};
+function openForm(id,prefill){
+  editing=id;const i=(id&&D.items.find(x=>x.id===id))||Object.assign({t:tab,n:"",x:{},k:"",p:"",s:"",m:"",img:""},prefill||{});
   $("dT").textContent=id?"Editar "+T[i.t].l.toLowerCase().replace(/s$/,""):"Nueva "+T[tab].l.toLowerCase().replace(/s$/,"");
   $("fN").value=i.n;$("fK").value=i.k;$("fP").value=i.p;img=i.img||"";
   $("ff").innerHTML=T[i.t].f.map(f=>`<label for="x_${f[0]}">${f[1]}</label>`+(f[2]?`<select id="x_${f[0]}">${f[2].split(",").map(o=>`<option${(i.x||{})[f[0]]===o?" selected":""}>${o}</option>`).join("")}</select>`:`<input id="x_${f[0]}" value="${esc((i.x||{})[f[0]]||"")}">`)).join("");
@@ -662,6 +673,58 @@ $("vG").onclick=async()=>{
   }finally{$("vG").disabled=false}
 };
 $("vr").onclick=e=>{const b=e.target.closest("[data-o]");if(b){$("vd").close();openDetail(b.dataset.o)}};
+
+/* ---------- Agregar con IA ---------- */
+let ab=null,aiSuggestions=[];
+function apick(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>{ab=b;$("ap").src=URL.createObjectURL(b);$("ap").style.display="block";checkAG()},"image/jpeg",.8)};im.src=r.result};
+  r.readAsDataURL(f);e.target.value="";
+}
+$("aI").onchange=apick;$("aC").onchange=apick;
+function checkAG(){$("aG").disabled=!(ab&&$("aq").value.trim())}
+$("aq").oninput=checkAG;
+$("ai").onclick=()=>{ab=null;aiSuggestions=[];$("ap").style.display="none";$("aq").value="";$("ar").innerHTML="";$("aG").disabled=true;$("ad").showModal()};
+$("aX").onclick=()=>$("ad").close();
+function aiItemFromSuggestion(p){
+  const t=T[p.t]?p.t:"planta",x={};if(T[t].f[0])x[T[t].f[0][0]]=p.detalle||"";
+  return{t,n:p.n,x};
+}
+$("aG").onclick=async()=>{
+  if(!ab)return;const desc=$("aq").value.trim();if(!desc)return;
+  const out=$("ar");out.textContent="Analizando…";$("aG").disabled=true;
+  try{
+    const sample=window.claude?await window.claude.use("sample"):null;
+    const key=sample?"":gKey();
+    if(!sample&&!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
+    const P="Eres asistente de un vivero. Te doy una foto de un lugar del vivero (una estantería, mesa o sector) y una descripción en español de lo que el dueño ve ahí. Identificá cada producto que el dueño describe (pueden ser una o varias plantas, macetas, tierras, accesorios o químicos) y devolvé una lista para agregar al inventario. Para cada producto elegí una categoría de esta lista: planta, maceta, tierra, accesorio, quimico.\n\nDescripción del dueño: \""+desc+"\"\n\nResponde SOLO con JSON: {\"productos\":[{\"t\":\"planta|maceta|tierra|accesorio|quimico\",\"n\":\"nombre corto del producto\",\"detalle\":\"detalle breve: tamaño, variedad, color de maceta, etc.\"}]}. Si no identificás ningún producto, dejá productos vacío.";
+    const r=sample?await sample.json(P,{images:[ab],modelTier:"default"}):await gemini(P,ab,key);
+    aiSuggestions=(r.productos||[]).filter(p=>p&&p.n);
+    if(!aiSuggestions.length){out.innerHTML='<p class="cat">No pude identificar productos. Probá con una descripción más específica.</p>';return}
+    out.innerHTML=`<p style="margin:0 0 6px"><b>Encontré ${aiSuggestions.length} producto(s):</b></p>`+
+      aiSuggestions.map((p,i)=>`<button type="button" class="pick" data-add="${i}"><span class="pick-ph">${T[p.t]?T[p.t].e:"❔"}</span><span class="pick-bd"><b>${esc(p.n)}</b><small>${esc(T[p.t]?T[p.t].l:p.t)}${p.detalle?" · "+esc(p.detalle):""}</small></span><span class="pick-go">Agregar →</span></button>`).join("")+
+      `<button type="button" class="btn" id="aAll" style="width:100%;margin-top:10px">➕ Agregar los ${aiSuggestions.length} sin precio (los completás después)</button>`;
+  }catch(e){
+    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este tipo de uso. Probá generar una clave nueva en Google AI Studio y pegarla arriba.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para esta función.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar el análisis. Intenta de nuevo.";
+  }finally{$("aG").disabled=false}
+};
+$("ar").onclick=e=>{
+  if(e.target.closest("#aAll")){
+    aiSuggestions.forEach(p=>{
+      const it=aiItemFromSuggestion(p);
+      D.items.push(Object.assign({id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),k:0,p:0,img:""},it));
+    });
+    save();render();$("ad").close();
+    return;
+  }
+  const b=e.target.closest("[data-add]");if(!b)return;
+  const p=aiSuggestions[+b.dataset.add];if(!p)return;
+  const it=aiItemFromSuggestion(p);
+  $("ad").close();
+  openForm(null,it);
+};
+
 $("sync").onclick=()=>{if($("sync").classList.contains("spin"))return;$("sync").classList.add("spin");pullFromCloud(false).finally(()=>$("sync").classList.remove("spin"))};
 render();
 cloudBadge("sync");

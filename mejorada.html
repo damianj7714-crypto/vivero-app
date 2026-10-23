@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ViveroApp</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#27432f">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vivero">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f5f2ea;--card:#fffdf8;--ink:#1d2620;--mute:#6a6d60;--line:#e3ded0;--moss:#27432f;--onmoss:#f5f2ea;--warn:#9a6b1c;--warnbg:#f3e6c6;--bad:#9c3b30;--gold:#a8854a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101411;--card:#171c18;--ink:#ebe7dc;--mute:#939a8c;--line:#262d27;--moss:#a9c9a4;--onmoss:#0f1510;--warn:#d9b062;--warnbg:#352c14;--bad:#e08377;--gold:#c9a86a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101411;--card:#171c18;--ink:#ebe7dc;--mute:#939a8c;--line:#262d27;--moss:#a9c9a4;--onmoss:#0f1510;--warn:#d9b062;--warnbg:#352c14;--bad:#e08377;--gold:#c9a86a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:680px;margin:0 auto;padding:14px 14px 100px;overflow-wrap:anywhere}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+h1{font-size:25px;font-weight:800;margin:0;letter-spacing:-.02em}
+input,select,button{font:inherit;color:inherit}
+.lock{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 12px;font-size:13px;cursor:pointer}
+.lock.on{background:var(--moss);color:var(--onmoss);border-color:var(--moss)}
+.tabs,.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.tab,.chip{flex:none;padding:8px 13px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:14px;cursor:pointer}
+.tab.on,.chip.on{background:var(--moss);color:var(--onmoss);border-color:var(--moss)}
+.search,.dt input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);margin-bottom:10px}
+.item{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.item.low{border-left:5px solid var(--warn)}.item.zero{border-left:5px solid var(--bad)}
+.ph{flex:none;width:88px;height:88px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-size:28px;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.bd{flex:1;min-width:0}
+.act{flex:1;min-height:40px;padding:8px 6px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:600;cursor:pointer}.act.del{color:var(--bad)}.act.on{background:var(--bad);color:var(--card);border-color:var(--bad)}.acts{display:flex;gap:8px;margin-top:8px}
+.nm{font-weight:600;font-size:16px;text-align:left;background:none;border:0;padding:0;cursor:pointer}
+.cat{font-size:12px;color:var(--mute);margin-top:1px}
+.pr{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:3px}.pr b{font-size:18px;font-weight:800}.pr span{font-size:12px;color:var(--mute)}
+.qty{display:flex;align-items:center;gap:8px;margin-top:6px}
+.qty button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:20px;cursor:pointer}
+.qty output{min-width:30px;text-align:center;font-weight:800;font-size:17px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--warnbg);color:var(--warn);margin-left:auto}.tag.z{color:var(--bad)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}.stat b{display:block;font-size:22px;font-weight:800}.stat span{font-size:12px;color:var(--mute)}
+.dt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.dt label{margin:0 0 3px}
+.sale{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.sale .top{display:flex;justify-content:space-between;font-size:13px;color:var(--mute)}
+.sale p{margin:6px 0;font-size:15px}.sale .tt{display:flex;justify-content:space-between;align-items:center}.sale .tt b{font-size:18px}
+.mini{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--bad);font-size:13px;cursor:pointer}
+.mini2{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--ink);font-size:12px;cursor:pointer;font-weight:600;text-align:center;text-decoration:none;display:block}
+.wres{display:flex;gap:10px;padding:9px 10px;margin-top:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.wres .wact{display:flex;flex-direction:column;gap:5px;flex:none;width:84px}
+.empty{text-align:center;color:var(--mute);padding:36px 12px}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--moss);color:var(--onmoss);border:0;border-radius:99px;padding:14px 20px;font-weight:800;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);width:min(94vw,440px);max-height:90vh;padding:18px;overflow-y:auto}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+dialog input,dialog select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.calc{margin:10px 0 0;font-size:14px;color:var(--mute)}
+.row{display:flex;gap:8px;margin-top:16px}
+.row button,.btn{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:600;cursor:pointer}
+.go{background:var(--moss)!important;color:var(--onmoss)!important;border-color:var(--moss)!important}.del{color:var(--bad)}
+.pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;margin-top:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer;font-size:14px}
+.pick-ph{flex:none;width:44px;height:44px;border-radius:9px;overflow:hidden;background:var(--card);display:grid;place-items:center;font-size:18px}.pick-ph img{width:100%;height:100%;object-fit:cover}
+.pick-bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.pick-bd b{font-weight:600;font-family:"Fraunces",serif;font-size:15px}.pick-bd small{color:var(--mute);font-size:12px}.pick-bd small.mt{color:var(--gold)}
+.pick-go{flex:none;font-size:12px;font-weight:600;color:var(--moss)}
+.cl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;gap:8px}
+.cl .qty{margin:0}.cl .qty button{width:30px;height:30px;font-size:16px}
+.tot{display:flex;justify-content:space-between;font-size:20px;font-weight:800;margin-top:12px}
+.up{position:relative;overflow:hidden;text-align:center;margin:0!important;color:var(--ink)!important;font-size:14px!important;display:block}.up input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:0;padding:0}
+#pv{max-width:100%;max-height:140px;border-radius:10px;margin-top:8px;display:none}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--moss);outline-offset:2px}
+/* ---- Estilo elegante ---- */
+body{font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.4}
+h1,.nm,.stat b,.pr b,dialog h2,.tt b{font-family:"Fraunces",Georgia,"Times New Roman",serif}
+main{padding-top:22px}
+header{align-items:flex-end;padding:0 2px 16px;border-bottom:1px solid var(--line);margin-bottom:16px}
+h1{font-size:34px;font-weight:500;line-height:1;letter-spacing:-.01em}
+.sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:8px}
+.ver{font-family:"Hanken Grotesk",sans-serif;font-size:12px;font-weight:600;color:var(--mute);vertical-align:middle;border:1px solid var(--line);border-radius:99px;padding:2px 9px;margin-left:6px;letter-spacing:.03em}
+.cloud{font-size:11px;color:var(--mute);margin-top:6px;display:flex;align-items:center;gap:5px}.cloud.on span{background:var(--moss)}.cloud.err span{background:var(--bad)}.cloud span{width:7px;height:7px;border-radius:99px;background:var(--mute);display:inline-block}
+#sync{font-size:16px;line-height:1;padding:8px 11px}#sync.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.lock{background:transparent;border-radius:8px;font-size:13px;font-weight:500;letter-spacing:.02em;padding:8px 12px}
+.tabs{gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;padding-bottom:0}
+.tab{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 12px;color:var(--mute);font-weight:500;font-size:14px;letter-spacing:.02em}
+.tab.on{background:none;color:var(--ink);border-color:transparent transparent var(--gold) transparent}
+.chip{background:transparent;font-size:13px;padding:6px 13px;color:var(--mute)}
+.chip.on{color:var(--onmoss)}
+.stats{gap:10px;margin:2px 0 14px}
+.stat{border-radius:14px;padding:14px 16px}
+.stat b{font-size:30px;font-weight:500;color:var(--moss);line-height:1.1}
+.stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.search,.dt input{border-radius:12px;padding:12px 16px}
+.item{gap:14px;padding:12px;border-radius:16px;margin-bottom:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(30,40,30,.05),0 10px 26px -14px rgba(30,40,30,.28);cursor:pointer}
+.item:active{opacity:.85}
+.ddph{width:100%;aspect-ratio:1/1;max-height:300px;border-radius:14px;overflow:hidden;background:var(--bg);display:grid;place-items:center;font-size:54px;border:1px solid var(--line)}
+.ddph img{width:100%;height:100%;object-fit:contain;object-position:center;cursor:zoom-in}
+dialog#lb{padding:0;background:transparent;border:0;width:96vw;max-width:96vw;max-height:96vh;overflow:visible}
+dialog#lb::backdrop{background:rgba(0,0,0,.88)}
+dialog#lb img{display:block;width:100%;height:96vh;object-fit:contain;object-position:center}
+.ph{width:96px;height:96px;border-radius:12px;font-size:30px;border:1px solid var(--line)}
+.nm{font-size:19px;font-weight:500;line-height:1.2;text-align:left}
+.cat{font-size:12.5px;margin-top:4px}
+.pr{gap:2px 10px;margin-top:8px}
+.pr b{font-size:22px;font-weight:500;color:var(--moss)}
+.pr span b{color:var(--ink)}
+.acts{margin-top:10px}
+.act{min-height:38px;border-radius:9px;font-size:13px;font-weight:500;letter-spacing:.03em;background:transparent}
+.sale{border-radius:14px;padding:14px}
+.fab{border-radius:14px;padding:14px 22px;font-weight:600;letter-spacing:.03em;box-shadow:0 12px 26px -10px rgba(20,40,25,.55)}
+dialog{border-radius:20px;padding:22px;box-shadow:0 30px 70px -20px rgba(0,0,0,.55)}
+dialog h2{font-size:24px;font-weight:500}
+.row button,.btn{border-radius:10px;font-weight:500;letter-spacing:.02em}
+.go{font-weight:600!important}
+.pr2{display:flex;gap:16px;margin-top:5px;font-size:13px;color:var(--mute)}.pr2 b{color:var(--ink);font-weight:600}
+.empty{padding:48px 16px}
+</style>
+</head>
+<body>
+<main>
+  <header><div><h1>Vivero <span class="ver">v2.7</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="view"></div>
+</main>
+<button class="fab" id="fab">+</button>
+
+<dialog id="dlg">
+  <h2 id="dT" style="margin:0;font-size:20px"></h2>
+  <label for="fN">Nombre</label><input id="fN">
+  <button type="button" class="btn" id="bWeb" style="width:100%;margin:8px 0 0">🔍 Buscar información e imágenes</button>
+  <div id="ff"></div>
+  <div class="two">
+    <div><label for="fK">Precio de compra</label><input id="fK" type="number" inputmode="decimal" min="0" step="any"></div>
+    <div><label for="fP">Precio de venta</label><input id="fP" type="number" inputmode="decimal" min="0" step="any"></div>
+    
+    
+  </div>
+  <p class="calc" id="calc"></p>
+  <label>Foto</label>
+  <div class="two"><label class="btn up">📁 Elegir de galería<input id="fI" type="file" accept="image/*"></label><label class="btn up">📷 Sacar foto<input id="fC" type="file" accept="image/*" capture="environment"></label></div>
+  <img id="pv" alt="Vista previa"><button class="mini" id="bR" type="button" style="display:none;margin-top:6px">Quitar foto</button>
+  <div class="row"><button class="del" id="bD">Eliminar</button><button id="bX">Cancelar</button><button class="go" id="bS">Guardar</button></div>
+</dialog>
+
+<dialog id="sd">
+  <h2 style="margin:0;font-size:20px">Nueva venta</h2>
+  <label for="sq">Buscar en inventario</label><input id="sq" type="search" placeholder="Nombre del producto…">
+  <div id="sr"></div>
+  <label>Ítem libre</label>
+  <div class="two"><input id="mn" placeholder="Concepto"><input id="mp" type="number" inputmode="decimal" placeholder="Precio"></div>
+  <button class="btn" id="bM" type="button" style="width:100%;margin-top:6px">Agregar ítem libre</button>
+  <h3 style="margin:16px 0 4px;font-size:16px">Carrito</h3>
+  <div id="cart"></div>
+  <div class="two"><div><label for="pay">Forma de pago</label><select id="pay"><option>Efectivo</option><option>Transferencia</option><option>Débito</option><option>Crédito</option></select></div>
+  <div><label for="cli">Cliente (opcional)</label><input id="cli"></div></div>
+  <div class="tot"><span>Total</span><span id="ct">$0</span></div>
+  <div class="row"><button id="sX">Cancelar</button><button class="go" id="sG">Finalizar venta</button></div>
+</dialog>
+
+<dialog id="md">
+  <h2 style="margin:0;font-size:20px">Importar desde Excel</h2>
+  <p class="calc">Elige uno o varios archivos .xlsx con columnas como Nombre, PrecioVenta y PrecioCompra. Detecto la categoría de cada archivo y puedes cambiarla. Los productos que ya existen (mismo nombre y medida) se actualizan; los nuevos se agregan.</p>
+  <label class="btn up" style="margin-top:10px!important">📥 Elegir archivos Excel<input id="mI" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple></label>
+  <div id="mr" style="margin-top:12px"></div>
+  <div class="row"><button id="mX">Cerrar</button><button class="go" id="mG" disabled>Importar</button></div>
+</dialog>
+
+<dialog id="pd">
+  <h2 style="margin:0;font-size:20px">Clave de acceso</h2>
+  <p class="calc">Ingresa la clave para ver o cambiar la clave de Gemini.</p>
+  <label for="pdI">Clave de acceso</label><input id="pdI" type="password" inputmode="numeric" autocomplete="off">
+  <p class="calc" id="pdErr" style="color:var(--bad);display:none">Clave incorrecta.</p>
+  <div class="row"><button id="pdX">Cancelar</button><button class="go" id="pdS">Entrar</button></div>
+</dialog>
+
+<dialog id="gd">
+  <h2 style="margin:0;font-size:20px">Clave de Gemini</h2>
+  <p class="calc">Esta clave permite usar "Buscar por foto" fuera de Claude. Se guarda solo en este teléfono.</p>
+  <label for="gki">Clave de Gemini</label><input id="gki" type="password" autocomplete="off" placeholder="Pega aquí tu clave de Google AI Studio">
+  <div class="row"><button id="gkX">Cerrar</button><button class="go" id="gkS">Guardar</button></div>
+</dialog>
+
+<dialog id="dd">
+  <div class="ddph" id="ddPhoto"></div>
+  <h2 id="ddName" style="margin:14px 0 2px"></h2>
+  <p class="cat" id="ddCat" style="margin:0"></p>
+  <div class="pr" id="ddPrice" style="margin-top:12px"></div>
+  <div class="pr2" id="ddMargin"></div>
+  <div class="row"><button class="act" id="ddEdit">Editar</button><button class="act del" id="ddDel">Eliminar</button></div>
+  <button type="button" id="ddClose" class="btn" style="width:100%;margin-top:10px">Cerrar</button>
+</dialog>
+
+<dialog id="lb"><img id="lbImg" alt="Foto ampliada"></dialog>
+
+<dialog id="vd">
+  <h2 style="margin:0;font-size:20px">Buscar por foto</h2>
+  <p class="calc">Toma o elige una foto de una planta, maceta, tierra, accesorio o químico y busco coincidencias en tu inventario.</p>
+  <div class="two"><label class="btn up">📁 Galería<input id="vI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="vC" type="file" accept="image/*" capture="environment"></label></div>
+  <img id="vp" alt="Foto a buscar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
+  <div id="vr" style="margin-top:12px"></div>
+  <div class="row"><button id="vX">Cerrar</button><button class="go" id="vG" disabled>Buscar coincidencias</button></div>
+</dialog>
+
+<dialog id="ad">
+  <h2 style="margin:0;font-size:20px">Agregar con IA</h2>
+  <p class="calc">Sacá o elegí una foto del lugar (una estantería, una mesa, un sector del vivero) y escribí qué plantas, macetas u otros productos ves ahí. La IA te va a sugerir productos nuevos para agregar a tu inventario.</p>
+  <div class="two"><label class="btn up">📁 Galería<input id="aI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="aC" type="file" accept="image/*" capture="environment"></label></div>
+  <img id="ap" alt="Foto del lugar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
+  <label for="aq">Describí lo que ves</label>
+  <textarea id="aq" rows="3" placeholder="Ej: una suculenta echeveria chica, un ficus lyrata grande en maceta negra, tres macetas de barro de 15cm…" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
+  <div id="ar" style="margin-top:12px"></div>
+  <div class="row"><button id="aX">Cerrar</button><button class="go" id="aG" disabled>Sugerir productos</button></div>
+</dialog>
+
+<dialog id="wd">
+  <h2 id="wdT" style="margin:0;font-size:20px">Buscar información</h2>
+  <p class="calc" id="wdD">Escribe el nombre de una planta, maceta, tierra, accesorio o químico y busco información e imágenes en Wikipedia.</p>
+  <label for="wq">Nombre a buscar</label><input id="wq" type="text" placeholder="Ej: Ficus">
+  <div id="wr" style="margin-top:12px"></div>
+  <div class="row"><button id="wX">Cerrar</button><button class="go" id="wG">Buscar información</button></div>
+</dialog>
+
+<script>
+const T={
+ planta:{l:"Plantas",e:"🪴",f:[["fam","Familia / especie"],["ubi","Ubicación","Interior,Exterior,Interior / Exterior"],["mac","Tipo de maceta"]]},
+ maceta:{l:"Macetas",e:"🏺",f:[["med","Medida"],["mat","Material"]]},
+ tierra:{l:"Tierras",e:"🌱",f:[["mar","Marca"],["tip","Tipo"],["med","Medida"]]},
+ accesorio:{l:"Accesorios",e:"🧰",f:[["tip","Tipo"],["med","Medida"]]},
+ quimico:{l:"Químicos",e:"🧪",f:[["med","Medida"],["tip","Tipo"],["uso","Uso"],["dil","Disolución"]]}
+};
+const KEY="viveroapp-mejorada-v1";
+let D={items:[],sales:[],pin:""};
+let showCost=(()=>{try{return localStorage.getItem("vivero-showcost")!=="0"}catch(e){return true}})();
+try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.items))D=Object.assign(D,r)}catch(e){}
+
+/* ---------- Firebase (Firestore por API REST, sin SDK) ---------- */
+const FB={projectId:"morlinavivero-90956",apiKey:"AIzaSyAVjMnA_eStmyurFJOoG2TbCCChfhKUdyA"};
+const FS=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+function toVal(v){
+  if(v==null)return{nullValue:null};
+  if(typeof v==="number")return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};
+  if(typeof v==="boolean")return{booleanValue:v};
+  if(Array.isArray(v))return{arrayValue:{values:v.map(toVal)}};
+  if(typeof v==="object")return{mapValue:{fields:toFields(v)}};
+  return{stringValue:String(v)};
+}
+function toFields(o){const f={};for(const k in o)if(o[k]!==undefined)f[k]=toVal(o[k]);return f}
+function fromVal(v){
+  if(!v)return null;
+  if("stringValue"in v)return v.stringValue;
+  if("integerValue"in v)return parseInt(v.integerValue,10);
+  if("doubleValue"in v)return v.doubleValue;
+  if("booleanValue"in v)return v.booleanValue;
+  if("mapValue"in v)return fromFields((v.mapValue||{}).fields||{});
+  if("arrayValue"in v)return(((v.arrayValue||{}).values)||[]).map(fromVal);
+  return null;
+}
+function fromFields(fl){const o={};for(const k in fl)o[k]=fromVal(fl[k]);return o}
+async function fsList(col){
+  let out=[],pageToken="";
+  do{
+    const url=`${FS}/${col}?pageSize=300&key=${FB.apiKey}`+(pageToken?`&pageToken=${encodeURIComponent(pageToken)}`:"");
+    const r=await fetch(url);if(!r.ok)throw new Error("fs"+r.status);
+    const j=await r.json();
+    (j.documents||[]).forEach(d=>out.push(Object.assign({id:d.name.split("/").pop()},fromFields(d.fields||{}))));
+    pageToken=j.nextPageToken||"";
+  }while(pageToken);
+  return out;
+}
+async function fsBatchWrite(writes){
+  for(let i=0;i<writes.length;i+=400){
+    const chunk=writes.slice(i,i+400);
+    const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents:commit?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({writes:chunk})});
+    if(!r.ok)throw new Error("fs"+r.status);
+  }
+}
+const wUp=(col,id,o)=>({update:{name:`projects/${FB.projectId}/databases/(default)/documents/${col}/${id}`,fields:toFields(o)}});
+const wDel=(col,id)=>({delete:`projects/${FB.projectId}/databases/(default)/documents/${col}/${id}`});
+let syncedItems=new Set(),syncedSales=new Set(),cloudTimer=null,pushing=false;
+function cloudBadge(st){
+  const e=$("cloud");if(!e)return;e.className="cloud"+(st==="on"?" on":st==="err"?" err":"");
+  e.innerHTML=`<span></span>`+(st==="on"?"En la nube":st==="err"?"Sin conexión · cambios guardados en este teléfono":st==="sync"?"Sincronizando…":"Conectando…");
+}
+function itemCloud(i){return{t:i.t,n:i.n,k:i.k||0,p:i.p||0,x:i.x||{},img:i.img||"",u:i.u||""}}
+function saleCloud(s){return{ts:s.ts||0,items:s.items||[],total:s.total||0,pay:s.pay||"",cli:s.cli||""}}
+async function pushToCloud(){
+  if(pushing)return;pushing=true;
+  try{
+    const writes=[];
+    D.items.forEach(i=>writes.push(wUp("items",i.id,itemCloud(i))));
+    [...syncedItems].filter(id=>!D.items.find(i=>i.id===id)).forEach(id=>writes.push(wDel("items",id)));
+    D.sales.forEach(s=>writes.push(wUp("sales",s.id,saleCloud(s))));
+    [...syncedSales].filter(id=>!D.sales.find(s=>s.id===id)).forEach(id=>writes.push(wDel("sales",id)));
+    if(writes.length)await fsBatchWrite(writes);
+    syncedItems=new Set(D.items.map(i=>i.id));syncedSales=new Set(D.sales.map(s=>s.id));
+    cloudBadge("on");
+  }catch(e){cloudBadge("err")}
+  pushing=false;
+}
+function scheduleCloud(){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushToCloud,600)}
+async function pullFromCloud(initial){
+  cloudBadge("sync");
+  try{
+    const[items,sales]=await Promise.all([fsList("items"),fsList("sales")]);
+    const busy=document.querySelector("dialog[open]");
+    if(items.length||sales.length){
+      D.items=items.map(it=>({id:it.id,t:it.t,n:it.n||"",k:it.k||0,p:it.p||0,x:it.x||{},img:it.img||"",u:it.u||""}));
+      D.sales=sales.map(s=>({id:s.id,ts:s.ts||0,items:s.items||[],total:s.total||0,pay:s.pay||"",cli:s.cli||""}));
+      try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}
+      if(!busy)render();
+    }else if(initial&&(D.items.length||D.sales.length)){
+      await pushToCloud();
+    }
+    syncedItems=new Set(D.items.map(i=>i.id));syncedSales=new Set(D.sales.map(s=>s.id));
+    cloudBadge("on");
+  }catch(e){cloudBadge("err")}
+}
+let tab="planta",term="",ubi="Todas",open=false,editing=null,img="",cart=[],rng="all",from="",to="",st="";
+const $=id=>document.getElementById(id);
+const money=v=>"$"+(+v||0).toLocaleString("es-AR",{maximumFractionDigits:2,useGrouping:"always"});
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mg=(k,p)=>p>0?Math.round((p-k)/p*100):0;
+const hs=i=>i.s!=null;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){alert("No hay espacio para guardar. Usa menos fotos o más pequeñas.")}scheduleCloud()}
+
+let curDetail=null,ddArm=null;
+function disarmDD(){
+  if(!ddArm)return;clearInterval(ddArm.t);$("ddDel").textContent="Eliminar";$("ddDel").classList.remove("on");ddArm=null;
+}
+function openDetail(id){
+  const i=D.items.find(x=>x.id===id);if(!i)return;
+  curDetail=id;disarmDD();
+  const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
+  $("ddPhoto").innerHTML=(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="">`:T[i.t].e;
+  $("ddName").textContent=i.n;
+  $("ddCat").textContent=T[i.t].l+(det?" · "+det:"");
+  $("ddPrice").innerHTML=`<b>${money(i.p)}</b><span>precio de venta</span>`;
+  $("ddMargin").innerHTML=showCost?`<span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span>`:"";
+  $("dd").showModal();
+}
+$("ddClose").onclick=()=>{disarmDD();$("dd").close()};
+$("ddPhoto").onclick=e=>{const im=e.target.closest("img");if(!im)return;$("lbImg").src=im.src;$("lb").showModal()};
+$("lb").onclick=()=>$("lb").close();
+$("ddEdit").onclick=()=>{disarmDD();$("dd").close();openForm(curDetail)};
+$("ddDel").onclick=()=>{
+  if(ddArm){
+    if(Date.now()-ddArm.ts<600)return;
+    clearInterval(ddArm.t);ddArm=null;D.items=D.items.filter(x=>x.id!==curDetail);save();$("dd").close();render();return;
+  }
+  let n=3;const lbl=()=>{$("ddDel").textContent="Confirmar ("+n+")";$("ddDel").classList.add("on")};lbl();
+  ddArm={ts:Date.now(),t:setInterval(()=>{n--;if(n<=0)disarmDD();else lbl()},1000)};
+};
+function render(){
+  $("tabs").innerHTML=Object.keys(T).concat("ventas").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":T[k].l}</button>`).join("");
+  $("fab").textContent=tab==="ventas"?"+ Venta":"+ "+(T[tab]?T[tab].l.replace(/s$/,""):"");
+  tab==="ventas"?renderSales():renderCat();
+}
+function renderCat(){
+  const q=term.toLowerCase();
+  let rows=D.items.filter(i=>i.t===tab&&(i.n+" "+Object.values(i.x||{}).join(" ")).toLowerCase().includes(q));
+  if(tab==="planta"&&ubi!=="Todas")rows=rows.filter(i=>(i.x||{}).ubi===ubi);
+  rows.sort((a,b)=>a.n.localeCompare(b.n,"es"));
+  const all=D.items.filter(i=>i.t===tab);
+  let h=`<div class="stats"><div class="stat" style="grid-column:1/-1"><b>${all.length}</b><span>En catálogo</span></div></div>
+  <input class="search" id="q" type="search" placeholder="Buscar en ${T[tab].l.toLowerCase()}…" value="${esc(term)}">`;
+  if(tab==="planta")h+=`<div class="chips">${["Todas","Interior","Exterior","Interior / Exterior"].map(u=>`<button class="chip${u===ubi?" on":""}" data-u="${u}">${u}</button>`).join("")}</div>`;
+  h+=rows.length?rows.map(card).join(""):`<div class="empty">No hay ${T[tab].l.toLowerCase()} aquí. Toca el botón verde para agregar.</div>`;
+  $("view").innerHTML=h;
+  $("view").querySelectorAll(".ph img").forEach(im=>{im.onerror=()=>{const p=im.parentNode;if(p)p.textContent=p.dataset.em}});
+  const qi=$("q");qi.oninput=e=>{term=e.target.value;const p=qi.selectionStart;renderCat();const n=$("q");n.focus();n.setSelectionRange(p,p)};
+}
+function card(i){
+  const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
+  return `<div class="item" data-open="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy">`:T[i.t].e}</div>
+  <div class="bd"><div class="nm">${esc(i.n)}</div><div class="cat">${esc(det)}</div>
+  <div class="pr"><b>${money(i.p)}</b><span>precio de venta</span></div>${showCost?`<div class="pr2"><span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span></div>`:""}
+  </div></div>`;
+}
+
+/* ---------- Ventas ---------- */
+function inRange(ts){
+  const d=new Date(ts),n=new Date(),sod=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),a=sod(d),b=sod(n);
+  if(rng==="hoy"&&a!==b)return false;if(rng==="ayer"&&a!==b-864e5)return false;if(rng==="7"&&a<b-6*864e5)return false;
+  if(rng==="mes"&&(d.getMonth()!==n.getMonth()||d.getFullYear()!==n.getFullYear()))return false;
+  if(from&&ts<new Date(from+"T00:00:00").getTime())return false;if(to&&ts>new Date(to+"T23:59:59").getTime())return false;
+  return true;
+}
+function renderSales(){
+  const q=st.toLowerCase();
+  const rows=D.sales.filter(s=>inRange(s.ts)&&(s.items.map(i=>i.n).join(" ")+" "+(s.cli||"")).toLowerCase().includes(q)).sort((a,b)=>b.ts-a.ts);
+  const tot=rows.reduce((a,s)=>a+s.total,0);
+  const R=[["all","Todos"],["hoy","Hoy"],["ayer","Ayer"],["7","7 días"],["mes","Este mes"]];
+  $("view").innerHTML=`<div class="stats"><div class="stat"><b>${money(tot)}</b><span>Ventas totales (filtradas)</span></div><div class="stat"><b>${rows.length}</b><span>Transacciones</span></div></div>
+  <div class="chips">${R.map(r=>`<button class="chip${r[0]===rng?" on":""}" data-r="${r[0]}">${r[1]}</button>`).join("")}</div>
+  <div class="dt"><div><label for="df">Desde</label><input id="df" type="date" value="${from}"></div><div><label for="dh">Hasta</label><input id="dh" type="date" value="${to}"></div></div>
+  <input class="search" id="sq2" type="search" style="margin-top:10px" placeholder="Buscar por producto o cliente…" value="${esc(st)}">`+
+  (rows.length?rows.map(s=>`<div class="sale"><div class="top"><span>${new Date(s.ts).toLocaleString("es",{dateStyle:"medium",timeStyle:"short"})}</span><span>${esc(s.pay)}${s.cli?" · "+esc(s.cli):""}</span></div>
+  <p>${s.items.map(i=>i.q+"× "+esc(i.n)).join(", ")}</p><div class="tt"><b>${money(s.total)}</b><button class="mini" data-x="${s.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">No hay ventas en este filtro.</div>`);
+  $("df").onchange=e=>{from=e.target.value;renderSales()};$("dh").onchange=e=>{to=e.target.value;renderSales()};
+  const s2=$("sq2");s2.oninput=e=>{st=e.target.value;const p=s2.selectionStart;renderSales();const n=$("sq2");n.focus();n.setSelectionRange(p,p)};
+}
+function openSale(){cart=[];$("sq").value="";$("mn").value="";$("mp").value="";$("cli").value="";drawSale();$("sd").showModal()}
+function drawSale(){
+  const q=$("sq").value.toLowerCase();
+  $("sr").innerHTML=q?D.items.filter(i=>i.n.toLowerCase().includes(q)).slice(0,6).map(i=>`<button class="pick" data-a="${i.id}"><span>${esc(i.n)}</span><span>${money(i.p)}</span></button>`).join("")||'<div class="cat">Sin coincidencias</div>':"";
+  $("cart").innerHTML=cart.length?cart.map((c,n)=>`<div class="cl"><span style="flex:1">${esc(c.n)}<br><small>${money(c.p)} c/u</small></span><div class="qty"><button data-m="${n}" data-v="-1">−</button><output>${c.q}</output><button data-m="${n}" data-v="1">+</button></div></div>`).join(""):'<div class="cat">Aún no agregaste nada.</div>';
+  $("ct").textContent=money(cart.reduce((a,c)=>a+c.p*c.q,0));
+}
+$("sq").oninput=drawSale;
+$("sr").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;const i=D.items.find(x=>x.id===b.dataset.a),c=cart.find(x=>x.id===i.id);c?c.q++:cart.push({id:i.id,n:i.n,p:i.p,q:1});drawSale()};
+$("bM").onclick=()=>{const n=$("mn").value.trim(),p=+$("mp").value;if(!n||!(p>0)){$("mn").focus();return}cart.push({id:null,n,p,q:1});$("mn").value="";$("mp").value="";drawSale()};
+$("cart").onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;const c=cart[+b.dataset.m];c.q+=+b.dataset.v;if(c.q<1)cart.splice(+b.dataset.m,1);drawSale()};
+$("sX").onclick=()=>$("sd").close();
+$("sG").onclick=()=>{
+  if(!cart.length)return;
+  D.sales.push({id:"v"+Date.now(),ts:Date.now(),items:cart,total:cart.reduce((a,c)=>a+c.p*c.q,0),pay:$("pay").value,cli:$("cli").value.trim()});
+  save();$("sd").close();render();
+};
+
+/* ---------- Formulario de producto ---------- */
+function openForm(id,prefill){
+  editing=id;const i=(id&&D.items.find(x=>x.id===id))||Object.assign({t:tab,n:"",x:{},k:"",p:"",s:"",m:"",img:""},prefill||{});
+  $("dT").textContent=id?"Editar "+T[i.t].l.toLowerCase().replace(/s$/,""):"Nueva "+T[tab].l.toLowerCase().replace(/s$/,"");
+  $("fN").value=i.n;$("fK").value=i.k;$("fP").value=i.p;img=i.img||"";
+  $("ff").innerHTML=T[i.t].f.map(f=>`<label for="x_${f[0]}">${f[1]}</label>`+(f[2]?`<select id="x_${f[0]}">${f[2].split(",").map(o=>`<option${(i.x||{})[f[0]]===o?" selected":""}>${o}</option>`).join("")}</select>`:`<input id="x_${f[0]}" value="${esc((i.x||{})[f[0]]||"")}">`)).join("");
+  $("bD").style.display=id?"":"none";prev();calc();$("dlg").dataset.t=i.t;$("dlg").showModal();
+}
+/* ---------- Buscar información e imágenes en internet (Wikipedia) ---------- */
+async function wikiSearch(q){
+  const sr=await fetch(`https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*&srlimit=4`);
+  if(!sr.ok)throw new Error("wiki"+sr.status);
+  const sj=await sr.json();
+  const hits=((sj.query||{}).search||[]).slice(0,4);
+  const sums=await Promise.all(hits.map(async h=>{
+    try{
+      const r=await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(h.title)}`);
+      if(!r.ok)return null;
+      const j=await r.json();
+      return{title:j.title,extract:j.extract||"",thumb:(j.thumbnail||{}).source||"",url:((j.content_urls||{}).desktop||{}).page||("https://es.wikipedia.org/wiki/"+encodeURIComponent(h.title))};
+    }catch(e){return null}
+  }));
+  return sums.filter(Boolean);
+}
+let wdStandalone=false;
+$("bWeb").onclick=()=>{
+  wdStandalone=false;
+  $("wdT").textContent="Buscar información";
+  $("wdD").textContent="Escribe el nombre de una planta, maceta, tierra, accesorio o químico y busco información e imágenes en Wikipedia.";
+  $("wq").value=$("fN").value.trim();$("wr").innerHTML="";$("wr").dataset.results="";$("wd").showModal();$("wq").focus();
+};
+$("pq").onclick=()=>{
+  wdStandalone=true;
+  $("wdT").textContent="Preguntar sobre una planta";
+  $("wdD").textContent="Escribe el nombre (común o científico) de cualquier planta, aunque no la tengas en tu inventario, y busco información e imágenes en Wikipedia para poder responderle a tu cliente.";
+  $("wq").value="";$("wr").innerHTML="";$("wr").dataset.results="";$("wd").showModal();$("wq").focus();
+};
+$("wX").onclick=()=>$("wd").close();
+async function runWikiSearch(){
+  const q=$("wq").value.trim();if(!q){$("wq").focus();return}
+  const box=$("wr"),t=wdStandalone?"planta":$("dlg").dataset.t;
+  box.innerHTML='<p class="cat">Buscando…</p>';$("wG").disabled=true;
+  try{
+    const res=await wikiSearch(t==="planta"?q+" planta":q);
+    if(!res.length){box.innerHTML=`<p class="cat">No encontré información para "${esc(q)}". Probá con el nombre científico o más general.</p>`;box.dataset.results="";return}
+    box.dataset.results=JSON.stringify(res);
+    box.innerHTML=res.map((r,i)=>`<div class="wres"><span class="pick-ph">${r.thumb?`<img src="${esc(r.thumb)}" alt="" loading="lazy">`:"🌐"}</span><span class="pick-bd"><b>${esc(r.title)}</b><small>${esc((r.extract||"").slice(0,220))}${(r.extract||"").length>220?"…":""}</small></span><span class="wact">${r.thumb&&!wdStandalone?`<button type="button" class="mini2" data-useimg="${i}">Usar foto</button>`:""}<a class="mini2" href="${esc(r.url)}" target="_blank" rel="noopener">Ver más</a></span></div>`).join("");
+  }catch(e){
+    box.innerHTML='<p class="cat">No se pudo buscar ahora. Revisá tu conexión e intentá de nuevo.</p>';
+  }finally{$("wG").disabled=false}
+}
+$("wG").onclick=runWikiSearch;
+$("wq").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();runWikiSearch()}};
+$("wr").onclick=e=>{
+  const b=e.target.closest("[data-useimg]");if(!b||wdStandalone)return;
+  const res=JSON.parse($("wr").dataset.results||"[]"),r=res[+b.dataset.useimg];if(!r)return;
+  img=r.thumb;prev();$("wd").close();
+};
+function prev(){$("pv").style.display=img?"block":"none";$("pv").src=img||"";$("bR").style.display=img?"":"none"}
+function calc(){const k=+$("fK").value,p=+$("fP").value;$("calc").textContent=p>0?`Ganancia por unidad: ${money(p-k)} (margen ${mg(k,p)}%)`:""}
+["fK","fP"].forEach(id=>$(id).addEventListener("input",calc));
+const pick=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);img=c.toDataURL("image/jpeg",.7);prev()};im.src=r.result};
+  r.readAsDataURL(f);e.target.value="";
+};
+$("fI").onchange=pick;$("fC").onchange=pick;
+$("bR").onclick=()=>{img="";prev()};
+$("bX").onclick=()=>$("dlg").close();
+$("bD").onclick=()=>{if(confirm("¿Eliminar este producto?")){D.items=D.items.filter(x=>x.id!==editing);save();render();$("dlg").close()}};
+$("bS").onclick=()=>{
+  const n=$("fN").value.trim();if(!n){$("fN").focus();return}
+  const t=$("dlg").dataset.t,x={};T[t].f.forEach(f=>x[f[0]]=$("x_"+f[0]).value.trim());
+  const d={t,n,x,k:+$("fK").value||0,p:+$("fP").value||0,img};
+  if(editing)Object.assign(D.items.find(i=>i.id===editing),d);else D.items.push(Object.assign({id:"p"+Date.now()},d));
+  save();render();$("dlg").close();
+};
+
+/* ---------- Eventos globales ---------- */
+$("fab").onclick=()=>tab==="ventas"?openSale():openForm(null);
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;term="";render()}};
+$("view").onclick=e=>{
+  const t=e.target,d=t.dataset,item=t.closest("[data-open]");
+  if(item)openDetail(item.dataset.open);
+  else if(d.u){ubi=d.u;render()}
+  else if(d.r){rng=d.r;from="";to="";render()}
+  else if(d.x&&confirm("¿Eliminar esta venta?")){
+    const s=D.sales.find(v=>v.id===d.x);
+    D.sales=D.sales.filter(v=>v!==s);save();render();
+  }
+};
+/* ---------- Importar desde Excel ---------- */
+const nk=s=>String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+const HM={nombre:"n",precioventa:"p",preciocompra:"k",stock:"s",cantidad:"s",existencia:"s",stockminimo:"m",minimo:"m",imagen:"u",familia:"fam",ubicacion:"ubi",maceta:"mac",medida:"med",material:"mat",marca:"mar",tipo:"tip",uso:"uso",disolucion:"dil"};
+async function unzip(buf){
+  const dv=new DataView(buf),u8=new Uint8Array(buf);let e=u8.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error("zip");
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};
+  for(let i=0;i<n;i++){
+    const nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true);
+    files[new TextDecoder().decode(u8.subarray(p+46,p+46+nl))]={cm:dv.getUint16(p+10,true),cs:dv.getUint32(p+20,true),off:dv.getUint32(p+42,true)};
+    p+=46+nl+el+cl;
+  }
+  return async name=>{
+    const f=files[name];if(!f)return null;
+    const ln=dv.getUint16(f.off+26,true),le=dv.getUint16(f.off+28,true),st=f.off+30+ln+le,data=u8.subarray(st,st+f.cs);
+    if(f.cm===0)return new TextDecoder().decode(data);
+    return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+  };
+}
+async function readXlsx(buf){
+  const get=await unzip(buf),dp=new DOMParser(),X=s=>dp.parseFromString(s,"text/xml");
+  const ss=[],sx=await get("xl/sharedStrings.xml");
+  if(sx)X(sx).querySelectorAll("si").forEach(si=>ss.push([...si.querySelectorAll(":scope > t, :scope > r > t")].map(t=>t.textContent).join("")));
+  const rel={};X(await get("xl/_rels/workbook.xml.rels")).querySelectorAll("Relationship").forEach(r=>{const t=r.getAttribute("Target");rel[r.getAttribute("Id")]=t.startsWith("/")?t.slice(1):"xl/"+t});
+  const col=r=>{let n=0;for(const ch of r.replace(/\d/g,""))n=n*26+ch.charCodeAt(0)-64;return n-1};
+  const out=[];
+  for(const s of X(await get("xl/workbook.xml")).querySelectorAll("sheet")){
+    const xml=await get(rel[s.getAttribute("r:id")]);if(!xml)continue;
+    const rows=[];
+    X(xml).querySelectorAll("row").forEach(r=>{
+      const a=[];
+      r.querySelectorAll(":scope > c").forEach(c=>{
+        const t=c.getAttribute("t"),v=c.querySelector("v");let val=null;
+        if(t==="inlineStr")val=[...c.querySelectorAll("t")].map(x=>x.textContent).join("");
+        else if(v){val=t==="s"?ss[+v.textContent]:(t==="str"||t==="e"||t==="b")?v.textContent:parseFloat(v.textContent)}
+        a[col(c.getAttribute("r")||"A1")]=val;
+      });
+      rows.push(a);
+    });
+    out.push({name:s.getAttribute("name"),rows});
+  }
+  return out;
+}
+function num(v){if(typeof v==="number")return v;let s=String(v).replace(/[^\d,.\-]/g,"");if(s.includes(",")&&s.includes("."))s=s.replace(/\./g,"").replace(",",".");else if(s.includes(","))s=s.replace(",",".");else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,"");return parseFloat(s)||0}
+function detect(h){const k=new Set(h);return k.has("dil")||k.has("uso")?"quimico":k.has("fam")||k.has("ubi")||k.has("mac")?"planta":k.has("mar")?"tierra":k.has("mat")?"maceta":"accesorio"}
+function rowItem(hdr,row,t){
+  const o={x:{}},ks=T[t].f.map(f=>f[0]);
+  hdr.forEach((k,i)=>{
+    const v=row[i];if(!k||v==null||v==="")return;
+    if(k==="n")o.n=String(v).trim();
+    else if("pksm".includes(k)&&k.length===1)o[k]=num(v);
+    else if(k==="u")o.u=String(v).trim();
+    else if(ks.includes(k)){let s=String(v).trim();if(k==="ubi"){const z=nk(s),i2=z.includes("int"),e2=z.includes("ext");s=i2&&e2?"Interior / Exterior":i2?"Interior":e2?"Exterior":s}o.x[k]=s}
+  });
+  return o;
+}
+const ikey=i=>[i.t,i.n,(i.x||{}).med,(i.x||{}).mac,(i.x||{}).mar,(i.x||{}).tip].map(nk).join("|");
+let imp=[];
+function drawImp(msgs){
+  const n=imp.reduce((a,r)=>a+r.rows.length,0);
+  $("mr").innerHTML=imp.map((r,i)=>`<div class="sale"><div class="top"><span>${esc(r.f)} · hoja “${esc(r.sh)}”</span><span>${r.rows.length} filas</span></div><label for="mc${i}" style="margin-top:6px">Categoría</label><select id="mc${i}" data-c="${i}">${Object.keys(T).map(k=>`<option value="${k}"${k===r.t?" selected":""}>${T[k].l}</option>`).join("")}</select></div>`).join("")+(msgs||[]).map(m=>`<div class="cat" style="color:var(--bad)">${esc(m)}</div>`).join("");
+  $("mG").disabled=!n;$("mG").textContent=n?"Importar "+n+" productos":"Importar";
+}
+$("im").onclick=()=>{imp=[];$("mr").innerHTML="";$("mG").disabled=true;$("mG").textContent="Importar";$("md").showModal()};
+$("mX").onclick=()=>$("md").close();
+$("mr").onchange=e=>{const i=e.target.dataset.c;if(i!=null)imp[+i].t=e.target.value};
+$("mI").onchange=async e=>{
+  const fs=[...e.target.files];e.target.value="";imp=[];const msgs=[];$("mr").textContent="Leyendo archivos…";
+  for(const f of fs){
+    try{
+      let found=false;
+      for(const sh of await readXlsx(await f.arrayBuffer())){
+        const hi=sh.rows.slice(0,5).findIndex(r=>r&&r.some(c=>nk(c)==="nombre"));if(hi<0)continue;
+        const hdr=Array.from(sh.rows[hi],c=>HM[nk(c)]||null),ni=hdr.indexOf("n");
+        const rows=sh.rows.slice(hi+1).filter(r=>r&&r[ni]!=null&&String(r[ni]).trim()!=="");
+        if(rows.length){found=true;imp.push({f:f.name,sh:sh.name,hdr,rows,t:detect(hdr)})}
+      }
+      if(!found)msgs.push(f.name+": no encontré una hoja con la columna Nombre.");
+    }catch(err){msgs.push(f.name+": no pude leer el archivo (¿es un .xlsx?).")}
+  }
+  drawImp(msgs);
+};
+$("mG").onclick=()=>{
+  let add=0,upd=0;const ex=new Map(D.items.map(i=>[ikey(i),i]));
+  imp.forEach(r=>r.rows.forEach(row=>{
+    const o=rowItem(r.hdr,row,r.t);if(!o.n)return;
+    const old=ex.get(ikey({t:r.t,n:o.n,x:o.x}));
+    if(old){old.n=o.n;if(o.p!=null)old.p=o.p;if(o.k!=null)old.k=o.k;old.x=Object.assign(old.x||{},o.x);if(o.u)old.u=o.u;if(o.s!=null)old.s=o.s;if(o.m!=null)old.m=o.m;upd++}
+    else{const n={id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),t:r.t,n:o.n,x:o.x,k:o.k||0,p:o.p||0,s:o.s!=null?o.s:null,m:o.m||0,img:"",u:o.u||""};D.items.push(n);ex.set(ikey(n),n);add++}
+  }));
+  save();render();imp=[];$("mG").disabled=true;$("mG").textContent="Importar";
+  $("mr").innerHTML=`<p><b>Listo:</b> ${add} productos nuevos y ${upd} actualizados.</p>`;
+};
+
+/* ---------- Buscar por foto ---------- */
+let vb=null;
+function vpick(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>{vb=b;$("vp").src=URL.createObjectURL(b);$("vp").style.display="block";$("vG").disabled=false;$("vr").innerHTML=""},"image/jpeg",.8)};im.src=r.result};
+  r.readAsDataURL(f);e.target.value="";
+}
+$("vI").onchange=vpick;$("vC").onchange=vpick;
+const gKey=()=>{try{return localStorage.getItem("vivero-gemini")||""}catch(e){return ""}};
+$("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("vd").showModal()};
+let pdAction=null;
+function openPd(action){pdAction=action;$("pdI").value="";$("pdErr").style.display="none";$("pd").showModal();$("pdI").focus()}
+$("gkBtn").onclick=()=>openPd("gemini");
+$("cpBtn").onclick=()=>openPd("cost");
+$("pdX").onclick=()=>$("pd").close();
+function pdCheck(){
+  if($("pdI").value.trim()==="7714"){
+    $("pd").close();
+    if(pdAction==="gemini"){$("gki").value=gKey();$("gd").showModal()}
+    else if(pdAction==="cost"){showCost=!showCost;try{localStorage.setItem("vivero-showcost",showCost?"1":"0")}catch(e){}render()}
+  }
+  else{$("pdErr").style.display="block";$("pdI").value="";$("pdI").focus()}
+}
+$("pdS").onclick=pdCheck;
+$("pdI").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();pdCheck()}};
+$("gkX").onclick=()=>$("gd").close();
+$("gkS").onclick=()=>{
+  const v=$("gki").value.trim();
+  try{if(v)localStorage.setItem("vivero-gemini",v);else localStorage.removeItem("vivero-gemini")}catch(e){}
+  $("gd").close();
+};
+async function gemini(prompt,blob,key){
+  const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(",")[1]);fr.readAsDataURL(blob)});
+  const body=JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:{responseMimeType:"application/json"}});
+  let err=null;
+  for(const m of ["gemini-3.1-flash-lite","gemini-3.5-flash","gemini-3-flash-preview"]){
+    const resp=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body});
+    if(resp.status===404){err=Object.assign(new Error("modelo"),{status:404});continue}
+    if(!resp.ok)throw Object.assign(new Error("gemini"),{status:resp.status});
+    const j=await resp.json();
+    try{localStorage.setItem("vivero-gemini",key)}catch(e){}
+    return JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,"").trim());
+  }
+  throw err||new Error("gemini");
+}
+$("vX").onclick=()=>$("vd").close();
+$("vG").onclick=async()=>{
+  if(!vb)return;const out=$("vr");
+  if(!D.items.length){out.textContent="Primero agrega productos a tu inventario.";return}
+  out.textContent="Buscando coincidencias…";$("vG").disabled=true;
+  try{
+    const sample=window.claude?await window.claude.use("sample"):null;
+    const key=sample?"":gKey();
+    if(!sample&&!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
+    const lst=D.items.map(i=>i.id+"|"+T[i.t].l+"|"+i.n+"|"+Object.values(i.x||{}).filter(Boolean).join(", ")).join("\n");
+    const P=("Eres asistente de un vivero. Mira la foto adjunta, identifica qué es (planta, maceta, tierra, accesorio o químico) y elige hasta 5 coincidencias de esta lista de inventario, de la más a la menos probable. Lista (id|categoría|nombre|detalles):\n"+lst+"\n\nResponde SOLO con JSON: {\"que_es\":\"descripción corta en español\",\"coincidencias\":[{\"id\":\"...\",\"motivo\":\"por qué coincide, en una frase\"}]}. Usa solo ids de la lista. Si nada coincide, deja coincidencias vacío.");
+    const r=sample?await sample.json(P,{images:[vb],modelTier:"default"}):await gemini(P,vb,key);
+    const ms=(r.coincidencias||[]).map(m=>({m,i:D.items.find(x=>x.id===m.id)})).filter(o=>o.i);
+    out.innerHTML=`<p style="margin:0 0 6px"><b>Parece:</b> ${esc(r.que_es||"")}</p>`+(ms.length?`<p class="cat" style="margin:0 0 8px">Toca la que quieras abrir:</p>`+ms.map(o=>`<button class="pick" data-o="${o.i.id}"><span class="pick-ph">${(o.i.img||o.i.u)?`<img src="${esc(o.i.img||o.i.u)}" alt="" loading="lazy">`:T[o.i.t].e}</span><span class="pick-bd"><b>${esc(o.i.n)}</b><small>${esc(T[o.i.t].l)} · ${money(o.i.p)}</small><small class="mt">${esc(o.m.motivo||"")}</small></span><span class="pick-go">Abrir →</span></button>`).join(""):'<div class="cat">No encontré coincidencias en tu inventario. Puede que aún no esté cargado.</div>');
+  }catch(e){
+    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este tipo de uso. Probá generar una clave nueva en Google AI Studio y pegarla arriba.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para buscar por foto.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar la búsqueda. Intenta con otra foto.";
+  }finally{$("vG").disabled=false}
+};
+$("vr").onclick=e=>{const b=e.target.closest("[data-o]");if(b){$("vd").close();openDetail(b.dataset.o)}};
+
+/* ---------- Agregar con IA ---------- */
+let ab=null,aiSuggestions=[];
+function apick(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>{ab=b;$("ap").src=URL.createObjectURL(b);$("ap").style.display="block";checkAG()},"image/jpeg",.8)};im.src=r.result};
+  r.readAsDataURL(f);e.target.value="";
+}
+$("aI").onchange=apick;$("aC").onchange=apick;
+function checkAG(){$("aG").disabled=!(ab&&$("aq").value.trim())}
+$("aq").oninput=checkAG;
+$("ai").onclick=()=>{ab=null;aiSuggestions=[];$("ap").style.display="none";$("aq").value="";$("ar").innerHTML="";$("aG").disabled=true;$("ad").showModal()};
+$("aX").onclick=()=>$("ad").close();
+function aiItemFromSuggestion(p){
+  const t=T[p.t]?p.t:"planta",x={};if(T[t].f[0])x[T[t].f[0][0]]=p.detalle||"";
+  return{t,n:p.n,x};
+}
+$("aG").onclick=async()=>{
+  if(!ab)return;const desc=$("aq").value.trim();if(!desc)return;
+  const out=$("ar");out.textContent="Analizando…";$("aG").disabled=true;
+  try{
+    const sample=window.claude?await window.claude.use("sample"):null;
+    const key=sample?"":gKey();
+    if(!sample&&!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
+    const P="Eres asistente de un vivero. Te doy una foto de un lugar del vivero (una estantería, mesa o sector) y una descripción en español de lo que el dueño ve ahí. Identificá cada producto que el dueño describe (pueden ser una o varias plantas, macetas, tierras, accesorios o químicos) y devolvé una lista para agregar al inventario. Para cada producto elegí una categoría de esta lista: planta, maceta, tierra, accesorio, quimico.\n\nDescripción del dueño: \""+desc+"\"\n\nResponde SOLO con JSON: {\"productos\":[{\"t\":\"planta|maceta|tierra|accesorio|quimico\",\"n\":\"nombre corto del producto\",\"detalle\":\"detalle breve: tamaño, variedad, color de maceta, etc.\"}]}. Si no identificás ningún producto, dejá productos vacío.";
+    const r=sample?await sample.json(P,{images:[ab],modelTier:"default"}):await gemini(P,ab,key);
+    aiSuggestions=(r.productos||[]).filter(p=>p&&p.n);
+    if(!aiSuggestions.length){out.innerHTML='<p class="cat">No pude identificar productos. Probá con una descripción más específica.</p>';return}
+    out.innerHTML=`<p style="margin:0 0 6px"><b>Encontré ${aiSuggestions.length} producto(s):</b></p>`+
+      aiSuggestions.map((p,i)=>`<button type="button" class="pick" data-add="${i}"><span class="pick-ph">${T[p.t]?T[p.t].e:"❔"}</span><span class="pick-bd"><b>${esc(p.n)}</b><small>${esc(T[p.t]?T[p.t].l:p.t)}${p.detalle?" · "+esc(p.detalle):""}</small></span><span class="pick-go">Agregar →</span></button>`).join("")+
+      `<button type="button" class="btn" id="aAll" style="width:100%;margin-top:10px">➕ Agregar los ${aiSuggestions.length} sin precio (los completás después)</button>`;
+  }catch(e){
+    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este tipo de uso. Probá generar una clave nueva en Google AI Studio y pegarla arriba.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para esta función.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar el análisis. Intenta de nuevo.";
+  }finally{$("aG").disabled=false}
+};
+$("ar").onclick=e=>{
+  if(e.target.closest("#aAll")){
+    aiSuggestions.forEach(p=>{
+      const it=aiItemFromSuggestion(p);
+      D.items.push(Object.assign({id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),k:0,p:0,img:""},it));
+    });
+    save();render();$("ad").close();
+    return;
+  }
+  const b=e.target.closest("[data-add]");if(!b)return;
+  const p=aiSuggestions[+b.dataset.add];if(!p)return;
+  const it=aiItemFromSuggestion(p);
+  $("ad").close();
+  openForm(null,it);
+};
+
+$("sync").onclick=()=>{if($("sync").classList.contains("spin"))return;$("sync").classList.add("spin");pullFromCloud(false).finally(()=>$("sync").classList.remove("spin"))};
+render();
+cloudBadge("sync");
+pullFromCloud(true);
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+}
+</script>
+</body>
+</html>
