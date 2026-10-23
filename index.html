@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ViveroApp</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#27432f">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vivero">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
 :root{--bg:#f5f2ea;--card:#fffdf8;--ink:#1d2620;--mute:#6a6d60;--line:#e3ded0;--moss:#27432f;--onmoss:#f5f2ea;--warn:#9a6b1c;--warnbg:#f3e6c6;--bad:#9c3b30;--gold:#a8854a;
@@ -115,7 +123,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v2.3</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="gkBtn">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v2.6</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -216,6 +224,7 @@ const T={
 };
 const KEY="viveroapp-mejorada-v1";
 let D={items:[],sales:[],pin:""};
+let showCost=(()=>{try{return localStorage.getItem("vivero-showcost")!=="0"}catch(e){return true}})();
 try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.items))D=Object.assign(D,r)}catch(e){}
 
 /* ---------- Firebase (Firestore por API REST, sin SDK) ---------- */
@@ -255,7 +264,7 @@ async function fsList(col){
 async function fsBatchWrite(writes){
   for(let i=0;i<writes.length;i+=400){
     const chunk=writes.slice(i,i+400);
-    const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents:batchWrite?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({writes:chunk})});
+    const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents:commit?key=${FB.apiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({writes:chunk})});
     if(!r.ok)throw new Error("fs"+r.status);
   }
 }
@@ -320,7 +329,7 @@ function openDetail(id){
   $("ddName").textContent=i.n;
   $("ddCat").textContent=T[i.t].l+(det?" · "+det:"");
   $("ddPrice").innerHTML=`<b>${money(i.p)}</b><span>precio de venta</span>`;
-  $("ddMargin").innerHTML=`<span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span>`;
+  $("ddMargin").innerHTML=showCost?`<span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span>`:"";
   $("dd").showModal();
 }
 $("ddClose").onclick=()=>{disarmDD();$("dd").close()};
@@ -358,7 +367,7 @@ function card(i){
   const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
   return `<div class="item" data-open="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy">`:T[i.t].e}</div>
   <div class="bd"><div class="nm">${esc(i.n)}</div><div class="cat">${esc(det)}</div>
-  <div class="pr"><b>${money(i.p)}</b><span>precio de venta</span></div><div class="pr2"><span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span></div>
+  <div class="pr"><b>${money(i.p)}</b><span>precio de venta</span></div>${showCost?`<div class="pr2"><span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span></div>`:""}
   </div></div>`;
 }
 
@@ -599,10 +608,17 @@ function vpick(e){
 $("vI").onchange=vpick;$("vC").onchange=vpick;
 const gKey=()=>{try{return localStorage.getItem("vivero-gemini")||""}catch(e){return ""}};
 $("ps").onclick=()=>{vb=null;$("vp").style.display="none";$("vr").innerHTML="";$("vG").disabled=true;$("vd").showModal()};
-$("gkBtn").onclick=()=>{$("pdI").value="";$("pdErr").style.display="none";$("pd").showModal();$("pdI").focus()};
+let pdAction=null;
+function openPd(action){pdAction=action;$("pdI").value="";$("pdErr").style.display="none";$("pd").showModal();$("pdI").focus()}
+$("gkBtn").onclick=()=>openPd("gemini");
+$("cpBtn").onclick=()=>openPd("cost");
 $("pdX").onclick=()=>$("pd").close();
 function pdCheck(){
-  if($("pdI").value.trim()==="7714"){$("pd").close();$("gki").value=gKey();$("gd").showModal()}
+  if($("pdI").value.trim()==="7714"){
+    $("pd").close();
+    if(pdAction==="gemini"){$("gki").value=gKey();$("gd").showModal()}
+    else if(pdAction==="cost"){showCost=!showCost;try{localStorage.setItem("vivero-showcost",showCost?"1":"0")}catch(e){}render()}
+  }
   else{$("pdErr").style.display="block";$("pdI").value="";$("pdI").focus()}
 }
 $("pdS").onclick=pdCheck;
@@ -650,6 +666,9 @@ $("sync").onclick=()=>{if($("sync").classList.contains("spin"))return;$("sync").
 render();
 cloudBadge("sync");
 pullFromCloud(true);
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+}
 </script>
 </body>
 </html>
