@@ -1,0 +1,16 @@
+{
+  "name": "vivero-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp que responde consultas de precios del inventario de Morlina (ViveroApp) usando Gemini.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
