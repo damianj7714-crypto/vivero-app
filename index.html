@@ -133,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.26</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.27</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -167,11 +167,8 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 
 <dialog id="sd">
   <h2 style="margin:0;font-size:20px">Nueva venta</h2>
-  <label for="sq">Buscar en inventario</label><input id="sq" type="search" placeholder="Nombre del producto…">
+  <label for="sq">Buscar o escribir el nombre del producto</label><input id="sq" type="search" placeholder="Nombre del producto…">
   <div id="sr"></div>
-  <label>Ítem libre</label>
-  <div class="two"><input id="mn" placeholder="Concepto"><input id="mp" type="number" inputmode="decimal" placeholder="Precio"></div>
-  <button class="btn" id="bM" type="button" style="width:100%;margin-top:6px">Agregar ítem libre</button>
   <h3 style="margin:16px 0 4px;font-size:16px">Carrito</h3>
   <div id="cart"></div>
   <div class="two"><div><label for="pay">Forma de pago</label><select id="pay"><option>Efectivo</option><option>Transferencia</option><option>Débito</option><option>Crédito</option></select></div>
@@ -507,16 +504,34 @@ function renderSales(){
   $("df").onchange=e=>{from=e.target.value;renderSales()};$("dh").onchange=e=>{to=e.target.value;renderSales()};
   const s2=$("sq2");s2.oninput=e=>{st=e.target.value;const p=s2.selectionStart;renderSales();const n=$("sq2");n.focus();n.setSelectionRange(p,p)};
 }
-function openSale(){cart=[];$("sq").value="";$("mn").value="";$("mp").value="";$("cli").value="";drawSale();$("sd").showModal()}
+function openSale(){cart=[];$("sq").value="";$("cli").value="";drawSale();$("sd").showModal()}
 function drawSale(){
-  const q=$("sq").value.toLowerCase();
-  $("sr").innerHTML=q?D.items.filter(i=>i.n.toLowerCase().includes(q)).slice(0,6).map(i=>`<button class="pick" data-a="${i.id}"><span>${esc(i.n)}</span><span>${money(i.p)}</span></button>`).join("")||'<div class="cat">Sin coincidencias</div>':"";
+  const q=$("sq").value.trim(),ql=q.toLowerCase();
+  const matches=ql?D.items.filter(i=>i.n.toLowerCase().includes(ql)).slice(0,6):[];
+  if(!q){
+    $("sr").innerHTML="";
+  }else if(matches.length){
+    $("sr").innerHTML=matches.map(i=>`<button class="pick" data-a="${i.id}"><span>${esc(i.n)}</span><span>${money(i.p)}</span></button>`).join("");
+  }else{
+    $("sr").innerHTML=`<div class="cat" style="margin-bottom:6px">No encontré "${esc(q)}" en el inventario. Lo podés agregar igual:</div><div class="two"><input id="mp" type="number" inputmode="decimal" placeholder="Precio"><button class="btn" id="bM" type="button">➕ Agregar</button></div>`;
+  }
   $("cart").innerHTML=cart.length?cart.map((c,n)=>`<div class="cl"><span style="flex:1">${esc(c.n)}<br><small>${money(c.p)} c/u</small></span><div class="qty"><button data-m="${n}" data-v="-1">−</button><output>${c.q}</output><button data-m="${n}" data-v="1">+</button></div></div>`).join(""):'<div class="cat">Aún no agregaste nada.</div>';
   $("ct").textContent=money(cart.reduce((a,c)=>a+c.p*c.q,0));
 }
 $("sq").oninput=drawSale;
-$("sr").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;const i=D.items.find(x=>x.id===b.dataset.a),c=cart.find(x=>x.id===i.id);c?c.q++:cart.push({id:i.id,n:i.n,p:i.p,q:1});drawSale()};
-$("bM").onclick=()=>{const n=$("mn").value.trim(),p=+$("mp").value;if(!n||!(p>0)){$("mn").focus();return}cart.push({id:null,n,p,q:1});$("mn").value="";$("mp").value="";drawSale()};
+$("sr").onclick=e=>{
+  const a=e.target.closest("[data-a]");
+  if(a){const i=D.items.find(x=>x.id===a.dataset.a),c=cart.find(x=>x.id===i.id);c?c.q++:cart.push({id:i.id,n:i.n,p:i.p,q:1});$("sq").value="";drawSale();return}
+  if(e.target.closest("#bM")){
+    const n=$("sq").value.trim(),mp=$("mp"),p=+mp.value;
+    if(!n)return;
+    if(!(p>0)){mp.focus();return}
+    cart.push({id:null,n,p,q:1});
+    $("sq").value="";drawSale();
+    return;
+  }
+};
+$("sr").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="mp"){e.preventDefault();$("bM").click()}});
 $("cart").onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;const c=cart[+b.dataset.m];c.q+=+b.dataset.v;if(c.q<1)cart.splice(+b.dataset.m,1);drawSale()};
 $("sX").onclick=()=>$("sd").close();
 $("sG").onclick=()=>{
