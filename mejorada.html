@@ -133,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.22</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.23</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -226,14 +226,14 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 
 <dialog id="ad">
   <h2 style="margin:0;font-size:20px">Agregar con IA</h2>
-  <p class="calc">Sacá o elegí una foto de un lugar (una estantería, una mesa, un sector del vivero o de la casa de un cliente). Después elegí qué querés: que la IA identifique o sugiera productos para tu inventario según el espacio de la foto, o que te genere una imagen mostrando cómo quedaría ese lugar con plantas nuevas bien integradas.</p>
+  <p class="calc">Sacá o elegí una foto de un lugar (una estantería, una mesa, un sector del vivero o de la casa de un cliente) y describí qué plantas querés agregar. La IA te genera una imagen mostrando cómo quedaría ese lugar con esas plantas bien integradas.</p>
   <div class="two"><label class="btn up">📁 Galería<input id="aI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="aC" type="file" accept="image/*" capture="environment"></label></div>
   <img id="ap" alt="Foto del lugar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
-  <label for="aq">Describí lo que ves, qué plantas querés agregar, o pedí una recomendación</label>
-  <textarea id="aq" rows="3" placeholder="Ej: una suculenta echeveria chica, un ficus lyrata grande en maceta negra… o pedí una recomendación: &quot;qué plantas van bien en este espacio?&quot;" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
+  <label for="aq">Describí qué plantas querés agregar</label>
+  <textarea id="aq" rows="3" placeholder="Ej: una suculenta echeveria chica, un ficus lyrata grande en maceta negra, tres macetas de barro de 15cm…" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
   <button type="button" class="mini2" id="aqMic" style="margin-top:6px">🎤 Dictar por voz</button>
   <div id="ar" style="margin-top:12px"></div>
-  <div class="row"><button id="aX">Cerrar</button><button id="aG" disabled>Sugerir productos</button></div>
+  <div class="row"><button id="aX">Cerrar</button></div>
   <button type="button" class="btn go" id="aImg" disabled style="width:100%;margin-top:8px">🖼️ Generar imagen con las plantas integradas</button>
 </dialog>
 
@@ -941,7 +941,7 @@ $("vG").onclick=async()=>{
 $("vr").onclick=e=>{const b=e.target.closest("[data-o]");if(b){$("vd").close();openDetail(b.dataset.o)}};
 
 /* ---------- Agregar con IA ---------- */
-let ab=null,aiSuggestions=[],aImgN=0;
+let ab=null,aImgN=0;
 function apick(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
@@ -949,7 +949,7 @@ function apick(e){
   r.readAsDataURL(f);e.target.value="";
 }
 $("aI").onchange=apick;$("aC").onchange=apick;
-function checkAG(){const en=!!(ab&&$("aq").value.trim());$("aG").disabled=!en;$("aImg").disabled=!en}
+function checkAG(){const en=!!(ab&&$("aq").value.trim());$("aImg").disabled=!en}
 $("aq").oninput=checkAG;
 /* ---------- Dictado por voz ---------- */
 (function(){
@@ -971,49 +971,14 @@ $("aq").oninput=checkAG;
     try{rec.start()}catch(e){stop()}
   };
 })();
-$("ai").onclick=()=>{ab=null;aiSuggestions=[];aImgN=0;$("ap").style.display="none";$("aq").value="";$("ar").innerHTML="";$("aG").disabled=true;$("aImg").disabled=true;$("ad").showModal()};
+$("ai").onclick=()=>{ab=null;aImgN=0;$("ap").style.display="none";$("aq").value="";$("ar").innerHTML="";$("aImg").disabled=true;$("ad").showModal()};
 $("aX").onclick=()=>$("ad").close();
-function aiItemFromSuggestion(p){
-  const t=T[p.t]?p.t:"planta",x={};if(T[t].f[0])x[T[t].f[0][0]]=p.detalle||"";
-  return{t,n:p.n,x};
-}
-$("aG").onclick=async()=>{
-  if(!ab)return;const desc=$("aq").value.trim();if(!desc)return;
-  const out=$("ar");out.textContent="Analizando…";$("aG").disabled=true;
-  try{
-    const sample=window.claude?await window.claude.use("sample"):null;
-    const key=sample?"":gKey();
-    if(!sample&&!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
-    const P="Eres asistente de un vivero. Te doy una foto de un lugar (un sector del vivero, o un ambiente como un baño, balcón, living, patio, etc.) y un texto en español del dueño.\n\n- Si el texto describe productos concretos que el dueño ve en la foto o quiere cargar (una o varias plantas, macetas, tierras, accesorios o químicos), identificá cada uno para agregarlo al inventario.\n- Si en cambio el texto es un PEDIDO DE RECOMENDACIÓN (por ejemplo \"qué plantas van bien acá\", \"plantas aptas para este espacio\", \"plantas que soporten estar en un baño\", o cualquier pregunta sobre qué plantar ahí), analizá las condiciones reales del lugar en la foto (luz natural o artificial y su intensidad, si es interior o exterior, humedad aparente -como la de un baño o cocina-, tamaño del espacio, estilo de la decoración) y sugerí entre 4 y 6 especies de plantas reales, conocidas y fáciles de conseguir en un vivero, que se adapten bien a esas condiciones específicas, como lo recomendaría un viverista experto (explicá brevemente el motivo de cada una en el detalle: por qué se adapta a ese ambiente).\n\nEn ambos casos devolvé la lista en el mismo formato. Para cada producto elegí una categoría de esta lista: planta, maceta, tierra, accesorio, quimico.\n\nTexto del dueño: \""+desc+"\"\n\nResponde SOLO con JSON: {\"productos\":[{\"t\":\"planta|maceta|tierra|accesorio|quimico\",\"n\":\"nombre corto del producto\",\"detalle\":\"detalle breve: por qué se adapta a este lugar, tamaño, variedad, etc.\"}]}. Si de verdad no podés identificar ni sugerir nada, dejá productos vacío.";
-    const r=sample?await sample.json(P,{images:[ab],modelTier:"default"}):await gemini(P,ab,key);
-    aiSuggestions=(r.productos||[]).filter(p=>p&&p.n);
-    if(!aiSuggestions.length){out.innerHTML='<p class="cat">No pude identificar ni sugerir productos. Probá con una descripción más específica, o pedí directamente una recomendación (ej: "qué plantas van bien en este espacio").</p>';return}
-    out.innerHTML=`<p style="margin:0 0 6px"><b>${aiSuggestions.length} sugerencia(s) para este lugar:</b></p>`+
-      aiSuggestions.map((p,i)=>`<button type="button" class="pick" data-add="${i}"><span class="pick-ph">${T[p.t]?T[p.t].e:"❔"}</span><span class="pick-bd"><b>${esc(p.n)}</b><small>${esc(T[p.t]?T[p.t].l:p.t)}${p.detalle?" · "+esc(p.detalle):""}</small></span><span class="pick-go">Agregar →</span></button>`).join("")+
-      `<button type="button" class="btn" id="aAll" style="width:100%;margin-top:10px">➕ Agregar los ${aiSuggestions.length} sin precio (los completás después)</button>`;
-  }catch(e){
-    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este tipo de uso. Probá generar una clave nueva en Google AI Studio y pegarla arriba.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para esta función.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo completar el análisis. Intenta de nuevo.";
-  }finally{$("aG").disabled=false}
-};
 $("ar").onclick=e=>{
   if(e.target.closest("#aImgRetry")){$("aImg").click();return}
-  if(e.target.closest("#aAll")){
-    aiSuggestions.forEach(p=>{
-      const it=aiItemFromSuggestion(p);
-      D.items.push(Object.assign({id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),k:0,p:0,img:""},it));
-    });
-    save();render();$("ad").close();
-    return;
-  }
-  const b=e.target.closest("[data-add]");if(!b)return;
-  const p=aiSuggestions[+b.dataset.add];if(!p)return;
-  const it=aiItemFromSuggestion(p);
-  $("ad").close();
-  openForm(null,it);
 };
 $("aImg").onclick=async()=>{
   if(!ab)return;const desc=$("aq").value.trim();if(!desc)return;
-  const out=$("ar");out.textContent="Buscando referencias de paisajismo…";$("aG").disabled=true;$("aImg").disabled=true;
+  const out=$("ar");out.textContent="Buscando referencias de paisajismo…";$("aImg").disabled=true;
   try{
     const key=gKey();
     if(!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
