@@ -132,7 +132,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.9</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.10</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -367,7 +367,7 @@ async function pullFromCloud(initial){
     cloudBadge("on");
   }catch(e){cloudBadge("err")}
 }
-let tab="planta",term="",ubi="Todas",open=false,editing=null,img="",cart=[],rng="all",from="",to="",st="";
+let tab="planta",term="",ubi="Todas",open=false,editing=null,img="",cart=[],rng="all",from="",to="",st="",catLimit=30;
 const $=id=>document.getElementById(id);
 const money=v=>"$"+(+v||0).toLocaleString("es-AR",{maximumFractionDigits:2,useGrouping:"always"});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -468,14 +468,16 @@ function renderCat(){
   let h=`<div class="stats"><div class="stat" style="grid-column:1/-1"><b>${all.length}</b><span>En catálogo</span></div></div>
   <input class="search" id="q" type="search" placeholder="Buscar en ${T[tab].l.toLowerCase()}…" value="${esc(term)}">`;
   if(tab==="planta")h+=`<div class="chips">${["Todas","Interior","Exterior","Interior / Exterior"].map(u=>`<button class="chip${u===ubi?" on":""}" data-u="${u}">${u}</button>`).join("")}</div>`;
-  h+=rows.length?rows.map(card).join(""):`<div class="empty">No hay ${T[tab].l.toLowerCase()} aquí. Toca el botón verde para agregar.</div>`;
+  const shown=rows.slice(0,catLimit);
+  h+=rows.length?shown.map(card).join(""):`<div class="empty">No hay ${T[tab].l.toLowerCase()} aquí. Toca el botón verde para agregar.</div>`;
+  if(rows.length>shown.length)h+=`<button type="button" class="btn" id="catMore" style="width:100%;margin:4px 0 8px">Ver más (${shown.length} de ${rows.length})</button>`;
   $("view").innerHTML=h;
   $("view").querySelectorAll(".ph img").forEach(im=>{im.onerror=()=>{const p=im.parentNode;if(p)p.textContent=p.dataset.em}});
-  const qi=$("q");qi.oninput=e=>{term=e.target.value;const p=qi.selectionStart;renderCat();const n=$("q");n.focus();n.setSelectionRange(p,p)};
+  const qi=$("q");qi.oninput=e=>{term=e.target.value;catLimit=30;const p=qi.selectionStart;renderCat();const n=$("q");n.focus();n.setSelectionRange(p,p)};
 }
 function card(i){
   const det=Object.values(i.x||{}).filter(Boolean).join(" · ");
-  return `<div class="item" data-open="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy">`:T[i.t].e}</div>
+  return `<div class="item" data-open="${i.id}"><div class="ph" data-em="${T[i.t].e}">${(i.img||i.u)?`<img src="${esc(i.img||i.u)}" alt="" loading="lazy" decoding="async">`:T[i.t].e}</div>
   <div class="bd"><div class="nm">${esc(i.n)}</div><div class="cat">${esc(det)}</div>
   <div class="pr"><b>${money(i.p)}</b><span>precio de venta</span></div>${showCost?`<div class="pr2"><span>compra <b>${i.k>0?money(i.k):"—"}</b></span><span>margen <b>${i.k>0&&i.p>0?mg(i.k,i.p)+"%":"—"}</b></span></div>`:""}
   </div></div>`;
@@ -601,12 +603,13 @@ $("bS").onclick=()=>{
 
 /* ---------- Eventos globales ---------- */
 $("fab").onclick=()=>tab==="ventas"?openSale():openForm(null);
-$("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;term="";render()}};
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;term="";catLimit=30;render()}};
 $("ventasBtn").onclick=()=>{tab="ventas";term="";render()};
 $("view").onclick=e=>{
   const t=e.target,d=t.dataset,item=t.closest("[data-open]");
   if(item)openDetail(item.dataset.open);
-  else if(d.u){ubi=d.u;render()}
+  else if(t.id==="catMore"){catLimit+=30;renderCat()}
+  else if(d.u){ubi=d.u;catLimit=30;render()}
   else if(d.r){rng=d.r;from="";to="";render()}
   else if(d.x&&confirm("¿Eliminar esta venta?")){
     const s=D.sales.find(v=>v.id===d.x);
