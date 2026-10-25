@@ -53,6 +53,7 @@ input,select,button{font:inherit;color:inherit}
 .sale p{margin:6px 0;font-size:15px}.sale .tt{display:flex;justify-content:space-between;align-items:center}.sale .tt b{font-size:18px}
 .mini{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--bad);font-size:13px;cursor:pointer}
 .mini2{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--ink);font-size:12px;cursor:pointer;font-weight:600;text-align:center;text-decoration:none;display:block}
+.mini2.on{background:var(--bad);color:#fff;border-color:var(--bad)}
 .wres{display:flex;gap:10px;padding:9px 10px;margin-top:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 .wres .wact{display:flex;flex-direction:column;gap:5px;flex:none;width:84px}
 .empty{text-align:center;color:var(--mute);padding:36px 12px}
@@ -132,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.21</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.22</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -230,6 +231,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
   <img id="ap" alt="Foto del lugar" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
   <label for="aq">Describí lo que ves, qué plantas querés agregar, o pedí una recomendación</label>
   <textarea id="aq" rows="3" placeholder="Ej: una suculenta echeveria chica, un ficus lyrata grande en maceta negra… o pedí una recomendación: &quot;qué plantas van bien en este espacio?&quot;" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
+  <button type="button" class="mini2" id="aqMic" style="margin-top:6px">🎤 Dictar por voz</button>
   <div id="ar" style="margin-top:12px"></div>
   <div class="row"><button id="aX">Cerrar</button><button id="aG" disabled>Sugerir productos</button></div>
   <button type="button" class="btn go" id="aImg" disabled style="width:100%;margin-top:8px">🖼️ Generar imagen con las plantas integradas</button>
@@ -949,6 +951,26 @@ function apick(e){
 $("aI").onchange=apick;$("aC").onchange=apick;
 function checkAG(){const en=!!(ab&&$("aq").value.trim());$("aG").disabled=!en;$("aImg").disabled=!en}
 $("aq").oninput=checkAG;
+/* ---------- Dictado por voz ---------- */
+(function(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=$("aqMic");
+  if(!SR){btn.style.display="none";return}
+  let rec=null,listening=false;
+  function stop(){listening=false;btn.textContent="🎤 Dictar por voz";btn.classList.remove("on");try{rec&&rec.stop()}catch(e){}}
+  btn.onclick=()=>{
+    if(listening){stop();return}
+    rec=new SR();rec.lang="es-AR";rec.interimResults=false;rec.maxAlternatives=1;
+    rec.onstart=()=>{listening=true;btn.textContent="🔴 Escuchando… (tocá para parar)";btn.classList.add("on")};
+    rec.onresult=e=>{
+      const txt=Array.from(e.results).map(r=>r[0].transcript).join(" ").trim();
+      if(txt){const cur=$("aq").value.trim();$("aq").value=cur?cur+" "+txt:txt;checkAG()}
+    };
+    rec.onerror=()=>{stop()};
+    rec.onend=()=>{stop()};
+    try{rec.start()}catch(e){stop()}
+  };
+})();
 $("ai").onclick=()=>{ab=null;aiSuggestions=[];aImgN=0;$("ap").style.display="none";$("aq").value="";$("ar").innerHTML="";$("aG").disabled=true;$("aImg").disabled=true;$("ad").showModal()};
 $("aX").onclick=()=>$("ad").close();
 function aiItemFromSuggestion(p){
