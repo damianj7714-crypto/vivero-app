@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<script>try{var __t=localStorage.getItem("vivero-theme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ViveroApp</title>
 <link rel="manifest" href="manifest.json">
@@ -123,7 +124,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.3</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.4</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -376,9 +377,45 @@ $("ddDel").onclick=()=>{
   ddArm={ts:Date.now(),t:setInterval(()=>{n--;if(n<=0)disarmDD();else lbl()},1000)};
 };
 function render(){
-  $("tabs").innerHTML=Object.keys(T).concat("ventas").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":T[k].l}</button>`).join("");
+  $("tabs").innerHTML=Object.keys(T).concat("ventas","config").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":k==="config"?"⚙️ Config":T[k].l}</button>`).join("");
+  $("fab").style.display=tab==="config"?"none":"";
   $("fab").textContent=tab==="ventas"?"+ Venta":"+ "+(T[tab]?T[tab].l.replace(/s$/,""):"");
-  tab==="ventas"?renderSales():renderCat();
+  if(tab==="ventas")renderSales();else if(tab==="config")renderConfig();else renderCat();
+}
+/* ---------- Configuración ---------- */
+function curTheme(){try{return localStorage.getItem("vivero-theme")||"auto"}catch(e){return "auto"}}
+function applyTheme(){
+  const t=curTheme();
+  if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);
+  else document.documentElement.removeAttribute("data-theme");
+}
+function setTheme(t){try{localStorage.setItem("vivero-theme",t)}catch(e){}applyTheme();renderConfig()}
+function renderConfig(){
+  const th=curTheme();
+  $("view").innerHTML=`
+  <div class="stats"><div class="stat" style="grid-column:1/-1"><b>${D.items.length}</b><span>Productos en el inventario</span></div></div>
+  <div class="sale" style="margin-bottom:10px">
+    <h3 style="margin:0 0 10px;font-size:15px">Apariencia</h3>
+    <div class="chips" style="margin:0"><button type="button" class="chip${th==="light"?" on":""}" data-th="light">☀️ Claro</button><button type="button" class="chip${th==="dark"?" on":""}" data-th="dark">🌙 Oscuro</button></div>
+  </div>
+  <div class="sale" style="margin-bottom:10px">
+    <h3 style="margin:0 0 10px;font-size:15px">Datos e inventario</h3>
+    <button type="button" class="btn" id="cfgExport" style="width:100%;margin-bottom:8px">📊 Exportar todo a Excel</button>
+    <button type="button" class="btn" id="cfgImport" style="width:100%">📥 Importar desde Excel</button>
+  </div>
+  <div class="sale" style="margin-bottom:10px">
+    <h3 style="margin:0 0 10px;font-size:15px">Nube</h3>
+    <button type="button" class="btn" id="cfgSync" style="width:100%">↻ Sincronizar con la nube</button>
+  </div>
+  <div class="sale">
+    <h3 style="margin:0 0 10px;font-size:15px">Acceso</h3>
+    <button type="button" class="btn" id="cfgKey" style="width:100%">🔑 Clave de Gemini (API)</button>
+  </div>`;
+  $("cfgExport").onclick=exportAllXlsx;
+  $("cfgImport").onclick=()=>$("im").click();
+  $("cfgSync").onclick=()=>$("sync").click();
+  $("cfgKey").onclick=()=>$("gkBtn").click();
+  $("view").querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>setTheme(b.dataset.th));
 }
 function renderCat(){
   const q=term.toLowerCase();
@@ -533,6 +570,91 @@ $("view").onclick=e=>{
     D.sales=D.sales.filter(v=>v!==s);save();render();
   }
 };
+/* ---------- Exportar todo a Excel (sin librer\u00edas, .xlsx generado a mano) ---------- */
+const REV={fam:"Familia",ubi:"Ubicacion",mac:"Maceta",med:"Medida",mat:"Material",mar:"Marca",tip:"Tipo",uso:"Uso",dil:"Disolucion"};
+function u16(n){return[n&255,(n>>8)&255]}
+function u32(n){return[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]}
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0}return t})();
+function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+const strBytes=s=>new TextEncoder().encode(s);
+const xmlEsc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function colLetter(n){let s="";n++;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s}
+function zipStore(files){
+  const chunks=[];let offset=0;const central=[];
+  const dosTime=0,dosDate=((2024-1980)<<9)|(1<<5)|1;
+  files.forEach(f=>{
+    const nameBytes=strBytes(f.name),data=f.data,crc=crc32(data),size=data.length;
+    const local=[...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(dosTime),...u16(dosDate),...u32(crc),...u32(size),...u32(size),...u16(nameBytes.length),...u16(0)];
+    const localBytes=new Uint8Array(local);
+    chunks.push(localBytes,nameBytes,data);
+    central.push({nameBytes,crc,size,localHeaderOffset:offset});
+    offset+=localBytes.length+nameBytes.length+data.length;
+  });
+  const centralStart=offset;
+  central.forEach(ce=>{
+    const hdr=[...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(dosTime),...u16(dosDate),...u32(ce.crc),...u32(ce.size),...u32(ce.size),...u16(ce.nameBytes.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(ce.localHeaderOffset)];
+    const hdrBytes=new Uint8Array(hdr);
+    chunks.push(hdrBytes,ce.nameBytes);
+    offset+=hdrBytes.length+ce.nameBytes.length;
+  });
+  const centralSize=offset-centralStart;
+  const end=[...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(centralSize),...u32(centralStart),...u16(0)];
+  chunks.push(new Uint8Array(end));
+  let total=0;chunks.forEach(c=>total+=c.length);
+  const out=new Uint8Array(total);let p=0;
+  chunks.forEach(c=>{out.set(c,p);p+=c.length});
+  return out;
+}
+function buildXlsx(sheets){
+  const files=[];
+  files.push({name:"[Content_Types].xml",data:strBytes(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`+
+    sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")+
+    `</Types>`
+  )});
+  files.push({name:"_rels/.rels",data:strBytes(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`
+  )});
+  files.push({name:"xl/_rels/workbook.xml.rels",data:strBytes(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")+
+    `</Relationships>`
+  )});
+  files.push({name:"xl/workbook.xml",data:strBytes(
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`+
+    sheets.map((s,i)=>`<sheet name="${xmlEsc(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")+
+    `</sheets></workbook>`
+  )});
+  sheets.forEach((s,i)=>{
+    const rows=[s.header,...s.rows];
+    const rowsXml=rows.map((row,ri)=>{
+      const cells=row.map((val,ci)=>{
+        const ref=colLetter(ci)+(ri+1);
+        if(typeof val==="number"&&isFinite(val))return `<c r="${ref}"><v>${val}</v></c>`;
+        return `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(val)}</t></is></c>`;
+      }).join("");
+      return `<row r="${ri+1}">${cells}</row>`;
+    }).join("");
+    files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:strBytes(
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rowsXml}</sheetData></worksheet>`
+    )});
+  });
+  return zipStore(files);
+}
+function exportAllXlsx(){
+  const sheets=Object.keys(T).map(t=>{
+    const extra=T[t].f;
+    const header=["Nombre","PrecioVenta","PrecioCompra",...extra.map(f=>REV[f[0]]||f[1])];
+    const rows=D.items.filter(i=>i.t===t).map(i=>[i.n,i.p||0,i.k||0,...extra.map(f=>(i.x||{})[f[0]]||"")]);
+    return{name:T[t].l,header,rows};
+  });
+  const bytes=buildXlsx(sheets);
+  const blob=new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="vivero-inventario-"+new Date().toISOString().slice(0,10)+".xlsx";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+
 /* ---------- Importar desde Excel ---------- */
 const nk=s=>String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
 const HM={nombre:"n",precioventa:"p",preciocompra:"k",stock:"s",cantidad:"s",existencia:"s",stockminimo:"m",minimo:"m",imagen:"u",familia:"fam",ubicacion:"ubi",maceta:"mac",medida:"med",material:"mat",marca:"mar",tipo:"tip",uso:"uso",disolucion:"dil"};
@@ -868,6 +990,7 @@ $("pur").onclick=async e=>{
 };
 
 $("sync").onclick=()=>{if($("sync").classList.contains("spin"))return;$("sync").classList.add("spin");pullFromCloud(false).finally(()=>$("sync").classList.remove("spin"))};
+applyTheme();
 render();
 cloudBadge("sync");
 pullFromCloud(true);
