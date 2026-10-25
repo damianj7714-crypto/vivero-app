@@ -132,7 +132,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.11</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.12</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -575,6 +575,16 @@ async function runWikiSearch(){
     box.innerHTML='<p class="cat">No se pudo buscar ahora. Revisá tu conexión e intentá de nuevo.</p>';
   }finally{$("wG").disabled=false}
 }
+function normTxt(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim()}
+function invMatches(q){
+  const terms=normTxt(q).split(/\s+/).filter(t=>t.length>2);
+  if(!terms.length)return[];
+  return D.items.map(i=>{
+    const hay=normTxt(i.n+" "+Object.values(i.x||{}).filter(Boolean).join(" "));
+    const score=terms.reduce((s,t)=>s+(hay.includes(t)?1:0),0);
+    return{i,score};
+  }).filter(o=>o.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+}
 async function runPlantInfoSearch(q){
   const box=$("wr");box.dataset.results="";
   box.innerHTML='<p class="cat">Buscando en sitios especializados en plantas…</p>';$("wG").disabled=true;
@@ -585,7 +595,9 @@ async function runPlantInfoSearch(q){
     const r=await geminiGrounded(P,key);
     if(!r.text){box.innerHTML=`<p class="cat">No encontré información confiable para "${esc(q)}". Probá con el nombre científico o más general.</p>`;return}
     const fuentes=(r.sources||[]).slice(0,5);
+    const matches=invMatches(q);
     box.innerHTML=`<div class="wres" style="align-items:flex-start"><span class="pick-ph">🌿</span><span class="pick-bd"><b>${esc(q)}</b><small style="white-space:pre-wrap">${esc(r.text)}</small></span></div>`+
+      (matches.length?`<p class="cat" style="margin:10px 0 4px">Tenés esto en tu inventario:</p>`+matches.map(o=>`<button type="button" class="pick" data-inv="${o.i.id}"><span class="pick-ph">${(o.i.img||o.i.u)?`<img src="${esc(o.i.img||o.i.u)}" alt="" loading="lazy">`:T[o.i.t].e}</span><span class="pick-bd"><b>${esc(o.i.n)}</b><small>${esc(T[o.i.t].l)} · ${money(o.i.p)}</small></span><span class="pick-go">Abrir →</span></button>`).join(""):"")+
       (fuentes.length?`<p class="cat" style="margin:10px 0 4px">Fuentes:</p>`+fuentes.map(s=>`<a class="mini2" href="${esc(s.uri)}" target="_blank" rel="noopener" style="display:block;margin-bottom:6px">${esc(s.title||s.uri)}</a>`).join(""):"");
   }catch(e){
     box.innerHTML=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este uso. Probá generar una clave nueva en Google AI Studio.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":"No se pudo buscar ahora. Intentá de nuevo en un momento.";
@@ -594,6 +606,8 @@ async function runPlantInfoSearch(q){
 $("wG").onclick=runWikiSearch;
 $("wq").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();runWikiSearch()}};
 $("wr").onclick=e=>{
+  const invBtn=e.target.closest("[data-inv]");
+  if(invBtn){$("wd").close();openDetail(invBtn.dataset.inv);return}
   const b=e.target.closest("[data-useimg]");if(!b||wdStandalone)return;
   const res=JSON.parse($("wr").dataset.results||"[]"),r=res[+b.dataset.useimg];if(!r)return;
   img=r.thumb;prev();$("wd").close();
