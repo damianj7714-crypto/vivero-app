@@ -88,8 +88,8 @@ h1{font-size:34px;font-weight:500;line-height:1;letter-spacing:-.01em}
 .cloud{font-size:11px;color:var(--mute);margin-top:6px;display:flex;align-items:center;gap:5px}.cloud.on span{background:var(--moss)}.cloud.err span{background:var(--bad)}.cloud span{width:7px;height:7px;border-radius:99px;background:var(--mute);display:inline-block}
 #sync{font-size:16px;line-height:1;padding:8px 11px}#sync.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .lock{background:transparent;border-radius:8px;font-size:13px;font-weight:500;letter-spacing:.02em;padding:8px 12px}
-.tabs{gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;padding-bottom:0}
-.tab{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 12px;color:var(--mute);font-weight:500;font-size:14px;letter-spacing:.02em}
+.tabs{gap:0;border-bottom:1px solid var(--line);margin-bottom:14px;padding-bottom:0;overflow-x:visible;flex-wrap:nowrap}
+.tab{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 2px;color:var(--mute);font-weight:500;font-size:clamp(10px,3.1vw,14px);letter-spacing:0;flex:1 1 0;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tab.on{background:none;color:var(--ink);border-color:transparent transparent var(--gold) transparent}
 .chip{background:transparent;font-size:13px;padding:6px 13px;color:var(--mute)}
 .chip.on{color:var(--onmoss)}
@@ -133,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.24</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.25</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
