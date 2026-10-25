@@ -120,15 +120,29 @@ dialog h2{font-size:24px;font-weight:500}
 .go{font-weight:600!important}
 .pr2{display:flex;gap:16px;margin-top:5px;font-size:13px;color:var(--mute)}.pr2 b{color:var(--ink);font-weight:600}
 .empty{padding:48px 16px}
+dialog#cfgDrawer{position:fixed;top:0;left:0;right:auto;bottom:0;margin:0;height:100%;max-height:100%;width:86vw;max-width:340px;border-radius:0 18px 18px 0;padding:18px 16px;overflow-y:auto;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+dialog#cfgDrawer.open{transform:translateX(0)}
+dialog#cfgDrawer::backdrop{background:rgba(0,0,0,0);transition:background .28s ease}
+dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
+.cfgSec{margin-bottom:16px}
+.cfgSec h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
 </style>
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.4</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.5</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
 <button class="fab" id="fab">+</button>
+
+<dialog id="cfgDrawer">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="margin:0;font-size:20px">Configuración</h2>
+    <button type="button" id="cfgClose" class="mini2" style="padding:6px 12px">✕ Cerrar</button>
+  </div>
+  <div id="cfgContent"></div>
+</dialog>
 
 <dialog id="dlg">
   <h2 id="dT" style="margin:0;font-size:20px"></h2>
@@ -377,46 +391,61 @@ $("ddDel").onclick=()=>{
   ddArm={ts:Date.now(),t:setInterval(()=>{n--;if(n<=0)disarmDD();else lbl()},1000)};
 };
 function render(){
-  $("tabs").innerHTML=Object.keys(T).concat("ventas","config").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":k==="config"?"⚙️ Config":T[k].l}</button>`).join("");
-  $("fab").style.display=tab==="config"?"none":"";
+  $("tabs").innerHTML=Object.keys(T).concat("ventas").map(k=>`<button class="tab${k===tab?" on":""}" data-t="${k}">${k==="ventas"?"Ventas":T[k].l}</button>`).join("");
   $("fab").textContent=tab==="ventas"?"+ Venta":"+ "+(T[tab]?T[tab].l.replace(/s$/,""):"");
-  if(tab==="ventas")renderSales();else if(tab==="config")renderConfig();else renderCat();
+  tab==="ventas"?renderSales():renderCat();
 }
-/* ---------- Configuración ---------- */
+/* ---------- Configuración (menú deslizable desde la izquierda) ---------- */
 function curTheme(){try{return localStorage.getItem("vivero-theme")||"auto"}catch(e){return "auto"}}
 function applyTheme(){
   const t=curTheme();
   if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);
   else document.documentElement.removeAttribute("data-theme");
 }
-function setTheme(t){try{localStorage.setItem("vivero-theme",t)}catch(e){}applyTheme();renderConfig()}
-function renderConfig(){
+function setTheme(t){try{localStorage.setItem("vivero-theme",t)}catch(e){}applyTheme();renderDrawer()}
+function renderDrawer(){
   const th=curTheme();
-  $("view").innerHTML=`
-  <div class="stats"><div class="stat" style="grid-column:1/-1"><b>${D.items.length}</b><span>Productos en el inventario</span></div></div>
-  <div class="sale" style="margin-bottom:10px">
-    <h3 style="margin:0 0 10px;font-size:15px">Apariencia</h3>
+  $("cfgContent").innerHTML=`
+  <div class="cfgSec"><h3>Apariencia</h3>
     <div class="chips" style="margin:0"><button type="button" class="chip${th==="light"?" on":""}" data-th="light">☀️ Claro</button><button type="button" class="chip${th==="dark"?" on":""}" data-th="dark">🌙 Oscuro</button></div>
   </div>
-  <div class="sale" style="margin-bottom:10px">
-    <h3 style="margin:0 0 10px;font-size:15px">Datos e inventario</h3>
+  <div class="cfgSec"><h3>Precios</h3>
+    <button type="button" class="btn" id="cfgCost" style="width:100%;margin-bottom:8px">💲 ${$("cpBtn").textContent}</button>
+    <button type="button" class="btn" id="cfgMargin" style="width:100%">📈 ${$("mgBtn").textContent}</button>
+  </div>
+  <div class="cfgSec"><h3>Datos e inventario</h3>
     <button type="button" class="btn" id="cfgExport" style="width:100%;margin-bottom:8px">📊 Exportar todo a Excel</button>
     <button type="button" class="btn" id="cfgImport" style="width:100%">📥 Importar desde Excel</button>
   </div>
-  <div class="sale" style="margin-bottom:10px">
-    <h3 style="margin:0 0 10px;font-size:15px">Nube</h3>
+  <div class="cfgSec"><h3>Nube</h3>
     <button type="button" class="btn" id="cfgSync" style="width:100%">↻ Sincronizar con la nube</button>
   </div>
-  <div class="sale">
-    <h3 style="margin:0 0 10px;font-size:15px">Acceso</h3>
+  <div class="cfgSec"><h3>Acceso</h3>
     <button type="button" class="btn" id="cfgKey" style="width:100%">🔑 Clave de Gemini (API)</button>
   </div>`;
   $("cfgExport").onclick=exportAllXlsx;
-  $("cfgImport").onclick=()=>$("im").click();
   $("cfgSync").onclick=()=>$("sync").click();
-  $("cfgKey").onclick=()=>$("gkBtn").click();
-  $("view").querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>setTheme(b.dataset.th));
+  const after=fn=>{closeDrawer();setTimeout(fn,260)};
+  $("cfgImport").onclick=()=>after(()=>$("im").click());
+  $("cfgKey").onclick=()=>after(()=>$("gkBtn").click());
+  $("cfgCost").onclick=()=>after(()=>$("cpBtn").click());
+  $("cfgMargin").onclick=()=>after(()=>$("mgBtn").click());
+  $("cfgContent").querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>setTheme(b.dataset.th));
 }
+function openDrawer(){
+  renderDrawer();
+  const d=$("cfgDrawer");d.showModal();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add("open")));
+}
+function closeDrawer(){
+  const d=$("cfgDrawer");if(!d.open)return;
+  d.classList.remove("open");
+  let done=false;const finish=()=>{if(done)return;done=true;d.removeEventListener("transitionend",finish);if(d.open)d.close()};
+  d.addEventListener("transitionend",finish);
+  setTimeout(finish,350);
+}
+$("cfgOpen").onclick=openDrawer;
+$("cfgClose").onclick=closeDrawer;
 function renderCat(){
   const q=term.toLowerCase();
   let rows=D.items.filter(i=>i.t===tab&&(i.n+" "+Object.values(i.x||{}).join(" ")).toLowerCase().includes(q));
