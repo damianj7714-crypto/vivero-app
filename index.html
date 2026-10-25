@@ -132,7 +132,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.8</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.9</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -236,9 +236,9 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </dialog>
 
 <dialog id="mgd">
-  <h2 style="margin:0;font-size:20px">Margen de ganancia base</h2>
-  <p class="calc">Porcentaje de ganancia que se usa para calcular el precio de venta cuando actualizás el precio de compra con "Actualizar precios con IA". Ejemplo: con 100%, un costo de $1.000 da un precio de venta de $2.000.</p>
-  <label for="mgI">Margen base (%)</label><input id="mgI" type="number" inputmode="decimal" min="0" step="any">
+  <h2 style="margin:0;font-size:20px">Márgenes de ganancia por categoría</h2>
+  <p class="calc">Porcentaje de ganancia que se usa para calcular el precio de venta cuando actualizás el precio de compra con "Actualizar precios con IA", según la categoría del producto. Ejemplo: con 100%, un costo de $1.000 da un precio de venta de $2.000.</p>
+  <div id="mgList"></div>
   <div class="row"><button id="mgX">Cancelar</button><button class="go" id="mgS">Guardar</button></div>
 </dialog>
 
@@ -272,7 +272,17 @@ const T={
 const KEY="viveroapp-mejorada-v1";
 let D={items:[],sales:[],pin:""};
 let showCost=(()=>{try{return localStorage.getItem("vivero-showcost")!=="0"}catch(e){return true}})();
-let margenBase=(()=>{try{const v=parseFloat(localStorage.getItem("vivero-margen"));return isFinite(v)&&v>=0?v:100}catch(e){return 100}})();
+let margenes=(()=>{
+  try{
+    const raw=localStorage.getItem("vivero-margenes");
+    if(raw){const obj=JSON.parse(raw);if(obj&&typeof obj==="object")return obj}
+  }catch(e){}
+  let base=100;
+  try{const v=parseFloat(localStorage.getItem("vivero-margen"));if(isFinite(v)&&v>=0)base=v}catch(e){}
+  const o={};Object.keys(T).forEach(t=>o[t]=base);
+  return o;
+})();
+function margenFor(t){const v=margenes[t];return isFinite(v)&&v>=0?v:100}
 try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.items))D=Object.assign(D,r)}catch(e){}
 
 /* ---------- Firebase (Firestore por API REST, sin SDK) ---------- */
@@ -943,13 +953,17 @@ $("aImg").onclick=async()=>{
 };
 
 /* ---------- Margen de ganancia base ---------- */
-function updateMgBtn(){$("mgBtn").textContent="Margen base: "+margenBase+"%"}
-$("mgBtn").onclick=()=>{$("mgI").value=margenBase;$("mgd").showModal()};
+function updateMgBtn(){$("mgBtn").textContent="Márgenes por categoría"}
+function renderMgList(){
+  $("mgList").innerHTML=Object.keys(T).map(t=>`<label for="mgI_${t}">${T[t].e} ${esc(T[t].l)}</label><input id="mgI_${t}" data-t="${t}" type="number" inputmode="decimal" min="0" step="any" value="${margenFor(t)}">`).join("");
+}
+$("mgBtn").onclick=()=>{renderMgList();$("mgd").showModal()};
 $("mgX").onclick=()=>$("mgd").close();
 $("mgS").onclick=()=>{
-  const v=parseFloat($("mgI").value);
-  if(!isFinite(v)||v<0){$("mgI").focus();return}
-  margenBase=v;try{localStorage.setItem("vivero-margen",String(v))}catch(e){}
+  const inputs=[...$("mgList").querySelectorAll("[data-t]")];
+  for(const inp of inputs){const v=parseFloat(inp.value);if(!isFinite(v)||v<0){inp.focus();return}}
+  const next={};inputs.forEach(inp=>next[inp.dataset.t]=parseFloat(inp.value));
+  margenes=next;try{localStorage.setItem("vivero-margenes",JSON.stringify(margenes))}catch(e){}
   updateMgBtn();$("mgd").close();
 };
 updateMgBtn();
@@ -968,10 +982,10 @@ $("puX").onclick=()=>$("pud").close();
 function drawPriceRows(){
   const matched=priceRows.filter(r=>r.item);
   const selCount=priceRows.filter(r=>r.sel&&r.item).length;
-  $("pur").innerHTML=`<p style="margin:0 0 8px" class="cat">Encontré ${priceRows.length} fila(s). Tocá una coincidencia para incluirla o no en la actualización. El precio de venta se recalcula con el margen base (${margenBase}%).</p>`+
+  $("pur").innerHTML=`<p style="margin:0 0 8px" class="cat">Encontré ${priceRows.length} fila(s). Tocá una coincidencia para incluirla o no en la actualización. El precio de venta se recalcula según el margen de cada categoría.</p>`+
     priceRows.map((r,i)=>{
       if(r.item){
-        r.newP=Math.round(r.precio*(1+margenBase/100));
+        r.newP=Math.round(r.precio*(1+margenFor(r.item.t)/100));
         const ventaTxt=` · venta ${money(r.item.p)} → ${money(r.newP)}`;
         return `<button type="button" class="pick" data-row="${i}" style="${r.sel?"border-color:var(--moss)":""}"><span class="pick-ph">${T[r.item.t].e}</span><span class="pick-bd"><b>${esc(r.item.n)}</b><small>${esc(r.nombre_remito||"")}${r.tamano_remito?" ("+esc(r.tamano_remito)+")":""}</small><small class="mt">compra ${money(r.item.k)} → ${money(r.precio)}${esc(ventaTxt)}</small></span><span class="pick-go">${r.sel?"✓ incluida":"— excluida"}</span></button>`;
       }
@@ -1008,7 +1022,7 @@ $("pur").onclick=async e=>{
     const out=$("pur"),n=updatedRows.length;
     if(!n){$("pud").close();return}
     if(!pb){$("pud").close();alert("Actualicé el precio de compra de "+n+" producto(s).");return}
-    const doneMsg=`Actualicé el precio de compra de ${n} producto(s) y el de venta (margen base ${margenBase}%).`;
+    const doneMsg=`Actualicé el precio de compra de ${n} producto(s) y el de venta según el margen de cada categoría.`;
     out.innerHTML=`<p class="cat">${doneMsg} Generando una foto del remito con lo cambiado tachado…</p>`;
     try{
       const key=gKey();
@@ -1028,7 +1042,7 @@ $("pur").onclick=async e=>{
   if(newBtn){
     const i=+newBtn.dataset.newrow,row=priceRows[i],t=T[row.t]?row.t:"planta",x={};if(T[t].f[0])x[T[t].f[0][0]]=row.tamano_remito||"";
     $("pud").close();
-    openForm(null,{t,n:row.nombre_sugerido||row.nombre_remito||"",x,k:row.precio,p:Math.round(row.precio*(1+margenBase/100))});
+    openForm(null,{t,n:row.nombre_sugerido||row.nombre_remito||"",x,k:row.precio,p:Math.round(row.precio*(1+margenFor(t)/100))});
     return;
   }
 };
