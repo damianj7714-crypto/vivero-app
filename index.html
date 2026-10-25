@@ -123,7 +123,7 @@ dialog h2{font-size:24px;font-weight:500}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v2.9</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.0</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="lock" id="sync" title="Volver a traer los datos de la nube">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn">Precio de compra</button><button class="lock" id="gkBtn">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -216,6 +216,17 @@ dialog h2{font-size:24px;font-weight:500}
   <div id="ar" style="margin-top:12px"></div>
   <div class="row"><button id="aX">Cerrar</button><button id="aG" disabled>Sugerir productos</button></div>
   <button type="button" class="btn go" id="aImg" disabled style="width:100%;margin-top:8px">🖼️ Generar imagen con las plantas integradas</button>
+</dialog>
+
+<dialog id="pud">
+  <h2 style="margin:0;font-size:20px">Actualizar precio de compra con IA</h2>
+  <p class="calc">Sacá o elegí una foto de la lista o remito de tu proveedor (nombre, tamaño y precio por unidad). La IA va a leer los datos y relacionarlos con tus productos para que confirmes qué precios de compra actualizar.</p>
+  <div class="two"><label class="btn up">📁 Galería<input id="puI" type="file" accept="image/*"></label><label class="btn up">📷 Cámara<input id="puC" type="file" accept="image/*" capture="environment"></label></div>
+  <img id="pup" alt="Foto del remito" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:10px;display:none">
+  <label for="puq">Aclaraciones (opcional)</label>
+  <textarea id="puq" rows="2" placeholder="Ej: MI5 es maceta de 15cm, SI2 es semillero chico…" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:inherit;resize:vertical"></textarea>
+  <div id="pur" style="margin-top:12px"></div>
+  <div class="row"><button id="puX">Cerrar</button><button class="go" id="puG" disabled>Analizar remito</button></div>
 </dialog>
 
 <dialog id="wd">
@@ -755,6 +766,67 @@ $("aImg").onclick=async()=>{
   }catch(e){
     out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida o no tiene permiso para generar imágenes. Probá generar una clave nueva en Google AI Studio.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.status===404?"Tu clave de Gemini todavía no tiene acceso a generación de imágenes.":"No se pudo generar la imagen. Probá de nuevo o con otra foto.";
   }finally{checkAG()}
+};
+
+/* ---------- Actualizar precio de compra con IA (a partir de un remito) ---------- */
+let pb=null,priceRows=[];
+function pupick(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>{pb=b;$("pup").src=URL.createObjectURL(b);$("pup").style.display="block";$("puG").disabled=false;$("pur").innerHTML=""},"image/jpeg",.85)};im.src=r.result};
+  r.readAsDataURL(f);e.target.value="";
+}
+$("puI").onchange=pupick;$("puC").onchange=pupick;
+$("pu").onclick=()=>{pb=null;priceRows=[];$("pup").style.display="none";$("puq").value="";$("pur").innerHTML="";$("puG").disabled=true;$("pud").showModal()};
+$("puX").onclick=()=>$("pud").close();
+function drawPriceRows(){
+  const matched=priceRows.filter(r=>r.item);
+  const selCount=priceRows.filter(r=>r.sel&&r.item).length;
+  $("pur").innerHTML=`<p style="margin:0 0 8px" class="cat">Encontré ${priceRows.length} fila(s). Tocá una coincidencia para incluirla o no en la actualización.</p>`+
+    priceRows.map((r,i)=>{
+      if(r.item){
+        return `<button type="button" class="pick" data-row="${i}" style="${r.sel?"border-color:var(--moss)":""}"><span class="pick-ph">${T[r.item.t].e}</span><span class="pick-bd"><b>${esc(r.item.n)}</b><small>${esc(r.nombre_remito||"")}${r.tamano_remito?" ("+esc(r.tamano_remito)+")":""}</small><small class="mt">${money(r.item.k)} → ${money(r.precio)}</small></span><span class="pick-go">${r.sel?"✓ incluida":"— excluida"}</span></button>`;
+      }
+      return `<button type="button" class="pick" data-newrow="${i}"><span class="pick-ph">❔</span><span class="pick-bd"><b>${esc(r.nombre_sugerido||r.nombre_remito||"?")}</b><small>Sin coincidencia en tu inventario${r.tamano_remito?" · "+esc(r.tamano_remito):""}</small><small class="mt">Precio: ${money(r.precio)}</small></span><span class="pick-go">Agregar →</span></button>`;
+    }).join("")+
+    (matched.length?`<button type="button" class="btn go" id="puApply" style="width:100%;margin-top:10px">Actualizar ${selCount} precio(s) de compra</button>`:"");
+}
+$("puG").onclick=async()=>{
+  if(!pb)return;const out=$("pur");out.textContent="Leyendo el remito…";$("puG").disabled=true;
+  try{
+    const sample=window.claude?await window.claude.use("sample"):null;
+    const key=sample?"":gKey();
+    if(!sample&&!key){out.textContent='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
+    if(!D.items.length){out.textContent="Primero agrega productos a tu inventario.";return}
+    const notes=$("puq").value.trim();
+    const lst=D.items.map(i=>i.id+"|"+T[i.t].l+"|"+i.n+"|"+Object.values(i.x||{}).filter(Boolean).join(", ")+"|compra actual: "+money(i.k)).join("\n");
+    const P="Sos el asistente de un vivero. Te muestro la foto de un remito o lista de precios de un proveedor, con filas de: cantidad, nombre del producto, tamaño o código de maceta entre paréntesis, y precio por unidad. Extraé cada fila (ignorando la cantidad) y compará cada nombre+tamaño con esta lista de productos YA CARGADOS en el inventario (id|categoría|nombre|detalle|precio de compra actual):\n"+lst+"\n\nTené en cuenta que los nombres en el remito pueden estar abreviados, mal escritos a mano o en otro orden, y que los tamaños pueden usar códigos de vivero (por ejemplo S=almácigo/semillero, B=bolsa, M=maceta seguido de un número en cm, L=litros) que no coinciden textualmente con el inventario."+(notes?(" Aclaraciones del dueño: "+notes):"")+"\n\nPara cada fila del remito, indicá el id del producto del inventario que corresponde (si hay una coincidencia razonable) o null si no hay ninguno parecido. También elegí una categoría (planta, maceta, tierra, accesorio o quimico) y un nombre prolijo por si hay que cargarlo como producto nuevo.\n\nResponde SOLO con JSON: {\"filas\":[{\"nombre_remito\":\"...\",\"tamano_remito\":\"...\",\"precio\":1650,\"item_id\":\"id o null\",\"t\":\"planta|maceta|tierra|accesorio|quimico\",\"nombre_sugerido\":\"...\"}]}. Usá solo ids que estén en la lista de inventario.";
+    const r=sample?await sample.json(P,{images:[pb],modelTier:"default"}):await gemini(P,pb,key);
+    priceRows=(r.filas||[]).filter(f=>f&&f.precio>0).map(f=>Object.assign({},f,{item:f.item_id?D.items.find(x=>x.id===f.item_id):null,sel:true}));
+    if(!priceRows.length){out.innerHTML='<p class="cat">No pude leer filas con precio en esta foto. Probá con otra foto más clara o derecha.</p>';return}
+    drawPriceRows();
+  }catch(e){
+    out.textContent=e&&(e.status===400||e.status===401||e.status===403)?"Esa clave de Gemini no es válida, no tiene permiso, o Google aún no la habilita para este uso. Probá generar una clave nueva en Google AI Studio.":e&&e.status===429?"Llegaste al límite gratuito de Gemini. Espera un momento.":e&&e.code==="not_granted"?"Necesitas permitir el uso de Claude para esta función.":e&&e.code==="rate_limited"?"Demasiadas búsquedas seguidas. Espera un momento.":"No se pudo leer el remito. Probá con otra foto.";
+  }finally{$("puG").disabled=false}
+};
+$("pur").onclick=e=>{
+  const applyBtn=e.target.closest("#puApply");
+  if(applyBtn){
+    let n=0;
+    priceRows.forEach(r=>{if(r.sel&&r.item){r.item.k=r.precio;n++}});
+    save();render();$("pud").close();
+    alert("Actualicé el precio de compra de "+n+" producto(s).");
+    return;
+  }
+  const rowBtn=e.target.closest("[data-row]");
+  if(rowBtn){const i=+rowBtn.dataset.row;priceRows[i].sel=!priceRows[i].sel;drawPriceRows();return}
+  const newBtn=e.target.closest("[data-newrow]");
+  if(newBtn){
+    const i=+newBtn.dataset.newrow,row=priceRows[i],t=T[row.t]?row.t:"planta",x={};if(T[t].f[0])x[T[t].f[0][0]]=row.tamano_remito||"";
+    $("pud").close();
+    openForm(null,{t,n:row.nombre_sugerido||row.nombre_remito||"",x,k:row.precio});
+    return;
+  }
 };
 
 $("sync").onclick=()=>{if($("sync").classList.contains("spin"))return;$("sync").classList.add("spin");pullFromCloud(false).finally(()=>$("sync").classList.remove("spin"))};
