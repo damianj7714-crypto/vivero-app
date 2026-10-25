@@ -133,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.27</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.28</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -609,11 +609,13 @@ async function runPlantInfoSearch(q){
     const key=gKey();
     if(!key){box.innerHTML='No tenés una clave de Gemini guardada. Tocá "Clave API" arriba (clave de acceso: 7714) para agregarla.';return}
     const P='Actuá como un experto en jardinería y viverismo. Buscá información en sitios especializados en plantas y jardinería (viveros, guías de cuidado de plantas, portales de jardinería) sobre: "'+q+'". Respondé en español, en tono claro y práctico, como para repetírselo directamente a un cliente del vivero. Si corresponde, incluí nombre común y científico, tipo de luz, riego, suelo y cuidados básicos. Sé breve (hasta 120 palabras). Si no encontrás nada confiable sobre esto, decilo claramente en vez de inventar.';
-    const r=await geminiGrounded(P,key);
+    const [r,photos]=await Promise.all([geminiGrounded(P,key),wikiSearch(q+" planta").catch(()=>[])]);
     if(!r.text){box.innerHTML=`<p class="cat">No encontré información confiable para "${esc(q)}". Probá con el nombre científico o más general.</p>`;return}
     const fuentes=(r.sources||[]).slice(0,5);
     const matches=invMatches(q);
+    const imgs=photos.map(p=>p.thumb).filter(Boolean).slice(0,4);
     box.innerHTML=`<div class="wres" style="align-items:flex-start"><span class="pick-ph">🌿</span><span class="pick-bd"><b>${esc(q)}</b><small style="white-space:pre-wrap">${esc(r.text)}</small></span></div>`+
+      (imgs.length?`<p class="cat" style="margin:10px 0 4px">Fotos:</p><div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px">${imgs.map(u=>`<img src="${esc(u)}" alt="${esc(q)}" loading="lazy" style="width:88px;height:88px;object-fit:cover;border-radius:10px;flex:none">`).join("")}</div>`:"")+
       (matches.length?`<p class="cat" style="margin:10px 0 4px">Tenés esto en tu inventario:</p>`+matches.map(o=>`<button type="button" class="pick" data-inv="${o.i.id}"><span class="pick-ph">${(o.i.img||o.i.u)?`<img src="${esc(o.i.img||o.i.u)}" alt="" loading="lazy">`:T[o.i.t].e}</span><span class="pick-bd"><b>${esc(o.i.n)}</b><small>${esc(T[o.i.t].l)} · ${money(o.i.p)}</small></span><span class="pick-go">Abrir →</span></button>`).join(""):"")+
       (fuentes.length?`<p class="cat" style="margin:10px 0 4px">Fuentes:</p>`+fuentes.map(s=>`<a class="mini2" href="${esc(s.uri)}" target="_blank" rel="noopener" style="display:block;margin-bottom:6px">${esc(s.title||s.uri)}</a>`).join(""):"");
   }catch(e){
