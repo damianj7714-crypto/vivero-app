@@ -133,7 +133,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </head>
 <body>
 <main>
-  <header><div><h1>Vivero <span class="ver">v3.31</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
+  <header><div><h1>Vivero <span class="ver">v3.32</span></h1><div class="sub">Inventario y precios</div><div class="cloud" id="cloud">·</div></div><div class="hdrGrid"><button class="lock" id="cfgOpen" title="Configuración">☰ Config</button><button class="lock" id="ventasBtn">Ventas</button><button class="lock" id="sync" title="Volver a traer los datos de la nube" style="display:none">↻</button><button class="lock" id="im" style="display:none">Importar Excel</button><button class="lock" id="ps">Buscar por foto</button><button class="lock" id="ai">Agregar con IA</button><button class="lock" id="pu">Actualizar precios con IA</button><button class="lock" id="mgBtn" style="display:none">Margen base: 100%</button><button class="lock" id="pq">Preguntar sobre una planta</button><button class="lock" id="cpBtn" style="display:none">Precio de compra</button><button class="lock" id="gkBtn" style="display:none">Clave API</button></div></header>
   <nav class="tabs" id="tabs"></nav>
   <div id="view"></div>
 </main>
@@ -166,7 +166,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
 </dialog>
 
 <dialog id="sd">
-  <h2 style="margin:0;font-size:20px">Nueva venta</h2>
+  <h2 style="margin:0;font-size:20px" id="sdT">Nueva venta</h2>
   <label for="sq">Buscar o escribir el nombre del producto</label><input id="sq" type="search" placeholder="Nombre del producto…">
   <div id="sr"></div>
   <h3 style="margin:16px 0 4px;font-size:16px">Carrito</h3>
@@ -174,7 +174,7 @@ dialog#cfgDrawer.open::backdrop{background:rgba(0,0,0,.5)}
   <div class="two"><div><label for="pay">Forma de pago</label><select id="pay"><option>Efectivo</option><option>Transferencia</option><option>Débito</option><option>Crédito</option></select></div>
   <div><label for="cli">Cliente (opcional)</label><input id="cli"></div></div>
   <div class="tot"><span>Total</span><span id="ct">$0</span></div>
-  <div class="row"><button id="sX">Cancelar</button><button class="go" id="sG">Finalizar venta</button></div>
+  <div class="row"><button class="del" id="bDS" style="display:none">Eliminar</button><button id="sX">Cancelar</button><button class="go" id="sG">Finalizar venta</button></div>
 </dialog>
 
 <dialog id="md">
@@ -366,7 +366,7 @@ async function pullFromCloud(initial){
     cloudBadge("on");
   }catch(e){cloudBadge("err")}
 }
-let tab="planta",term="",ubi="Todas",open=false,editing=null,img="",cart=[],rng="all",from="",to="",st="",catLimit=30,editPriceIdx=null;
+let tab="planta",term="",ubi="Todas",open=false,editing=null,img="",cart=[],rng="all",from="",to="",st="",catLimit=30,editPriceIdx=null,editingSale=null;
 const $=id=>document.getElementById(id);
 const money=v=>"$"+(+v||0).toLocaleString("es-AR",{maximumFractionDigits:2,useGrouping:"always"});
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -500,11 +500,21 @@ function renderSales(){
   <div class="dt"><div><label for="df">Desde</label><input id="df" type="date" value="${from}"></div><div><label for="dh">Hasta</label><input id="dh" type="date" value="${to}"></div></div>
   <input class="search" id="sq2" type="search" style="margin-top:10px" placeholder="Buscar por producto o cliente…" value="${esc(st)}">`+
   (rows.length?rows.map(s=>`<div class="sale"><div class="top"><span>${new Date(s.ts).toLocaleString("es",{dateStyle:"medium",timeStyle:"short"})}</span><span>${esc(s.pay)}${s.cli?" · "+esc(s.cli):""}</span></div>
-  <p>${s.items.map(i=>i.q+"× "+esc(i.n)).join(", ")}</p><div class="tt"><b>${money(s.total)}</b><button class="mini" data-x="${s.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">No hay ventas en este filtro.</div>`);
+  <p>${s.items.map(i=>i.q+"× "+esc(i.n)).join(", ")}</p><div class="tt"><b>${money(s.total)}</b><span><button class="mini" data-e="${s.id}">Editar</button> <button class="mini" data-x="${s.id}">Eliminar</button></span></div></div>`).join(""):`<div class="empty">No hay ventas en este filtro.</div>`);
   $("df").onchange=e=>{from=e.target.value;renderSales()};$("dh").onchange=e=>{to=e.target.value;renderSales()};
   const s2=$("sq2");s2.oninput=e=>{st=e.target.value;const p=s2.selectionStart;renderSales();const n=$("sq2");n.focus();n.setSelectionRange(p,p)};
 }
-function openSale(){cart=[];editPriceIdx=null;$("sq").value="";$("cli").value="";drawSale();$("sd").showModal()}
+function openSale(saleId){
+  const s=saleId?D.sales.find(v=>v.id===saleId):null;
+  editingSale=s?s.id:null;
+  cart=s?s.items.map(i=>({...i})):[];
+  editPriceIdx=null;$("sq").value="";
+  $("pay").value=s?s.pay:"Efectivo";$("cli").value=s?s.cli:"";
+  $("sdT").textContent=s?"Editar venta":"Nueva venta";
+  $("sG").textContent=s?"Guardar cambios":"Finalizar venta";
+  $("bDS").style.display=s?"":"none";
+  drawSale();$("sd").showModal();
+}
 function drawSale(){
   const q=$("sq").value.trim(),ql=q.toLowerCase();
   const matches=ql?D.items.filter(i=>i.n.toLowerCase().includes(ql)).slice(0,6):[];
@@ -558,7 +568,18 @@ $("cart").addEventListener("keydown",e=>{
 $("sX").onclick=()=>$("sd").close();
 $("sG").onclick=()=>{
   if(!cart.length)return;
-  D.sales.push({id:"v"+Date.now(),ts:Date.now(),items:cart,total:cart.reduce((a,c)=>a+c.p*c.q,0),pay:$("pay").value,cli:$("cli").value.trim()});
+  const total=cart.reduce((a,c)=>a+c.p*c.q,0),pay=$("pay").value,cli=$("cli").value.trim();
+  if(editingSale){
+    const s=D.sales.find(v=>v.id===editingSale);
+    if(s){s.items=cart;s.total=total;s.pay=pay;s.cli=cli}
+  }else{
+    D.sales.push({id:"v"+Date.now(),ts:Date.now(),items:cart,total,pay,cli});
+  }
+  save();$("sd").close();render();
+};
+$("bDS").onclick=()=>{
+  if(!editingSale||!confirm("¿Eliminar esta venta?"))return;
+  D.sales=D.sales.filter(v=>v.id!==editingSale);
   save();$("sd").close();render();
 };
 
@@ -683,6 +704,7 @@ $("view").onclick=e=>{
   else if(t.id==="catMore"){catLimit+=30;renderCat()}
   else if(d.u){ubi=d.u;catLimit=30;render()}
   else if(d.r){rng=d.r;from="";to="";render()}
+  else if(d.e){openSale(d.e)}
   else if(d.x&&confirm("¿Eliminar esta venta?")){
     const s=D.sales.find(v=>v.id===d.x);
     D.sales=D.sales.filter(v=>v!==s);save();render();
